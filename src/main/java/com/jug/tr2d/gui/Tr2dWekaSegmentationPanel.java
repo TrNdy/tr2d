@@ -31,6 +31,9 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 	private JTextPane txtClassifierPath;
 	private JButton bOpenClassifier;
 
+	private JLabel lblThresholds;
+	private JDoubleListTextPane txtThresholds;
+
 	private JButton bStartSegmentation;
 
 	private IddeaComponent icSegmentation = null;
@@ -52,13 +55,23 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		bOpenClassifier = new JButton( "pick classifier" );
 		bOpenClassifier.addActionListener( this );
 
+		lblThresholds = new JLabel( "thresholds: " );
+		txtThresholds = new JDoubleListTextPane( modelWekaSeg.getListThresholds() );
+
 		bStartSegmentation = new JButton( "start" );
 		bStartSegmentation.addActionListener( this );
 
+		// Add stuff together
+		// - - - - - - - - - -
 		final JPanel helper = new JPanel();
+
 		helper.add( lblClassifier );
 		helper.add( txtClassifierPath );
 		helper.add( bOpenClassifier );
+
+		helper.add( lblThresholds );
+		helper.add( txtThresholds );
+
 		helper.add( bStartSegmentation );
 
 		icSegmentation = new IddeaComponent();
@@ -117,22 +130,22 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 			return;
 		}
 
-//		try {
-//			modelWekaSeg.setSigma( Double.parseDouble( txtSigma.getText() ) );
-//		} catch ( final NumberFormatException nfe ) {
-//			JOptionPane.showMessageDialog(
-//					this,
-//					"Sigma ist not a floating point number.\nSegmentation could not be started!",
-//					"Number parse error...",
-//					JOptionPane.ERROR_MESSAGE );
-//			return;
-//		}
+		try {
+			modelWekaSeg.setListThresholds( txtThresholds.getList() );
+		} catch ( final NumberFormatException nfe ) {
+			JOptionPane.showMessageDialog(
+					this,
+					"List of doubles cannot be parsed!",
+					"Number parse error...",
+					JOptionPane.ERROR_MESSAGE );
+			return;
+		}
 
 		// in case all could be set fine:
 		modelWekaSeg.segment();
 
 		try {
-			icSegmentation.setSourceImage( modelWekaSeg.getSegmentation() );
+			icSegmentation.setSourceImage( modelWekaSeg.getSegmentHypotheses() );
 		} catch ( final IllegalAccessException e ) {
 			JOptionPane.showMessageDialog(
 					this,

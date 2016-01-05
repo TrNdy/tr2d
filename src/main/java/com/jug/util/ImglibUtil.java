@@ -18,12 +18,12 @@ public class ImglibUtil {
 
 	/**
 	 * Compute the min and max for any {@link Iterable}, like an {@link Img}.
-	 * 
+	 *
 	 * The only functionality we need for that is to iterate. Therefore we need
 	 * no {@link Cursor} that can localize itself, neither do we need a
 	 * {@link RandomAccess}. So we simply use the
 	 * most simple interface in the hierarchy.
-	 * 
+	 *
 	 * @param viewImg
 	 *            - the input that has to just be {@link Iterable}
 	 * @param min

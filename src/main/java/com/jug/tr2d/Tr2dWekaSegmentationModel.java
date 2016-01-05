@@ -4,9 +4,12 @@
 package com.jug.tr2d;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jug.segmentation.SegmentationMagic;
 import com.jug.segmentation.SilentWekaSegmenter;
+import com.jug.util.DataMover;
 import com.jug.util.converter.RealDoubleThresholdConverter;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -24,14 +27,17 @@ public class Tr2dWekaSegmentationModel {
 
 	private SilentWekaSegmenter< DoubleType > segClassifier;
 
+	private List< Double > listThresholds = new ArrayList< Double >();
+
 	private RandomAccessibleInterval< DoubleType > imgClassification = null;
-	private RandomAccessibleInterval< DoubleType > imgSegmentation = null;
+	private RandomAccessibleInterval< DoubleType > imgSegmentHypotheses = null;
 
 	/**
 	 *
 	 */
 	public Tr2dWekaSegmentationModel( final Tr2dModel model ) {
 		this.model = model;
+		getListThresholds().add( 0.5 );
 	}
 
 	/**
@@ -76,10 +82,18 @@ public class Tr2dWekaSegmentationModel {
 
 		// classify frames
 		imgClassification = SegmentationMagic.returnClassification( model.getImgOrig() );
-		imgSegmentation = Converters.convert(
-				imgClassification,
-				new RealDoubleThresholdConverter( 0.5 ),
-				new DoubleType() );
+
+		// collect thresholds in SumImage
+		RandomAccessibleInterval< DoubleType > imgTemp;
+		imgSegmentHypotheses =
+				DataMover.createEmptyArrayImgLike( imgClassification, new DoubleType() );
+		for ( final Double d : listThresholds ) {
+			imgTemp = Converters.convert(
+					imgClassification,
+					new RealDoubleThresholdConverter( d ),
+					new DoubleType() );
+			DataMover.add( imgTemp, imgSegmentHypotheses );
+		}
 	}
 
 	/**
@@ -96,10 +110,24 @@ public class Tr2dWekaSegmentationModel {
 	 * @return
 	 * @throws IllegalAccessException
 	 */
-	public RandomAccessibleInterval< DoubleType > getSegmentation()
+	public RandomAccessibleInterval< DoubleType > getSegmentHypotheses()
 			throws IllegalAccessException {
-		if ( imgSegmentation == null ) { throw new IllegalAccessException( "Segmentation not available. Method 'segment()' might not have been called before..." ); }
-		return imgSegmentation;
+		if ( imgSegmentHypotheses == null ) { throw new IllegalAccessException( "Segmentation not available. Method 'segment()' might not have been called before..." ); }
+		return imgSegmentHypotheses;
 	}
 
+	/**
+	 * @return the listThresholds
+	 */
+	public List< Double > getListThresholds() {
+		return listThresholds;
+	}
+
+	/**
+	 *
+	 * @param list
+	 */
+	public void setListThresholds( final List< Double > list ) {
+		this.listThresholds = list;
+	}
 }
