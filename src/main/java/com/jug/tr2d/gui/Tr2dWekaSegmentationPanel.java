@@ -27,9 +27,6 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 	private final Tr2dWekaSegmentationModel modelWekaSeg;
 
-	private JLabel lblSigma;
-	private JTextPane txtSigma;
-
 	private JLabel lblClassifier;
 	private JTextPane txtClassifierPath;
 	private JButton bOpenClassifier;
@@ -49,10 +46,6 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 	 */
 	private void buildGui() {
 
-		lblSigma = new JLabel( "sigma: " );
-		txtSigma = new JTextPane();
-		txtSigma.setText( String.format( "%.2f", modelWekaSeg.getSigma() ) );
-
 		lblClassifier = new JLabel( "classifier: " );
 		txtClassifierPath = new JTextPane();
 		txtClassifierPath.setText( modelWekaSeg.getClassifierPath() );
@@ -63,8 +56,6 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		bStartSegmentation.addActionListener( this );
 
 		final JPanel helper = new JPanel();
-		helper.add( lblSigma );
-		helper.add( txtSigma );
 		helper.add( lblClassifier );
 		helper.add( txtClassifierPath );
 		helper.add( bOpenClassifier );
@@ -126,16 +117,16 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 			return;
 		}
 
-		try {
-			modelWekaSeg.setSigma( Double.parseDouble( txtSigma.getText() ) );
-		} catch ( final NumberFormatException nfe ) {
-			JOptionPane.showMessageDialog(
-					this,
-					"Sigma ist not a floating point number.\nSegmentation could not be started!",
-					"Number parse error...",
-					JOptionPane.ERROR_MESSAGE );
-			return;
-		}
+//		try {
+//			modelWekaSeg.setSigma( Double.parseDouble( txtSigma.getText() ) );
+//		} catch ( final NumberFormatException nfe ) {
+//			JOptionPane.showMessageDialog(
+//					this,
+//					"Sigma ist not a floating point number.\nSegmentation could not be started!",
+//					"Number parse error...",
+//					JOptionPane.ERROR_MESSAGE );
+//			return;
+//		}
 
 		// in case all could be set fine:
 		modelWekaSeg.segment();

@@ -3,6 +3,9 @@
  */
 package com.jug.segmentation;
 
+import com.jug.fkt.Constant1D;
+import com.jug.fkt.Function1D;
+
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
@@ -14,9 +17,6 @@ import net.imglib2.type.numeric.integer.LongType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.SubsampleIntervalView;
 import net.imglib2.view.Views;
-
-import com.jug.fkt.Constant1D;
-import com.jug.fkt.Function1D;
 
 /**
  * @author jug
@@ -51,7 +51,7 @@ public class SegmentationMagic {
 
 		final long[] min = new long[ lastClassified.numDimensions() ];
 		lastClassified.min( min );
-		min[ 2 ]++;
+//		min[ 2 ]++; // reduce to second class (without this line to first)
 		final long[] max = new long[ lastClassified.numDimensions() ];
 		lastClassified.max( max );
 		// TODO: FIXES A BUG IN THE IMGLIB... NEEDS TO BE REMOVED AFTER THE BUG IS REMOVED!!!
@@ -65,7 +65,7 @@ public class SegmentationMagic {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param rai
 	 * @param withClassificationOfGaps
 	 * @return
@@ -81,7 +81,7 @@ public class SegmentationMagic {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param rai
 	 * @param unaryCostFactor
 	 * @param unaryPotentialImage
@@ -100,7 +100,7 @@ public class SegmentationMagic {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param rai
 	 * @param classRai
 	 * @return
@@ -142,7 +142,7 @@ public class SegmentationMagic {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param rai
 	 * @return
 	 */
@@ -151,7 +151,7 @@ public class SegmentationMagic {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param rai
 	 * @param classRai
 	 * @return

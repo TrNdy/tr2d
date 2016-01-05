@@ -19,12 +19,10 @@ import net.imglib2.type.numeric.real.DoubleType;
 public class Tr2dWekaSegmentationModel {
 
 	private static final String USE_LOADED_CLASSIFIER = "<default>";
-	private static final double DEFAULT_SIGMA = 0.0;
 
 	private final Tr2dModel model;
 
 	private SilentWekaSegmenter< DoubleType > segClassifier;
-	private double sigma;
 
 	private RandomAccessibleInterval< DoubleType > imgClassification = null;
 	private RandomAccessibleInterval< DoubleType > imgSegmentation = null;
@@ -34,7 +32,6 @@ public class Tr2dWekaSegmentationModel {
 	 */
 	public Tr2dWekaSegmentationModel( final Tr2dModel model ) {
 		this.model = model;
-		sigma = DEFAULT_SIGMA;
 	}
 
 	/**
@@ -46,20 +43,6 @@ public class Tr2dWekaSegmentationModel {
 		SegmentationMagic
 				.setClassifier( classifierFile.getParent() + "/", classifierFile.getName() );
 		segClassifier = SegmentationMagic.getClassifier();
-	}
-
-	/**
-	 * @return the sigma
-	 */
-	public double getSigma() {
-		return sigma;
-	}
-
-	/**
-	 * @param sigma the sigma to set
-	 */
-	public void setSigma( final double sigma ) {
-		this.sigma = sigma;
 	}
 
 	/**
