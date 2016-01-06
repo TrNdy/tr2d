@@ -19,6 +19,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.jug.tr2d.Tr2dModel;
+import com.jug.tr2d.Tr2dTrackingModel;
 import com.jug.tr2d.Tr2dWekaSegmentationModel;
 import com.jug.util.converter.RealDoubleNormalizeConverter;
 
@@ -82,8 +83,9 @@ public class Tr2dPanel extends JPanel implements ActionListener, ChangeListener 
 
 		tabs = new JTabbedPane();
 		tabData = new JPanel( new BorderLayout() );
-		tabSegmentation = new Tr2dWekaSegmentationPanel( new Tr2dWekaSegmentationModel( model ) );
-		tabTracking = new JPanel( new BorderLayout() );
+		final Tr2dWekaSegmentationModel segModel = new Tr2dWekaSegmentationModel( model );
+		tabSegmentation = new Tr2dWekaSegmentationPanel( segModel );
+		tabTracking = new Tr2dTrackingPanel( new Tr2dTrackingModel( model, segModel ) );
 
 		icData = new IddeaComponent( model.getImgOrigNorm() );
 		icData.showMenu( false );
