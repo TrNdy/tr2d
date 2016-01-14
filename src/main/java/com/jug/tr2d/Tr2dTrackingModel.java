@@ -6,16 +6,18 @@ package com.jug.tr2d;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.indago.fg.CostsFactory;
 import com.indago.fg.FactorGraph;
 import com.indago.segment.LabelingBuilder;
 import com.indago.segment.LabelingForest;
 import com.indago.segment.LabelingSegment;
 import com.indago.segment.MinimalOverlapConflictGraph;
-import com.indago.segment.RandomSegmentCosts;
+import com.indago.segment.Segment;
 import com.indago.segment.fg.FactorGraphFactory;
 import com.indago.segment.filteredcomponents.FilteredComponentTree;
 import com.indago.segment.filteredcomponents.FilteredComponentTree.Filter;
 import com.indago.segment.filteredcomponents.FilteredComponentTree.MaxGrowthPerStep;
+import com.jug.tr2d.datasets.hernan.HernanSegmentCostFactory;
 import com.jug.tr2d.fg.Tr2dFactorGraphPlus;
 
 import net.imglib2.Dimensions;
@@ -115,7 +117,8 @@ public class Tr2dTrackingModel {
 			System.out.print( "Constructing frameFG from MinimalOverlapConflictGraph... " );
 			t0 = System.currentTimeMillis();
 			final ArrayList< LabelingSegment > segments = labelingBuilder.getSegments();
-			final RandomSegmentCosts costs = new RandomSegmentCosts( segments, 4711 );
+			final CostsFactory< Segment > costs =
+					new HernanSegmentCostFactory( frameId, tr2dModel.getImgOrig() );
 			final FactorGraph frameFG = FactorGraphFactory
 					.createFromConflictGraph( segments, conflictGraph, costs )
 					.getFactorGraph();
