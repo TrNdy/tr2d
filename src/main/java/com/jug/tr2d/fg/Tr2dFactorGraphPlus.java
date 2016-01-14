@@ -12,7 +12,7 @@ import com.indago.fg.factor.Factor;
 import com.indago.fg.function.Function;
 import com.indago.fg.variable.BooleanVariable;
 import com.indago.fg.variable.Variable;
-import com.indago.segment.LabelingForest;
+import com.indago.segment.fg.FactorGraphPlus;
 
 
 /**
@@ -25,30 +25,23 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	private final Collection< ? extends Function< ?, ? > > functions;
 
 	// the sub factor graphs
-	private final List< FactorGraph > frameFGs;
-	private final List< FactorGraph > transFGs;
-
-	// associated labeling forests
-	private final List< List< LabelingForest > > perFrameLabelingForests;
+	private final List< FactorGraphPlus > frameFGs;
+	private final List< FactorGraphPlus > transFGs;
 
 	/**
 	 * Creates an empty Tr2d Factor Graph object.
-	 * 
+	 *
 	 * @param perFrameLabelingForests
 	 */
 	public Tr2dFactorGraphPlus(
-			final FactorGraph firstFrameFG,
-			final List< LabelingForest > frameLabelingForests ) {
-		frameFGs = new ArrayList< FactorGraph >();
+			final FactorGraphPlus firstFrameFG ) {
+		frameFGs = new ArrayList< FactorGraphPlus >();
 		frameFGs.add( firstFrameFG );
-		transFGs = new ArrayList< FactorGraph >();
+		transFGs = new ArrayList< FactorGraphPlus >();
 
 		variables = new ArrayList< BooleanVariable >();
 		factors = new ArrayList< Factor< ?, ?, ? > >();
 		functions = new ArrayList< Function< ?, ? > >();
-
-		perFrameLabelingForests = new ArrayList< List< LabelingForest > >();
-		perFrameLabelingForests.add( frameLabelingForests );
 	}
 
 	/**
@@ -76,11 +69,9 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	}
 
 	public void addFrame(
-			final FactorGraph transFG,
-			final FactorGraph frameFG,
-			final List< LabelingForest > frameLabelingForests ) {
+			final FactorGraphPlus transFG,
+			final FactorGraphPlus frameFG ) {
 		transFGs.add( transFG );
 		frameFGs.add( frameFG );
-		this.perFrameLabelingForests.add( frameLabelingForests );
 	}
 }
