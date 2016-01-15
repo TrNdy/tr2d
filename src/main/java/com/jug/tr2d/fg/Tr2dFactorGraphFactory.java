@@ -4,61 +4,296 @@
 package com.jug.tr2d.fg;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import com.indago.fg.CostsFactory;
 import com.indago.fg.DefaultFactorGraph;
+import com.indago.fg.domain.BooleanFunctionDomain;
+import com.indago.fg.factor.BooleanFactor;
 import com.indago.fg.factor.Factor;
+import com.indago.fg.function.BooleanTensorTable;
 import com.indago.fg.function.Function;
+import com.indago.fg.variable.BooleanVariable;
 import com.indago.segment.Segment;
 import com.indago.segment.fg.FactorGraphPlus;
 import com.indago.segment.fg.SegmentHypothesisVariable;
+import com.jug.tr2d.fg.constraints.BooleanAssignmentConstraint;
+import com.jug.tr2d.fg.variables.AppearanceHypothesisVariable;
+import com.jug.tr2d.fg.variables.DisappearanceHypothesisVariable;
+import com.jug.tr2d.fg.variables.DivisionHypothesisVariable;
+import com.jug.tr2d.fg.variables.MappingHypothesisVariable;
 
 import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 
 /**
  * @author jug
  */
 public class Tr2dFactorGraphFactory {
 
+	private Tr2dFactorGraphPlus fgp;
+
+	final BooleanFunctionDomain unaryDomain = new BooleanFunctionDomain( 1 );
+	final BooleanFunctionDomain mappingConstraintDomain = new BooleanFunctionDomain( 3 );
+	final BooleanFunctionDomain divisionConstraintDomain = new BooleanFunctionDomain( 4 );
+	final BooleanFunctionDomain appdisappConstraintDomain = new BooleanFunctionDomain( 2 );
+
+	final BooleanAssignmentConstraint mappingConstraint =
+			new BooleanAssignmentConstraint( mappingConstraintDomain );
+	final BooleanAssignmentConstraint divisionConstraint =
+			new BooleanAssignmentConstraint( divisionConstraintDomain );
+	final BooleanAssignmentConstraint appdisappConstraint =
+			new BooleanAssignmentConstraint( appdisappConstraintDomain );
+
+	private ArrayList< Function< ?, ? > > functions;
+	private ArrayList< Factor< ?, ?, ? > > factors;
+	private ArrayList< BooleanVariable > variables;
+
+	private Collection< SegmentHypothesisVariable< Segment > > segVarsSource;
+	private Collection< SegmentHypothesisVariable< Segment > > segVarsDest;
+
+	private CostsFactory< Pair< Segment, Segment > > mappingCosts;
+	private double maxMappingCost;
+	private CostsFactory< Pair< Segment, Pair< Segment, Segment > > > divisionCosts;
+	private double maxDivisionCost;
+	private CostsFactory< Segment > appearanceCosts;
+	private double maxAppearanceCost;
+	private CostsFactory< Segment > disappearanceCosts;
+	private double maxDisappearanceCost;
+
+
 	/**
-	 * @param fgPlus
-	 * @param segments
-	 * @param transCosts
+	 *
+	 * @param segVarSource
+	 * @param segVarDest
+	 * @param mappingCosts
+	 * @param maxMappingCost
+	 * @param divisionCosts
+	 * @param maxDivisionCost
+	 * @param appearanceCosts
+	 * @param maxAppearanceCost
+	 * @param disappearanceCosts
+	 * @param maxDisappearanceCost
 	 * @return
 	 */
+	public FactorGraphPlus< Segment > createTransitionGraph(
+			final Tr2dFactorGraphPlus fgp,
+			final Collection< SegmentHypothesisVariable< Segment > > segVarSource,
+			final Collection< SegmentHypothesisVariable< Segment > > segVarDest,
+			final CostsFactory< Pair< Segment, Segment > > mappingCosts,
+			final double maxMappingCost,
+			final CostsFactory< Pair< Segment, Pair< Segment, Segment > > > divisionCosts,
+			final double maxDivisionCost,
+			final CostsFactory< Segment > appearanceCosts,
+			final double maxAppearanceCost,
+			final CostsFactory< Segment > disappearanceCosts,
+			final double maxDisappearanceCost ) {
 
-	public static < T extends Segment > FactorGraphPlus< T > createTrackingTransitionGraph(
-			final ArrayList< T > segmentsSource,
-			final ArrayList< T > segmentsDest,
-			final CostsFactory< Pair< T, T > > transCosts ) {
+		this.fgp = fgp;
 
-		final int factorId = 0;
-		final int functionId = 0;
+		functions = new ArrayList< >();
+		factors = new ArrayList< >();
+		variables = new ArrayList< BooleanVariable >();
 
-		final ArrayList< Function< ?, ? > > functions = new ArrayList< >();
-		final ArrayList< Factor< ?, ?, ? > > factors = new ArrayList< >();
-		final ArrayList< SegmentHypothesisVariable< T > > variables = new ArrayList< >();
+		functions.add( mappingConstraint );
+		fgp.consumeNextFunctionId();
+		functions.add( divisionConstraint );
+		fgp.consumeNextFunctionId();
+
+		this.segVarsSource = segVarSource;
+		this.segVarsDest = segVarDest;
+
+		this.mappingCosts = mappingCosts;
+		this.maxMappingCost = maxMappingCost;
+		this.divisionCosts = divisionCosts;
+		this.maxDivisionCost = maxDivisionCost;
+		this.appearanceCosts = appearanceCosts;
+		this.maxAppearanceCost = maxAppearanceCost;
+		this.disappearanceCosts = disappearanceCosts;
+		this.maxDisappearanceCost = maxDisappearanceCost;
 
 		// Add variables AND set up segment to variable dictionary
-		final HashMap< T, SegmentHypothesisVariable< T > > segmentVariableDict =
-				new HashMap< >( segmentsSource.size() + segmentsDest.size() );
-		for ( final T segment : segmentsSource ) {
-			final SegmentHypothesisVariable< T > var = new SegmentHypothesisVariable< >( segment );
-			segmentVariableDict.put( segment, var );
-			variables.add( var );
+		final HashMap< Segment, SegmentHypothesisVariable< Segment > > segmentVariableDict =
+				new HashMap< >( segVarSource.size() + segVarDest.size() );
+		for ( final SegmentHypothesisVariable< Segment > segVar : segVarSource ) {
+			final Segment segment = segVar.getSegment();
+			segmentVariableDict.put( segment, segVar );
+			variables.add( segVar );
 		}
-		for ( final T segment : segmentsDest ) {
-			final SegmentHypothesisVariable< T > var = new SegmentHypothesisVariable< >( segment );
-			segmentVariableDict.put( segment, var );
-			variables.add( var );
+		for ( final SegmentHypothesisVariable< Segment > segVar : segVarDest ) {
+			final Segment segment = segVar.getSegment();
+			segmentVariableDict.put( segment, segVar );
+			variables.add( segVar );
 		}
 
-		// Add Functions
+		// Add Functions and Factors
+		// =========================
+		addMappingAssignments();
+		addDivisionAssignments();
+		addAppearanceAssignments();
+		addDisappearanceAssignments();
 
-		// Add Factors
+		return new FactorGraphPlus< Segment >( new DefaultFactorGraph( variables, factors, functions ), segmentVariableDict );
+	}
 
-		return new FactorGraphPlus< T >( new DefaultFactorGraph( variables, factors, functions ), segmentVariableDict );
+	/**
+	 *
+	 */
+	private void addMappingAssignments() {
+		for ( final SegmentHypothesisVariable< Segment > sourceVar : segVarsSource ) {
+			for ( final SegmentHypothesisVariable< Segment > destVar : segVarsDest ) {
+				final double cost =
+						mappingCosts.getCost(
+								new ValuePair< Segment, Segment >(
+										sourceVar.getSegment(),
+										destVar.getSegment() ) );
+				if ( cost <= maxMappingCost ) {
+
+					// create mapping variable
+					final MappingHypothesisVariable< Segment, SegmentHypothesisVariable< Segment > > newMappingVariable =
+							new MappingHypothesisVariable< >( sourceVar, destVar );
+					variables.add( newMappingVariable );
+
+					// add unary mapping factor
+					final double[] entries = new double[] { 0.0, cost };
+					final BooleanTensorTable btt =
+							new BooleanTensorTable( unaryDomain, entries, fgp.consumeNextFunctionId() );
+					BooleanFactor factor =
+							new BooleanFactor( unaryDomain, fgp.consumeNextFactorId() );
+					factor.setFunction( btt );
+					factor.setVariable( 0, newMappingVariable );
+					functions.add( btt );
+					factors.add( factor );
+
+					// add mapping constraint (function added in constructor!)
+					factor = new BooleanFactor( mappingConstraintDomain, fgp.consumeNextFactorId() );
+					factor.setFunction( mappingConstraint );
+					factor.setVariable( 0, newMappingVariable );
+					factor.setVariable( 1, sourceVar );
+					factor.setVariable( 2, destVar );
+					factors.add( factor );
+				}
+			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void addDivisionAssignments() {
+		for ( final SegmentHypothesisVariable< Segment > sourceVar : segVarsSource ) {
+			for ( final SegmentHypothesisVariable< Segment > destVar1 : segVarsDest ) {
+				for ( final SegmentHypothesisVariable< Segment > destVar2 : segVarsDest ) {
+
+					//Avoid double enumeration of pairs...
+					if ( destVar1.hashCode() > destVar2.hashCode() ) continue;
+
+					final double cost =
+							divisionCosts.getCost(
+									new ValuePair< Segment, Pair< Segment, Segment > >(
+											sourceVar.getSegment(),
+											new ValuePair< Segment, Segment > (
+													destVar1.getSegment(),
+													destVar2.getSegment() ) ) );
+					if ( cost <= maxDivisionCost ) {
+
+						// create division variable
+						final DivisionHypothesisVariable< Segment, SegmentHypothesisVariable< Segment > > newDivisionVariable =
+								new DivisionHypothesisVariable< >( sourceVar, destVar1, destVar2 );
+						variables.add( newDivisionVariable );
+
+						// add unary division factor
+						final double[] entries = new double[] { 0.0, cost };
+						final BooleanTensorTable btt =
+								new BooleanTensorTable( unaryDomain, entries, fgp
+										.consumeNextFunctionId() );
+						BooleanFactor factor =
+								new BooleanFactor( unaryDomain, fgp.consumeNextFactorId() );
+						factor.setFunction( btt );
+						factor.setVariable( 0, newDivisionVariable );
+						functions.add( btt );
+						factors.add( factor );
+
+						// add mapping constraint (function added in constructor!)
+						factor = new BooleanFactor( divisionConstraintDomain, fgp
+								.consumeNextFactorId() );
+						factor.setFunction( mappingConstraint );
+						factor.setVariable( 0, newDivisionVariable );
+						factor.setVariable( 1, sourceVar );
+						factor.setVariable( 2, destVar1 );
+						factor.setVariable( 3, destVar2 );
+						factors.add( factor );
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void addAppearanceAssignments() {
+		for ( final SegmentHypothesisVariable< Segment > destVar : segVarsDest ) {
+			final double cost = appearanceCosts.getCost( destVar.getSegment() );
+			if ( cost <= maxAppearanceCost ) {
+
+				// create appearance variable
+				final AppearanceHypothesisVariable< Segment, SegmentHypothesisVariable< Segment > > newAppearanceVariable =
+						new AppearanceHypothesisVariable< >( destVar );
+				variables.add( newAppearanceVariable );
+
+				// add unary appearance factor
+				final double[] entries = new double[] { 0.0, cost };
+				final BooleanTensorTable btt =
+						new BooleanTensorTable( unaryDomain, entries, fgp.consumeNextFunctionId() );
+				BooleanFactor factor = new BooleanFactor( unaryDomain, fgp.consumeNextFactorId() );
+				factor.setFunction( btt );
+				factor.setVariable( 0, newAppearanceVariable );
+				functions.add( btt );
+				factors.add( factor );
+
+				// add appearance constraint (function added in constructor!)
+				factor = new BooleanFactor( appdisappConstraintDomain, fgp.consumeNextFactorId() );
+				factor.setFunction( appdisappConstraint );
+				factor.setVariable( 0, newAppearanceVariable );
+				factor.setVariable( 1, destVar );
+				factors.add( factor );
+			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void addDisappearanceAssignments() {
+		for ( final SegmentHypothesisVariable< Segment > sourceVar : segVarsSource ) {
+			final double cost = disappearanceCosts.getCost( sourceVar.getSegment() );
+			if ( cost <= maxDisappearanceCost ) {
+
+				// create disappearance variable
+				final DisappearanceHypothesisVariable< Segment, SegmentHypothesisVariable< Segment > > newDisappearanceVariable =
+						new DisappearanceHypothesisVariable< >( sourceVar );
+				variables.add( newDisappearanceVariable );
+
+				// add unary appearance factor
+				final double[] entries = new double[] { 0.0, cost };
+				final BooleanTensorTable btt =
+						new BooleanTensorTable( unaryDomain, entries, fgp.consumeNextFunctionId() );
+				BooleanFactor factor = new BooleanFactor( unaryDomain, fgp.consumeNextFactorId() );
+				factor.setFunction( btt );
+				factor.setVariable( 0, newDisappearanceVariable );
+				functions.add( btt );
+				factors.add( factor );
+
+				// add appearance constraint (function added in constructor!)
+				factor = new BooleanFactor( appdisappConstraintDomain, fgp.consumeNextFactorId() );
+				factor.setFunction( appdisappConstraint );
+				factor.setVariable( 0, newDisappearanceVariable );
+				factor.setVariable( 1, sourceVar );
+				factors.add( factor );
+			}
+		}
 	}
 
 }

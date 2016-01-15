@@ -8,11 +8,17 @@ import java.util.Collection;
 import java.util.List;
 
 import com.indago.fg.FactorGraph;
+import com.indago.fg.domain.BooleanFunctionDomain;
+import com.indago.fg.factor.BooleanFactor;
 import com.indago.fg.factor.Factor;
+import com.indago.fg.function.BooleanWeightedIndexSumConstraint;
 import com.indago.fg.function.Function;
+import com.indago.fg.function.WeightedIndexSumConstraint.Relation;
 import com.indago.fg.variable.BooleanVariable;
 import com.indago.fg.variable.Variable;
+import com.indago.segment.Segment;
 import com.indago.segment.fg.FactorGraphPlus;
+import com.indago.segment.fg.SegmentHypothesisVariable;
 
 
 /**
@@ -20,13 +26,16 @@ import com.indago.segment.fg.FactorGraphPlus;
  */
 public class Tr2dFactorGraphPlus implements FactorGraph {
 
-	private final Collection< ? extends Variable< ? > > variables;
-	private final Collection< ? extends Factor< ?, ?, ? > > factors;
-	private final Collection< ? extends Function< ?, ? > > functions;
+	private int factorId = 0;
+	private int functionId = 0;
+
+	private final Collection< BooleanVariable > variables;
+	private final Collection< Factor< ?, ?, ? > > factors;
+	private final Collection< Function< ?, ? > > functions;
 
 	// the sub factor graphs
-	private final List< FactorGraphPlus > frameFGs;
-	private final List< FactorGraphPlus > transFGs;
+	private final List< FactorGraphPlus< Segment > > frameFGs;
+	private final List< FactorGraphPlus< Segment > > transFGs;
 
 	/**
 	 * Creates an empty Tr2d Factor Graph object.
@@ -34,14 +43,33 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	 * @param perFrameLabelingForests
 	 */
 	public Tr2dFactorGraphPlus(
-			final FactorGraphPlus firstFrameFG ) {
-		frameFGs = new ArrayList< FactorGraphPlus >();
-		frameFGs.add( firstFrameFG );
-		transFGs = new ArrayList< FactorGraphPlus >();
+			final FactorGraphPlus< Segment > firstFrameFG ) {
+		this();
+		addFirstFrame( firstFrameFG );
+	}
+
+	/**
+	 *
+	 */
+	public Tr2dFactorGraphPlus() {
+		frameFGs = new ArrayList< FactorGraphPlus< Segment > >();
+		transFGs = new ArrayList< FactorGraphPlus< Segment > >();
 
 		variables = new ArrayList< BooleanVariable >();
 		factors = new ArrayList< Factor< ?, ?, ? > >();
 		functions = new ArrayList< Function< ?, ? > >();
+	}
+
+	/**
+	 * @param frameFG
+	 */
+	public void addFirstFrame( final FactorGraphPlus< Segment > frameFG ) {
+		if ( frameFGs.size() == 0 ) {
+			frameFGs.add( frameFG );
+		} else {
+			throw new IllegalStateException(
+					"addFirstFrame called after frames have already been added" );
+		}
 	}
 
 	/**
@@ -69,9 +97,71 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	}
 
 	public void addFrame(
-			final FactorGraphPlus transFG,
-			final FactorGraphPlus frameFG ) {
+			final FactorGraphPlus< Segment > transFG,
+			final FactorGraphPlus< Segment > frameFG ) {
 		transFGs.add( transFG );
 		frameFGs.add( frameFG );
+
+		// If frame is >2nd frame (id>=2) --> add continuation constraints
+		if ( frameFGs.size() >= 2 ) {
+			addContinuationConstraints( frameFGs.get( frameFGs.size() - 2 ) );
+		}
+
 	}
+
+	/**
+	 * For each segment variable we add 2 constraints.
+	 * One requesting that all adjacent assignment variables sum to <= 2.
+	 * The second requesting that all left adj. assignment variables - all adj.
+	 * right assignment variables == 0.
+	 *
+	 * @param factorGraphPlus
+	 */
+	private void addContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
+		BooleanFactor factor;
+
+		for ( final SegmentHypothesisVariable< Segment > segVar : frameFG.getSegmentVariables() ) {
+			final int sizeLN = segVar.getLeftNeighbors().size();
+			final int sizeRN = segVar.getRightNeighbors().size();
+
+			final BooleanFunctionDomain bfd = new BooleanFunctionDomain( sizeLN + sizeRN );
+
+			// add first constraint (sum <= 2)
+			factor = new BooleanFactor( bfd, consumeNextFactorId() );
+			final double[] coeffs1 = new double[ ( sizeLN + sizeRN ) ];
+			for ( int i = 0; i < sizeLN; i++ ) {
+				coeffs1[ i ] = 1;
+				factor.setVariable( i, segVar.getLeftNeighbors().get( i ) );
+			}
+			for ( int i = 0; i < sizeRN; i++ ) {
+				coeffs1[ sizeLN + i ] = 1;
+				factor.setVariable( sizeLN + i, segVar.getRightNeighbors().get( i ) );
+			}
+			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs1, Relation.LE, 2 ) );
+			factors.add( factor );
+
+			// add second constraint (leftsum - rightsum == 0)
+			factor = new BooleanFactor( bfd, consumeNextFactorId() );
+			final double[] coeffs2 = new double[ ( sizeLN + sizeRN ) ];
+			for ( int i = 0; i < sizeLN; i++ ) {
+				coeffs2[ i ] = 1;
+				factor.setVariable( i, segVar.getLeftNeighbors().get( i ) );
+			}
+			for ( int i = 0; i < sizeRN; i++ ) {
+				coeffs2[ sizeLN + i ] = -1;
+				factor.setVariable( sizeLN + i, segVar.getRightNeighbors().get( i ) );
+			}
+			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs2, Relation.EQ, 0 ) );
+			factors.add( factor );
+		}
+	}
+
+	public int consumeNextFactorId() {
+		return factorId++;
+	}
+
+	public int consumeNextFunctionId() {
+		return functionId++;
+	}
+
 }

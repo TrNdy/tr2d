@@ -4,7 +4,7 @@
 package com.jug.tr2d.datasets.hernan;
 
 import com.indago.fg.CostsFactory;
-import com.indago.segment.LabelingSegment;
+import com.indago.segment.Segment;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -14,9 +14,9 @@ import net.imglib2.util.Pair;
 /**
  * @author jug
  */
-public class HernanTransitionCostFactory
+public class HernanMappingCostFactory
 		implements
-		CostsFactory< Pair< LabelingSegment, LabelingSegment > > {
+		CostsFactory< Pair< Segment, Segment > > {
 
 	private final long destframeId;
 	private final Object sourceImage;
@@ -25,7 +25,7 @@ public class HernanTransitionCostFactory
 	 * @param destFrameId
 	 * @param sourceImage
 	 */
-	public HernanTransitionCostFactory(
+	public HernanMappingCostFactory(
 			final long destFrameId,
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
 		this.destframeId = destFrameId;
@@ -36,7 +36,7 @@ public class HernanTransitionCostFactory
 	 * @see com.indago.fg.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
-	public double getCost( final Pair< LabelingSegment, LabelingSegment > segment ) {
+	public double getCost( final Pair< Segment, Segment > segment ) {
 		return 0.1;
 	}
 

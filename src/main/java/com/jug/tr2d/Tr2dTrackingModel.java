@@ -3,7 +3,8 @@
  */
 package com.jug.tr2d;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import com.indago.fg.CostsFactory;
 import com.indago.segment.LabelingBuilder;
@@ -12,11 +13,12 @@ import com.indago.segment.MinimalOverlapConflictGraph;
 import com.indago.segment.Segment;
 import com.indago.segment.fg.FactorGraphFactory;
 import com.indago.segment.fg.FactorGraphPlus;
+import com.indago.segment.fg.SegmentHypothesisVariable;
 import com.indago.segment.filteredcomponents.FilteredComponentTree;
 import com.indago.segment.filteredcomponents.FilteredComponentTree.Filter;
 import com.indago.segment.filteredcomponents.FilteredComponentTree.MaxGrowthPerStep;
+import com.jug.tr2d.datasets.hernan.HernanMappingCostFactory;
 import com.jug.tr2d.datasets.hernan.HernanSegmentCostFactory;
-import com.jug.tr2d.datasets.hernan.HernanTransitionCostFactory;
 import com.jug.tr2d.fg.Tr2dFactorGraphFactory;
 import com.jug.tr2d.fg.Tr2dFactorGraphPlus;
 
@@ -43,7 +45,7 @@ public class Tr2dTrackingModel {
 	private final boolean darkToBright = true;
 
 	// factor graph (plus association data structures)
-	private Tr2dFactorGraphPlus fgPlus;
+	private final Tr2dFactorGraphPlus fgPlus = new Tr2dFactorGraphPlus();
 
 	/**
 	 * @param model
@@ -64,11 +66,18 @@ public class Tr2dTrackingModel {
 		return tr2dSegModel.getSegmentHypotheses();
 	}
 
+	/**
+	 * This method creates the tracking FG for the entire given time-series.
+	 */
+	@SuppressWarnings( "unchecked" )
 	public void run() {
 		long t0, t1;
-		ArrayList< LabelingSegment > segments;
-		ArrayList< LabelingSegment > oldSegments = null;
+		List< LabelingSegment > segments;
+		Collection< SegmentHypothesisVariable< Segment > > segVars;
+		List< LabelingSegment > oldSegments = null;
+		Collection< SegmentHypothesisVariable< Segment > > oldSegVars = null;
 
+		// set dim
 		try {
 			dim = getSegmentHypothesesImage();
 			System.out.println( "Input image dimensions: " + dim.toString() );
@@ -78,10 +87,14 @@ public class Tr2dTrackingModel {
 			return;
 		}
 
+		// go over frames and create and add frameFGs
+		// + assignmentFGs between adjacent frames
+		// ---------------------------------------------------------
 		final long numFrames = dim.dimension( 2 );
 		for ( long frameId = 0; frameId < numFrames; frameId++ ) {
 //			final List< LabelingForest > frameLabelingForests = new ArrayList< LabelingForest >();
 
+			// Hyperslize current frame out of complete dataset
 			IntervalView< DoubleType > hsFrame = null;
 			try {
 				hsFrame = Views.hyperSlice( getSegmentHypothesesImage(), 2, frameId );
@@ -117,6 +130,9 @@ public class Tr2dTrackingModel {
 			System.out
 					.println( String.format( "completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
 
+			// =============
+			// FRAME FG
+			// =============
 			System.out.print( "Constructing frameFG from MinimalOverlapConflictGraph... " );
 			t0 = System.currentTimeMillis();
 			segments = labelingBuilder.getSegments();
@@ -124,30 +140,48 @@ public class Tr2dTrackingModel {
 					new HernanSegmentCostFactory( frameId, tr2dModel.getImgOrig() );
 			final FactorGraphPlus frameFG = FactorGraphFactory
 					.createFromConflictGraph( segments, conflictGraph, segmentCosts );
+			segVars = ( Collection< SegmentHypothesisVariable< Segment > > ) frameFG
+					.getFactorGraph()
+					.getVariables();
 			t1 = System.currentTimeMillis();
 			System.out
 					.println( String.format( "completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
 
-			// If frame is NOT the first in line generate also transition FG!
+			// =============
+			// TRANSITION FG
+			// =============
 			FactorGraphPlus transFG = null;
 			if ( frameId > 0 ) {
-				final CostsFactory< Pair< LabelingSegment, LabelingSegment > > transCosts =
-						new HernanTransitionCostFactory( frameId, tr2dModel.getImgOrig() );
-				transFG = Tr2dFactorGraphFactory
-						.createTrackingTransitionGraph(
-								oldSegments,
-								segments,
-								transCosts );
+				final CostsFactory< Pair< Segment, Segment > > mappingCosts =
+						new HernanMappingCostFactory( frameId, tr2dModel.getImgOrig() );
+				final CostsFactory< Pair< Segment, Pair< Segment, Segment > > > divisionCosts =
+						null;
+				final CostsFactory< Segment > appearanceCosts = null;
+				final CostsFactory< Segment > disappearanceCosts = null;
+				transFG = new Tr2dFactorGraphFactory()
+						.createTransitionGraph(
+								fgPlus,
+								oldSegVars,
+								segVars,
+								mappingCosts,
+								1.,
+								divisionCosts,
+								1.,
+								appearanceCosts,
+								1.,
+								disappearanceCosts,
+								1. );
 			}
 
 			// ADD FRAME
 			if ( frameId == 0 ) {
-				fgPlus = new Tr2dFactorGraphPlus( frameFG );
+				fgPlus.addFirstFrame( frameFG );
 			} else {
 				fgPlus.addFrame( transFG, frameFG );
 			}
 
 			oldSegments = segments;
+			oldSegVars = segVars;
 		}
 
 		System.out.println( "Success!" );
