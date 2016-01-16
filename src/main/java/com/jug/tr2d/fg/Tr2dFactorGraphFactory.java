@@ -19,6 +19,10 @@ import com.indago.segment.Segment;
 import com.indago.segment.fg.FactorGraphPlus;
 import com.indago.segment.fg.SegmentHypothesisVariable;
 import com.jug.tr2d.fg.constraints.BooleanAssignmentConstraint;
+import com.jug.tr2d.fg.factor.AppearanceFactor;
+import com.jug.tr2d.fg.factor.DisappearanceFactor;
+import com.jug.tr2d.fg.factor.DivisionFactor;
+import com.jug.tr2d.fg.factor.MappingFactor;
 import com.jug.tr2d.fg.variables.AppearanceHypothesisVariable;
 import com.jug.tr2d.fg.variables.DisappearanceHypothesisVariable;
 import com.jug.tr2d.fg.variables.DivisionHypothesisVariable;
@@ -100,6 +104,8 @@ public class Tr2dFactorGraphFactory {
 		fgp.consumeNextFunctionId();
 		functions.add( divisionConstraint );
 		fgp.consumeNextFunctionId();
+		functions.add( appdisappConstraint );
+		fgp.consumeNextFunctionId();
 
 		this.segVarsSource = segVarSource;
 		this.segVarsDest = segVarDest;
@@ -119,12 +125,10 @@ public class Tr2dFactorGraphFactory {
 		for ( final SegmentHypothesisVariable< Segment > segVar : segVarSource ) {
 			final Segment segment = segVar.getSegment();
 			segmentVariableDict.put( segment, segVar );
-//			variables.add( segVar );
 		}
 		for ( final SegmentHypothesisVariable< Segment > segVar : segVarDest ) {
 			final Segment segment = segVar.getSegment();
 			segmentVariableDict.put( segment, segVar );
-//			variables.add( segVar );
 		}
 
 		// Add Functions and Factors
@@ -169,7 +173,8 @@ public class Tr2dFactorGraphFactory {
 					factors.add( factor );
 
 					// add mapping constraint (function added in constructor!)
-					factor = new BooleanFactor( mappingConstraintDomain, fgp.consumeNextFactorId() );
+					factor = new MappingFactor( mappingConstraintDomain, fgp
+							.consumeNextFactorId() );
 					factor.setFunction( mappingConstraint );
 					factor.setVariable( 0, newMappingVariable );
 					factor.setVariable( 1, sourceVar );
@@ -224,9 +229,9 @@ public class Tr2dFactorGraphFactory {
 						factors.add( factor );
 
 						// add mapping constraint (function added in constructor!)
-						factor = new BooleanFactor( divisionConstraintDomain, fgp
+						factor = new DivisionFactor( divisionConstraintDomain, fgp
 								.consumeNextFactorId() );
-						factor.setFunction( mappingConstraint );
+						factor.setFunction( divisionConstraint );
 						factor.setVariable( 0, newDivisionVariable );
 						factor.setVariable( 1, sourceVar );
 						factor.setVariable( 2, destVar1 );
@@ -268,7 +273,8 @@ public class Tr2dFactorGraphFactory {
 				factors.add( factor );
 
 				// add appearance constraint (function added in constructor!)
-				factor = new BooleanFactor( appdisappConstraintDomain, fgp.consumeNextFactorId() );
+				factor = new AppearanceFactor( appdisappConstraintDomain, fgp
+						.consumeNextFactorId() );
 				factor.setFunction( appdisappConstraint );
 				factor.setVariable( 0, newAppearanceVariable );
 				factor.setVariable( 1, destVar );
@@ -307,7 +313,8 @@ public class Tr2dFactorGraphFactory {
 				factors.add( factor );
 
 				// add appearance constraint (function added in constructor!)
-				factor = new BooleanFactor( appdisappConstraintDomain, fgp.consumeNextFactorId() );
+				factor = new DisappearanceFactor( appdisappConstraintDomain, fgp
+						.consumeNextFactorId() );
 				factor.setFunction( appdisappConstraint );
 				factor.setVariable( 0, newDisappearanceVariable );
 				factor.setVariable( 1, sourceVar );

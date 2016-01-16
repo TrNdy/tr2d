@@ -18,9 +18,9 @@ public class BooleanAssignmentConstraint extends BooleanWeightedIndexSumConstrai
 	public BooleanAssignmentConstraint( final BooleanFunctionDomain mappingConstraintDomain ) {
 		// Encode the constraint: ((D-1) * c_1) - c_2 - ... - c_D <= 0
 		super( new double[ mappingConstraintDomain.numDimensions() ], Relation.LE, 0 );
-		this.coefficients[ 0 ] = mappingConstraintDomain.numDimensions() - 1;
-		for ( int i = 1; i < coefficients.length; i++ ) {
-			this.coefficients[ i ] = -1;
+		this.getCoefficients()[ 0 ] = mappingConstraintDomain.numDimensions() - 1;
+		for ( int i = 1; i < getCoefficients().length; i++ ) {
+			this.getCoefficients()[ i ] = -1;
 		}
 	}
 
