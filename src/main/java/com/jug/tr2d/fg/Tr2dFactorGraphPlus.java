@@ -14,7 +14,6 @@ import com.indago.fg.factor.Factor;
 import com.indago.fg.function.BooleanWeightedIndexSumConstraint;
 import com.indago.fg.function.Function;
 import com.indago.fg.function.WeightedIndexSumConstraint.Relation;
-import com.indago.fg.variable.BooleanVariable;
 import com.indago.fg.variable.Variable;
 import com.indago.segment.Segment;
 import com.indago.segment.fg.FactorGraphPlus;
@@ -29,7 +28,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	private int factorId = 0;
 	private int functionId = 0;
 
-	private final Collection< BooleanVariable > variables;
+	private final Collection< Variable< ? > > variables;
 	private final Collection< Factor< ?, ?, ? > > factors;
 	private final Collection< Function< ?, ? > > functions;
 
@@ -55,21 +54,9 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 		frameFGs = new ArrayList< FactorGraphPlus< Segment > >();
 		transFGs = new ArrayList< FactorGraphPlus< Segment > >();
 
-		variables = new ArrayList< BooleanVariable >();
+		variables = new ArrayList< Variable< ? > >();
 		factors = new ArrayList< Factor< ?, ?, ? > >();
 		functions = new ArrayList< Function< ?, ? > >();
-	}
-
-	/**
-	 * @param frameFG
-	 */
-	public void addFirstFrame( final FactorGraphPlus< Segment > frameFG ) {
-		if ( frameFGs.size() == 0 ) {
-			frameFGs.add( frameFG );
-		} else {
-			throw new IllegalStateException(
-					"addFirstFrame called after frames have already been added" );
-		}
 	}
 
 	/**
@@ -96,17 +83,41 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 		return functions;
 	}
 
+	/**
+	 * @param frameFG
+	 */
+	public void addFirstFrame( final FactorGraphPlus< Segment > frameFG ) {
+		if ( frameFGs.size() == 0 ) {
+			frameFGs.add( frameFG );
+			mergeFG( frameFG );
+		} else {
+			throw new IllegalStateException( "Tr2dFactorGraphPlus::addFirstFrame() called after frames have already been added" );
+		}
+	}
+
 	public void addFrame(
 			final FactorGraphPlus< Segment > transFG,
 			final FactorGraphPlus< Segment > frameFG ) {
 		transFGs.add( transFG );
 		frameFGs.add( frameFG );
 
+		mergeFG( frameFG );
+		mergeFG( transFG );
+
 		// If frame is >2nd frame (id>=2) --> add continuation constraints
 		if ( frameFGs.size() >= 2 ) {
 			addContinuationConstraints( frameFGs.get( frameFGs.size() - 2 ) );
 		}
 
+	}
+
+	/**
+	 * @param frameFG
+	 */
+	private void mergeFG( final FactorGraphPlus< Segment > fg ) {
+		this.variables.addAll( fg.getFactorGraph().getVariables() );
+		this.factors.addAll( fg.getFactorGraph().getFactors() );
+		this.functions.addAll( fg.getFactorGraph().getFunctions() );
 	}
 
 	/**

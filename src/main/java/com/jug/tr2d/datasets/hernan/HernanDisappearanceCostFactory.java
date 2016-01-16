@@ -13,21 +13,20 @@ import net.imglib2.type.numeric.real.DoubleType;
 /**
  * @author jug
  */
-public class HernanSegmentCostFactory implements CostsFactory< Segment > {
+public class HernanDisappearanceCostFactory implements CostsFactory< Segment > {
 
 	private final long frameId;
-	private final RandomAccessibleInterval< DoubleType > sourceImage;
+	private final RandomAccessibleInterval< DoubleType > imgOrig;
 
 	/**
 	 * @param frameId
-	 * @param segments
-	 * @param sourceImage
+	 * @param imgOrig
 	 */
-	public HernanSegmentCostFactory(
+	public HernanDisappearanceCostFactory(
 			final long frameId,
-			final RandomAccessibleInterval< DoubleType > sourceImage ) {
+			final RandomAccessibleInterval< DoubleType > imgOrig ) {
 		this.frameId = frameId;
-		this.sourceImage = sourceImage;
+		this.imgOrig = imgOrig;
 	}
 
 	/**
@@ -35,7 +34,7 @@ public class HernanSegmentCostFactory implements CostsFactory< Segment > {
 	 */
 	@Override
 	public double getCost( final Segment segment ) {
-		return -1 * segment.getArea();
+		return 0.01;
 	}
 
 }

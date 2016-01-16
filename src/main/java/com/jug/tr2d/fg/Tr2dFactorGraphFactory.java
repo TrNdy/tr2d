@@ -119,12 +119,12 @@ public class Tr2dFactorGraphFactory {
 		for ( final SegmentHypothesisVariable< Segment > segVar : segVarSource ) {
 			final Segment segment = segVar.getSegment();
 			segmentVariableDict.put( segment, segVar );
-			variables.add( segVar );
+//			variables.add( segVar );
 		}
 		for ( final SegmentHypothesisVariable< Segment > segVar : segVarDest ) {
 			final Segment segment = segVar.getSegment();
 			segmentVariableDict.put( segment, segVar );
-			variables.add( segVar );
+//			variables.add( segVar );
 		}
 
 		// Add Functions and Factors
@@ -140,7 +140,9 @@ public class Tr2dFactorGraphFactory {
 	/**
 	 *
 	 */
-	private void addMappingAssignments() {
+	private int addMappingAssignments() {
+		int numMappingsAdded = 0;
+
 		for ( final SegmentHypothesisVariable< Segment > sourceVar : segVarsSource ) {
 			for ( final SegmentHypothesisVariable< Segment > destVar : segVarsDest ) {
 				final double cost =
@@ -173,15 +175,21 @@ public class Tr2dFactorGraphFactory {
 					factor.setVariable( 1, sourceVar );
 					factor.setVariable( 2, destVar );
 					factors.add( factor );
+
+					numMappingsAdded++;
 				}
 			}
 		}
+		System.out.println( String.format( "\n\t\tMappings added: %d", numMappingsAdded ) );
+		return numMappingsAdded;
 	}
 
 	/**
 	 *
 	 */
-	private void addDivisionAssignments() {
+	private int addDivisionAssignments() {
+		int numDivisionsAdded = 0;
+
 		for ( final SegmentHypothesisVariable< Segment > sourceVar : segVarsSource ) {
 			for ( final SegmentHypothesisVariable< Segment > destVar1 : segVarsDest ) {
 				for ( final SegmentHypothesisVariable< Segment > destVar2 : segVarsDest ) {
@@ -224,16 +232,22 @@ public class Tr2dFactorGraphFactory {
 						factor.setVariable( 2, destVar1 );
 						factor.setVariable( 3, destVar2 );
 						factors.add( factor );
+
+						numDivisionsAdded++;
 					}
 				}
 			}
 		}
+		System.out.println( String.format( "\t\tDivisions added: %d", numDivisionsAdded ) );
+		return numDivisionsAdded;
 	}
 
 	/**
 	 *
 	 */
-	private void addAppearanceAssignments() {
+	private int addAppearanceAssignments() {
+		int numAppAdded = 0;
+
 		for ( final SegmentHypothesisVariable< Segment > destVar : segVarsDest ) {
 			final double cost = appearanceCosts.getCost( destVar.getSegment() );
 			if ( cost <= maxAppearanceCost ) {
@@ -259,14 +273,20 @@ public class Tr2dFactorGraphFactory {
 				factor.setVariable( 0, newAppearanceVariable );
 				factor.setVariable( 1, destVar );
 				factors.add( factor );
+
+				numAppAdded++;
 			}
 		}
+		System.out.println( String.format( "\t\tApps added: %d", numAppAdded ) );
+		return numAppAdded;
 	}
 
 	/**
 	 *
 	 */
-	private void addDisappearanceAssignments() {
+	private int addDisappearanceAssignments() {
+		int numDisappAdded = 0;
+
 		for ( final SegmentHypothesisVariable< Segment > sourceVar : segVarsSource ) {
 			final double cost = disappearanceCosts.getCost( sourceVar.getSegment() );
 			if ( cost <= maxDisappearanceCost ) {
@@ -292,8 +312,12 @@ public class Tr2dFactorGraphFactory {
 				factor.setVariable( 0, newDisappearanceVariable );
 				factor.setVariable( 1, sourceVar );
 				factors.add( factor );
+
+				numDisappAdded++;
 			}
 		}
+		System.out.println( String.format( "\t\tDisapps added: %d", numDisappAdded ) );
+		return numDisappAdded;
 	}
 
 }
