@@ -141,7 +141,11 @@ public class Tr2dTrackingModel {
 			// Hyperslize current frame out of complete dataset
 			IntervalView< DoubleType > hsFrame = null;
 			try {
-				hsFrame = Views.hyperSlice( getSegmentHypothesesImage(), 2, frameId );
+				final long[] offset = new long[ getSegmentHypothesesImage().numDimensions() ];
+				offset[ offset.length - 1 ] = frameId;
+				hsFrame = Views.offset(
+						Views.hyperSlice( getSegmentHypothesesImage(), 2, frameId ),
+						offset );
 //				ImageJFunctions.show( hsFrame );
 			} catch ( final IllegalAccessException e ) {
 				System.err.println( "\tSegmentation Hypotheses could not be accessed!" );
@@ -382,11 +386,10 @@ public class Tr2dTrackingModel {
 			final BooleanVariable variable = variables.get( i );
 			final BooleanValue value =
 					vars[ i ].get( DoubleAttr.X ) > 0.5 ? BooleanValue.TRUE : BooleanValue.FALSE;
-			assignment.assign( variable, value );
-
-			if ( true || assignment.getAssignment( variable ).equals( "true" ) ) {
-				System.out.println( variable + " = " + assignment.getAssignment( variable ) );
+			if ( value.equals( BooleanValue.TRUE ) ) {
+				System.out.println( variable + " = true" );
 			}
+			assignment.assign( variable, value );
 		}
 
 		// Dispose of model and environment

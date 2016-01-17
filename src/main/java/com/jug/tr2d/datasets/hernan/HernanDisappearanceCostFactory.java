@@ -34,7 +34,7 @@ public class HernanDisappearanceCostFactory implements CostsFactory< Segment > {
 	 */
 	@Override
 	public double getCost( final Segment segment ) {
-		return 0.01;
+		return 0.0;
 	}
 
 }

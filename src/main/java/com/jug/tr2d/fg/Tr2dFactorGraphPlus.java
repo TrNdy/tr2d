@@ -110,25 +110,25 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 		mergeFG( transFG );
 
 		for ( final Factor< ?, ?, ? > factor : transFG.getFactorGraph().getFactors() ) {
-			final BooleanVariable factorIndicator = ( BooleanVariable ) factor.getVariable( 0 );
+			final BooleanVariable factorIndicatorVariable = ( BooleanVariable ) factor.getVariable( 0 );
 			if ( factor instanceof MappingFactor ) {
 				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 1 ) )
-						.addRightNeighbor( factorIndicator );
+						.addRightNeighbor( factorIndicatorVariable );
 				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 2 ) )
-						.addLeftNeighbor( factorIndicator );
+						.addLeftNeighbor( factorIndicatorVariable );
 			} else if ( factor instanceof DivisionFactor ) {
 				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 1 ) )
-						.addRightNeighbor( factorIndicator );
+						.addRightNeighbor( factorIndicatorVariable );
 				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 2 ) )
-						.addLeftNeighbor( factorIndicator );
+						.addLeftNeighbor( factorIndicatorVariable );
 				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 3 ) )
-						.addLeftNeighbor( factorIndicator );
+						.addLeftNeighbor( factorIndicatorVariable );
 			} else if ( factor instanceof AppearanceFactor ) {
 				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 1 ) )
-						.addLeftNeighbor( factorIndicator );
+						.addLeftNeighbor( factorIndicatorVariable );
 			} else if ( factor instanceof DisappearanceFactor ) {
 				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 1 ) )
-						.addRightNeighbor( factorIndicator );
+						.addRightNeighbor( factorIndicatorVariable );
 			} else if ( factor instanceof BooleanFactor ) {
 				// BooleanFactors are NOT used to connect SegmentHypothesisVariables
 			} else {
@@ -156,9 +156,9 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 
 	/**
 	 * For each segment variable we add 2 constraints.
-	 * One requesting that all adjacent assignment variables sum to <= 2.
-	 * The second requesting that all left adj. assignment variables - all adj.
-	 * right assignment variables == 0.
+	 * One requesting that all left adjacent assignment variables sum to the
+	 * same value as the segmentation variable, and a second enforcing the same
+	 * towards the right neighbors.
 	 *
 	 * @param factorGraphPlus
 	 */
@@ -169,33 +169,35 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 		for ( final SegmentHypothesisVariable< Segment > segVar : frameFG.getSegmentVariables() ) {
 			final int sizeLN = segVar.getLeftNeighbors().size();
 			final int sizeRN = segVar.getRightNeighbors().size();
+//			System.out.println(
+//					String.format(
+//							"\t\tadding Cont.Constr. with %d l.n. and %d r.n. ",
+//							sizeLN,
+//							sizeRN ) );
 
-			final BooleanFunctionDomain bfd = new BooleanFunctionDomain( sizeLN + sizeRN );
 
-			// add first constraint (sum <= 2)
-			factor = new BooleanFactor( bfd, consumeNextFactorId() );
-			final double[] coeffs1 = new double[ ( sizeLN + sizeRN ) ];
+			// add first constraint to left neighbors
+			final BooleanFunctionDomain bfd1 = new BooleanFunctionDomain( sizeLN + 1 );
+			factor = new BooleanFactor( bfd1, consumeNextFactorId() );
+			final double[] coeffs1 = new double[ sizeLN + 1 ];
+			coeffs1[ sizeLN ] = -1;
+			factor.setVariable( sizeLN, segVar );
 			for ( int i = 0; i < sizeLN; i++ ) {
 				coeffs1[ i ] = 1;
 				factor.setVariable( i, segVar.getLeftNeighbors().get( i ) );
 			}
-			for ( int i = 0; i < sizeRN; i++ ) {
-				coeffs1[ sizeLN + i ] = 1;
-				factor.setVariable( sizeLN + i, segVar.getRightNeighbors().get( i ) );
-			}
-			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs1, Relation.LE, 2 ) );
+			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs1, Relation.EQ, 0 ) );
 			factors.add( factor );
 
-			// add second constraint (leftsum - rightsum == 0)
-			factor = new BooleanFactor( bfd, consumeNextFactorId() );
-			final double[] coeffs2 = new double[ ( sizeLN + sizeRN ) ];
-			for ( int i = 0; i < sizeLN; i++ ) {
-				coeffs2[ i ] = 1;
-				factor.setVariable( i, segVar.getLeftNeighbors().get( i ) );
-			}
+			// add first constraint to left neighbors
+			final BooleanFunctionDomain bfd2 = new BooleanFunctionDomain( sizeRN + 1 );
+			factor = new BooleanFactor( bfd2, consumeNextFactorId() );
+			final double[] coeffs2 = new double[ sizeRN + 1 ];
+			coeffs2[ sizeRN ] = -1;
+			factor.setVariable( sizeRN, segVar );
 			for ( int i = 0; i < sizeRN; i++ ) {
-				coeffs2[ sizeLN + i ] = -1;
-				factor.setVariable( sizeLN + i, segVar.getRightNeighbors().get( i ) );
+				coeffs2[ i ] = 1;
+				factor.setVariable( i, segVar.getRightNeighbors().get( i ) );
 			}
 			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs2, Relation.EQ, 0 ) );
 			factors.add( factor );
