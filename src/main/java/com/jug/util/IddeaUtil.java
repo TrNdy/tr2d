@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.jug.util;
 
@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.jhotdraw.draw.Figure;
+
+import com.jug.fkt.SampledFunction1D;
+
 import net.imglib2.IterableInterval;
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccessible;
@@ -17,16 +21,12 @@ import net.imglib2.histogram.Histogram1d;
 import net.imglib2.histogram.Real1dBinMapper;
 import net.imglib2.newroi.util.ContainsRandomAccessible;
 import net.imglib2.newroi.util.LocalizableSet;
+import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.Regions;
 import net.imglib2.type.logic.BoolType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
-
-import org.jhotdraw.draw.Figure;
-
 import view.component.IddeaComponent;
-
-import com.jug.fkt.SampledFunction1D;
 
 /**
  * @author jug
@@ -93,7 +93,7 @@ public class IddeaUtil {
 		final RandomAccessibleInterval< BoolType > b = Views.interval( a, iddeaComp.getSourceImage() );
 
 		// make IteratableInterval that iterates only over the True pixels (selected areas)
-		final IterableInterval< BoolType > c = Regions.iterable( b );
+		final IterableRegion< BoolType > c = Regions.iterable( b );
 
 		// sample img with that: IteratableInterval that iterates only over the
 		// img pixels for whose coordinates MyFigureMarkupsLocator.contains() is true

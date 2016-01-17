@@ -3,13 +3,12 @@
  */
 package com.jug.segmentation;
 
-import ij.IJ;
-import ij.ImagePlus;
-import ij.Prefs;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import ij.IJ;
+import ij.ImagePlus;
+import ij.Prefs;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.converter.RealDoubleConverter;
@@ -23,7 +22,7 @@ import trainableSegmentation.WekaSegmentation;
 /**
  * @author jug
  */
-public class SilentWekaSegmenter< T extends NumericType > {
+public class SilentWekaSegmenter< T extends NumericType< T > > {
 
 	/** reference to the segmentation backend */
 	WekaSegmentation wekaSegmentation = null;
@@ -52,15 +51,17 @@ public class SilentWekaSegmenter< T extends NumericType > {
 		return true;
 	}
 
-	public RandomAccessibleInterval< T > classifyPixels( final RandomAccessibleInterval< T > img, final boolean probabilityMaps ) {
+	public RandomAccessibleInterval< DoubleType > classifyPixels( final RandomAccessibleInterval< T > img, final boolean probabilityMaps ) {
 		final List< RandomAccessibleInterval< T >> rais = new ArrayList< RandomAccessibleInterval< T >>();
 		rais.add( img );
 		return ( classifyPixels( rais, probabilityMaps ) ).get( 0 );
 	}
 
-	public List< RandomAccessibleInterval< T >> classifyPixels( final List< RandomAccessibleInterval< T >> raiList, final boolean probabilityMaps ) {
+	public List< RandomAccessibleInterval< DoubleType >> classifyPixels( final List< RandomAccessibleInterval< T >> raiList, final boolean probabilityMaps ) {
 
-		final List< RandomAccessibleInterval< T >> results = new ArrayList< RandomAccessibleInterval< T >>( raiList );
+		final List< RandomAccessibleInterval< DoubleType >> results = new ArrayList< RandomAccessibleInterval< DoubleType >>();
+		for ( int i = 0; i < raiList.size(); ++i )
+			results.add( null );
 
 		final int numProcessors = Prefs.getThreads();
 		final int numThreads = Math.min( raiList.size(), numProcessors );
@@ -75,9 +76,9 @@ public class SilentWekaSegmenter< T extends NumericType > {
 			final int numThread;
 			final int numThreads;
 			final List< RandomAccessibleInterval< T >> raiList;
-			final List< RandomAccessibleInterval< T >> raiListOutputs;
+			final List< RandomAccessibleInterval< DoubleType >> raiListOutputs;
 
-			public ImageProcessingThread( final int numThread, final int numThreads, final List< RandomAccessibleInterval< T >> raiList, final List< RandomAccessibleInterval< T >> raiListOutputs ) {
+			public ImageProcessingThread( final int numThread, final int numThreads, final List< RandomAccessibleInterval< T >> raiList, final List< RandomAccessibleInterval< DoubleType >> raiListOutputs ) {
 				this.numThread = numThread;
 				this.numThreads = numThreads;
 				this.raiList = raiList;
@@ -96,8 +97,9 @@ public class SilentWekaSegmenter< T extends NumericType > {
 //					segmentation.
 
 					if ( null != segmentation ) {
-						final ImagePlusImg< ?, ? > temp = ImagePlusAdapter.wrapNumeric( segmentation );
-						raiListOutputs.set( i, Converters.convert( ( RandomAccessibleInterval< ? > ) temp, new RealDoubleConverter(), new DoubleType() ) );
+						final ImagePlusImg< ?, ? > temp = ImagePlusAdapter.wrapReal( segmentation );
+						final RandomAccessibleInterval< DoubleType > rai = Converters.convert( temp, new RealDoubleConverter(), new DoubleType() );
+						raiListOutputs.set( i, rai );
 					} else {
 						System.out.println( "WARNING!!! One of the input images could not be classified!!!" );
 					}
