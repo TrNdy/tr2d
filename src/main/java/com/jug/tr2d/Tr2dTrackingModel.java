@@ -16,6 +16,7 @@ import com.indago.fg.factor.Factor;
 import com.indago.fg.function.BooleanConflictConstraint;
 import com.indago.fg.function.BooleanFunction;
 import com.indago.fg.function.BooleanTensorTable;
+import com.indago.fg.function.BooleanWeightedIndexSumConstraint;
 import com.indago.fg.value.BooleanValue;
 import com.indago.fg.variable.BooleanVariable;
 import com.indago.fg.variable.Variable;
@@ -162,7 +163,10 @@ public class Tr2dTrackingModel {
 			frameLabelingForests.add( labelingBuilder.buildLabelingForest( tree ) );
 			t1 = System.currentTimeMillis();
 			System.out
-					.println( String.format( "completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
+					.println(
+							String.format(
+									"\n\t...completed in %.2f seconds!",
+									( t1 - t0 ) / 1000. ) );
 
 			System.out.print( "\tConstructing MinimalOverlapConflictGraph... " );
 			t0 = System.currentTimeMillis();
@@ -171,7 +175,10 @@ public class Tr2dTrackingModel {
 			conflictGraph.getConflictGraphCliques();
 			t1 = System.currentTimeMillis();
 			System.out
-					.println( String.format( "completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
+					.println(
+							String.format(
+									"\n\t...completed in %.2f seconds!",
+									( t1 - t0 ) / 1000. ) );
 
 			// =============
 			// FRAME FG
@@ -188,7 +195,10 @@ public class Tr2dTrackingModel {
 					.getVariables();
 			t1 = System.currentTimeMillis();
 			System.out
-					.println( String.format( "completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
+					.println(
+							String.format(
+									"\n\t...completed in %.2f seconds!",
+									( t1 - t0 ) / 1000. ) );
 
 			// =============
 			// TRANSITION FG
@@ -220,7 +230,7 @@ public class Tr2dTrackingModel {
 								HernanCostConstants.TRUNCATE_COST_THRESHOLD );
 				t1 = System.currentTimeMillis();
 				System.out.println(
-						String.format( "completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
+						String.format( "\n\t...completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
 			}
 
 			// =============
@@ -235,7 +245,10 @@ public class Tr2dTrackingModel {
 			}
 			t1 = System.currentTimeMillis();
 			System.out
-					.println( String.format( "completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
+					.println(
+							String.format(
+									"\n\t...completed in %.2f seconds!",
+									( t1 - t0 ) / 1000. ) );
 
 			oldSegments = segments;
 			oldSegVars = segVars;
@@ -271,6 +284,8 @@ public class Tr2dTrackingModel {
 					constraints.add( factor );
 				else if ( function instanceof BooleanTensorTable )
 					unaries.add( factor );
+				else if ( function instanceof BooleanWeightedIndexSumConstraint )
+					constraints.add( factor );
 				else
 					throw new IllegalArgumentException( "Function that fucks it up: " + function
 							.getClass()
@@ -315,11 +330,41 @@ public class Tr2dTrackingModel {
 		for ( int i = 0; i < constraints.size(); i++ ) {
 			final BooleanFactor constraint = constraints.get( i );
 			final GRBLinExpr lhsExprs = new GRBLinExpr();
-			for ( final BooleanVariable variable : constraint.getVariables() ) {
-				final int vi = variableToIndex.get( variable );
-				lhsExprs.addTerm( 1.0, vars[ vi ] );
+			if ( constraint.getFunction() instanceof BooleanWeightedIndexSumConstraint ) {
+				final BooleanWeightedIndexSumConstraint fkt =
+						( BooleanWeightedIndexSumConstraint ) constraint.getFunction();
+				final double[] c = fkt.getCoefficients();
+				int ci = 0;
+				for ( final BooleanVariable variable : constraint.getVariables() ) {
+					try {
+						final int vi = variableToIndex.get( variable );
+						lhsExprs.addTerm( c[ ci ], vars[ vi ] );
+						ci++;
+					} catch ( final Exception e ) {
+						e.printStackTrace();
+					}
+				}
+				char grb_rel = GRB.EQUAL;
+				switch ( fkt.getRelation() ) {
+				default:
+				case EQ:
+					grb_rel = GRB.EQUAL;
+					break;
+				case GE:
+					grb_rel = GRB.GREATER_EQUAL;
+					break;
+				case LE:
+					grb_rel = GRB.LESS_EQUAL;
+					break;
+				}
+				model.addConstr( lhsExprs, grb_rel, fkt.getRHS(), null );
+			} else if ( constraint.getFunction() instanceof BooleanConflictConstraint) {
+    			for ( final BooleanVariable variable : constraint.getVariables() ) {
+    				final int vi = variableToIndex.get( variable );
+    				lhsExprs.addTerm( 1.0, vars[ vi ] );
+				}
+				model.addConstr( lhsExprs, GRB.LESS_EQUAL, 1.0, null );
 			}
-			model.addConstr( lhsExprs, GRB.LESS_EQUAL, 1.0, null );
 		}
 
 		// Optimize model
@@ -331,7 +376,7 @@ public class Tr2dTrackingModel {
 //		System.out.println( "Obj: " + model.get( GRB.DoubleAttr.ObjVal ) );
 
 		// Build assignment
-		System.out.println( String.format( "\retrieving (optimal) assignment..." ) );
+		System.out.println( String.format( "\tretrieving (optimal) assignment..." ) );
 		final Assignment assignment = new Assignment( variables );
 		for ( int i = 0; i < variables.size(); i++ ) {
 			final BooleanVariable variable = variables.get( i );
@@ -339,7 +384,9 @@ public class Tr2dTrackingModel {
 					vars[ i ].get( DoubleAttr.X ) > 0.5 ? BooleanValue.TRUE : BooleanValue.FALSE;
 			assignment.assign( variable, value );
 
-//			System.out.println( variable + " = " + assignment.getAssignment( variable ) );
+			if ( true || assignment.getAssignment( variable ).equals( "true" ) ) {
+				System.out.println( variable + " = " + assignment.getAssignment( variable ) );
+			}
 		}
 
 		// Dispose of model and environment
