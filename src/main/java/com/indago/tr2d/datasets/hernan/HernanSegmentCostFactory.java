@@ -15,7 +15,6 @@ import net.imglib2.type.numeric.real.DoubleType;
  */
 public class HernanSegmentCostFactory implements CostsFactory< Segment > {
 
-	private final long frameId;
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
 
 	/**
@@ -24,9 +23,7 @@ public class HernanSegmentCostFactory implements CostsFactory< Segment > {
 	 * @param sourceImage
 	 */
 	public HernanSegmentCostFactory(
-			final long frameId,
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
-		this.frameId = frameId;
 		this.sourceImage = sourceImage;
 	}
 

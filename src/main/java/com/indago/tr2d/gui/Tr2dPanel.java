@@ -21,6 +21,7 @@ import javax.swing.event.ChangeListener;
 import com.indago.tr2d.Tr2dModel;
 import com.indago.tr2d.Tr2dTrackingModel;
 import com.indago.tr2d.Tr2dWekaSegmentationModel;
+import com.indago.tr2d.datasets.hernan.HernanSegmentCostFactory;
 import com.indago.util.converter.RealDoubleNormalizeConverter;
 
 import ij.IJ;
@@ -85,7 +86,9 @@ public class Tr2dPanel extends JPanel implements ActionListener, ChangeListener 
 		tabData = new JPanel( new BorderLayout() );
 		final Tr2dWekaSegmentationModel segModel = new Tr2dWekaSegmentationModel( model );
 		tabSegmentation = new Tr2dWekaSegmentationPanel( segModel );
-		tabTracking = new Tr2dTrackingPanel( new Tr2dTrackingModel( model, segModel ) );
+		tabTracking =
+				new Tr2dTrackingPanel( new Tr2dTrackingModel( model, segModel, 
+						new HernanSegmentCostFactory( model.getImgOrig() ) ) );
 
 		icData = new IddeaComponent( model.getImgOrigNorm() );
 		icData.showMenu( false );
