@@ -1,6 +1,6 @@
 package net.imglib2.paramaxflow;
 
-import com.jug.tr2d.gui.Tr2dPanel;
+import com.indago.tr2d.gui.Tr2dPanel;
 
 
 public class Parametric
