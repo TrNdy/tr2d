@@ -6,11 +6,15 @@ package com.jug.tr2d;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import com.indago.fg.Assignment;
 import com.indago.fg.CostsFactory;
 import com.indago.fg.FactorGraph;
+import com.indago.fg.domain.BooleanDomain;
 import com.indago.fg.factor.BooleanFactor;
 import com.indago.fg.factor.Factor;
 import com.indago.fg.function.BooleanConflictConstraint;
@@ -39,6 +43,13 @@ import com.jug.tr2d.datasets.hernan.HernanMappingCostFactory;
 import com.jug.tr2d.datasets.hernan.HernanSegmentCostFactory;
 import com.jug.tr2d.fg.Tr2dFactorGraphFactory;
 import com.jug.tr2d.fg.Tr2dFactorGraphPlus;
+import com.jug.tr2d.fg.factor.DivisionFactor;
+import com.jug.tr2d.fg.factor.MappingFactor;
+import com.jug.tr2d.fg.variables.AppearanceHypothesisVariable;
+import com.jug.tr2d.fg.variables.DisappearanceHypothesisVariable;
+import com.jug.tr2d.fg.variables.DivisionHypothesisVariable;
+import com.jug.tr2d.fg.variables.MappingHypothesisVariable;
+import com.jug.util.DataMover;
 
 import gurobi.GRB;
 import gurobi.GRB.DoubleAttr;
@@ -47,10 +58,14 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import net.imglib2.Cursor;
 import net.imglib2.Dimensions;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
@@ -75,6 +90,8 @@ public class Tr2dTrackingModel {
 		}
 	}
 
+	private static Assignment assignment;
+
 	private final Tr2dModel tr2dModel;
 	private final Tr2dWekaSegmentationModel tr2dSegModel;
 
@@ -86,7 +103,10 @@ public class Tr2dTrackingModel {
 	private final boolean darkToBright = false;
 
 	// factor graph (plus association data structures)
-	private final Tr2dFactorGraphPlus fgPlus = new Tr2dFactorGraphPlus();
+	private Tr2dFactorGraphPlus fgPlus = new Tr2dFactorGraphPlus();
+
+	private RandomAccessibleInterval< DoubleType > imgSolution = null;
+
 
 	/**
 	 * @param model
@@ -112,6 +132,8 @@ public class Tr2dTrackingModel {
 	 */
 	@SuppressWarnings( "unchecked" )
 	public void run() {
+		fgPlus = new Tr2dFactorGraphPlus();
+
 		long t0, t1;
 		List< LabelingSegment > segments;
 		Collection< SegmentHypothesisVariable< Segment > > segVars;
@@ -127,6 +149,8 @@ public class Tr2dTrackingModel {
 			e.printStackTrace();
 			return;
 		}
+
+		// ===============================================================================================
 
 		// go over frames and create and add frameFGs
 		// + assignmentFGs between adjacent frames
@@ -260,6 +284,8 @@ public class Tr2dTrackingModel {
 
 		System.out.println( "FG successfully built!\n" );
 
+		// ===============================================================================================
+
 		System.out.println( "Constructing and solving ILP... " );
 		t0 = System.currentTimeMillis();
 		GurobiReadouts gurobiStats;
@@ -271,6 +297,112 @@ public class Tr2dTrackingModel {
 		t1 = System.currentTimeMillis();
 		System.out
 				.println( String.format( "...completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
+
+		// ===============================================================================================
+
+		System.out.println( "Visualize tracking results... " );
+		t0 = System.currentTimeMillis();
+		try {
+			imgSolution =
+					DataMover.createEmptyArrayImgLike(
+							getSegmentHypothesesImage(),
+							new DoubleType() );
+			int trackletId = 1;
+			final Set< SegmentHypothesisVariable< Segment > > seenSegVars = new HashSet< >();
+			for ( long frameId = 0; frameId < numFrames; frameId++ ) {
+				final FactorGraphPlus< Segment > firstFrameFG = fgPlus.getFrameFGs().get( 0 );
+				for ( final SegmentHypothesisVariable< Segment > segVar : firstFrameFG
+						.getSegmentVariables() ) {
+					if ( assignment.getAssignment( segVar ).get()
+							&& !seenSegVars.contains( segVar ) ) {
+						recursivelyPaintTracklet( segVar, seenSegVars, trackletId, frameId );
+						trackletId++;
+					}
+
+				}
+			}
+			ImageJFunctions.show( imgSolution );
+		} catch ( final IllegalAccessException e ) {
+			e.printStackTrace();
+		}
+
+		t1 = System.currentTimeMillis();
+		System.out
+				.println( String.format( "...completed in %.2f seconds!", ( t1 - t0 ) / 1000. ) );
+
+	}
+
+	/**
+	 * @param segVar
+	 * @param seenSegVars
+	 * @param trackletId
+	 * @param frameId
+	 */
+	private void recursivelyPaintTracklet(
+			final SegmentHypothesisVariable< Segment > startVar,
+			final Set< SegmentHypothesisVariable< Segment > > seenSegVars,
+			final int trackletId,
+			long frameId ) {
+
+		final LinkedList< Pair< Long, SegmentHypothesisVariable< Segment > > > queue =
+				new LinkedList< >();
+		queue.add(
+				new ValuePair< Long, SegmentHypothesisVariable< Segment > >( frameId, startVar ) );
+
+		while ( !queue.isEmpty() ) {
+			final Pair< Long, SegmentHypothesisVariable< Segment > > qelem = queue.remove();
+			frameId = qelem.getA();
+			final SegmentHypothesisVariable< Segment > segVar = qelem.getB();
+			paintSegment( imgSolution, segVar.getSegment(), frameId, trackletId );
+			seenSegVars.add( segVar );
+
+			final List< BooleanVariable > rns = segVar.getRightNeighbors();
+			for ( final BooleanVariable rn : rns ) {
+				for ( final Factor< BooleanDomain, ?, ? > fac : rn.getFactors() ) {
+					if ( fac instanceof MappingFactor ) {
+						final BooleanVariable var0 = ( BooleanVariable ) fac.getVariable( 0 );
+						final SegmentHypothesisVariable< Segment > var2 =
+								( SegmentHypothesisVariable< Segment > ) fac.getVariable( 2 );
+						if ( assignment.getAssignment( var0 ).get() ) {
+							queue.add(
+									new ValuePair< Long, SegmentHypothesisVariable< Segment > >( frameId + 1, var2 ) );
+						}
+					}
+					if ( fac instanceof DivisionFactor ) {
+						final BooleanVariable var0 = ( BooleanVariable ) fac.getVariable( 0 );
+						final SegmentHypothesisVariable< Segment > var2 =
+								( SegmentHypothesisVariable< Segment > ) fac.getVariable( 2 );
+						final SegmentHypothesisVariable< Segment > var3 =
+								( SegmentHypothesisVariable< Segment > ) fac.getVariable( 3 );
+						if ( assignment.getAssignment( var0 ).get() ) {
+							queue.add(
+									new ValuePair< Long, SegmentHypothesisVariable< Segment > >( frameId + 1, var2 ) );
+							queue.add(
+									new ValuePair< Long, SegmentHypothesisVariable< Segment > >( frameId + 1, var3 ) );
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param imgSolution2
+	 * @param segment
+	 */
+	private void paintSegment(
+			final RandomAccessibleInterval< DoubleType > img,
+			final Segment segment,
+			final long time,
+			final long id ) {
+		final Cursor< ? > cSegment = segment.getRegion().cursor();
+		final RandomAccess< DoubleType > ra = img.randomAccess();
+		while ( cSegment.hasNext() ) {
+			cSegment.fwd();
+			ra.setPosition( cSegment );
+			ra.setPosition( time, 2 );
+			ra.get().set( new DoubleType( id ) );
+		}
 	}
 
 	private static GurobiReadouts buildAndRunILP( final FactorGraph fg ) throws GRBException {
@@ -381,16 +513,37 @@ public class Tr2dTrackingModel {
 
 		// Build assignment
 		System.out.println( String.format( "\tretrieving (optimal) assignment..." ) );
-		final Assignment assignment = new Assignment( variables );
+		assignment = new Assignment( variables );
+		int mappings, divisions, appearances, disappearances;
+		mappings = divisions = appearances = disappearances = 0;
 		for ( int i = 0; i < variables.size(); i++ ) {
 			final BooleanVariable variable = variables.get( i );
 			final BooleanValue value =
 					vars[ i ].get( DoubleAttr.X ) > 0.5 ? BooleanValue.TRUE : BooleanValue.FALSE;
 			if ( value.equals( BooleanValue.TRUE ) ) {
-				System.out.println( variable + " = true" );
+				if ( variable instanceof MappingHypothesisVariable ) {
+					mappings++;
+				}
+				if ( variable instanceof DivisionHypothesisVariable ) {
+					divisions++;
+				}
+				if ( variable instanceof AppearanceHypothesisVariable ) {
+					appearances++;
+				}
+				if ( variable instanceof DisappearanceHypothesisVariable ) {
+					disappearances++;
+				}
+//				System.out.println( variable + " = true" );
 			}
 			assignment.assign( variable, value );
 		}
+		System.out.println(
+				String.format(
+						"total map/div/app/disapp events: %d, %d, %d, %d",
+						mappings,
+						divisions,
+						appearances,
+						disappearances ) );
 
 		// Dispose of model and environment
 		model.dispose();

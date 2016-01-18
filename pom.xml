@@ -15,11 +15,11 @@
 		<enforcer.skip>true</enforcer.skip>
 	</properties>
 
-	<groupId>com.jug</groupId>
+	<groupId>com.indago</groupId>
 	<artifactId>tr2d</artifactId>
-	<version>0.1</version>
+	<version>0.1.0-SNAPSHOT</version>
 
-	<description>Tracking 2D</description>
+	<description>Tracking 2D [tr2d]</description>
 
 	<dependencies>
 		<dependency>
@@ -84,46 +84,11 @@
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>com.jug</groupId>
-			<artifactId>Indago_</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<groupId>com.indago</groupId>
+			<artifactId>Indago</artifactId>
+			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<resources>
-			<resource>
-				<directory>${basedir}/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>${project.build.sourceDirectory}</directory>
-			</resource>
-		</resources>
-		<testResources>
-			<testResource>
-				<directory>${basedir}/src/test/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>${project.build.testSourceDirectory}</directory>
-			</testResource>
-		</testResources>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>java</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass>MotherMachine</mainClass>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 	<developers>
 		<developer>
@@ -202,5 +167,5 @@
 		</repository>
 	</repositories>
 
-	<name>tr2d.jar</name>
+	<name>tr2d</name>
 </project>

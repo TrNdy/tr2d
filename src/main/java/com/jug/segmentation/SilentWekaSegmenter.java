@@ -14,7 +14,6 @@ import net.imglib2.converter.Converters;
 import net.imglib2.converter.RealDoubleConverter;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.img.imageplus.ImagePlusImg;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.DoubleType;
 import trainableSegmentation.WekaSegmentation;
@@ -97,8 +96,13 @@ public class SilentWekaSegmenter< T extends NumericType< T > > {
 //					segmentation.
 
 					if ( null != segmentation ) {
-						final ImagePlusImg< ?, ? > temp = ImagePlusAdapter.wrapReal( segmentation );
-						final RandomAccessibleInterval< DoubleType > rai = Converters.convert( temp, new RealDoubleConverter(), new DoubleType() );
+						final RandomAccessibleInterval< ? > temp =
+								ImagePlusAdapter.wrapReal( segmentation );
+						final RandomAccessibleInterval< DoubleType > rai =
+								Converters.convert(
+										temp,
+										new RealDoubleConverter(),
+										new DoubleType() );
 						raiListOutputs.set( i, rai );
 					} else {
 						System.out.println( "WARNING!!! One of the input images could not be classified!!!" );

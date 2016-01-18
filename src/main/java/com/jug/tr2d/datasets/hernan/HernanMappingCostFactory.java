@@ -49,7 +49,7 @@ public class HernanMappingCostFactory
 
 		if ( centroidDistance > HernanCostConstants.MAX_MAPPING_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 
-		return .5 * centroidDistance;
+		return .0 * centroidDistance / Math.PI;
 	}
 
 }

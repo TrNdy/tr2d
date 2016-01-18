@@ -92,8 +92,8 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	 * @param frameFG
 	 */
 	public void addFirstFrame( final FactorGraphPlus< Segment > frameFG ) {
-		if ( frameFGs.size() == 0 ) {
-			frameFGs.add( frameFG );
+		if ( getFrameFGs().size() == 0 ) {
+			getFrameFGs().add( frameFG );
 			mergeFG( frameFG );
 		} else {
 			throw new IllegalStateException( "Tr2dFactorGraphPlus::addFirstFrame() called after frames have already been added" );
@@ -103,8 +103,8 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	public void addFrame(
 			final FactorGraphPlus< Segment > transFG,
 			final FactorGraphPlus< Segment > frameFG ) {
-		transFGs.add( transFG );
-		frameFGs.add( frameFG );
+		getTransFGs().add( transFG );
+		getFrameFGs().add( frameFG );
 
 		mergeFG( frameFG );
 		mergeFG( transFG );
@@ -139,8 +139,9 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 		}
 
 		// If frame is >2nd frame (id>=2) --> add continuation constraints
-		if ( frameFGs.size() >= 2 ) {
-			addContinuationConstraints( frameFGs.get( frameFGs.size() - 2 ) );
+		if ( getFrameFGs().size() >= 2 ) {
+			addRightContinuationConstraints( getFrameFGs().get( getFrameFGs().size() - 2 ) );
+			addLeftContinuationConstraints( getFrameFGs().get( getFrameFGs().size() - 1 ) );
 		}
 
 	}
@@ -155,41 +156,19 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	}
 
 	/**
-	 * For each segment variable we add 2 constraints.
-	 * One requesting that all left adjacent assignment variables sum to the
-	 * same value as the segmentation variable, and a second enforcing the same
-	 * towards the right neighbors.
+	 * Add constraint requesting that all right adjacent assignment variables
+	 * sum to the same value as the segmentation variable.
 	 *
 	 * @param factorGraphPlus
 	 */
-	private void addContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
+	private void addRightContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
 		BooleanFactor factor;
-		int numContinuationConstraintPairs = 0;
+		int numRightContinuationConstraints = 0;
 
 		for ( final SegmentHypothesisVariable< Segment > segVar : frameFG.getSegmentVariables() ) {
-			final int sizeLN = segVar.getLeftNeighbors().size();
 			final int sizeRN = segVar.getRightNeighbors().size();
-//			System.out.println(
-//					String.format(
-//							"\t\tadding Cont.Constr. with %d l.n. and %d r.n. ",
-//							sizeLN,
-//							sizeRN ) );
 
-
-			// add first constraint to left neighbors
-			final BooleanFunctionDomain bfd1 = new BooleanFunctionDomain( sizeLN + 1 );
-			factor = new BooleanFactor( bfd1, consumeNextFactorId() );
-			final double[] coeffs1 = new double[ sizeLN + 1 ];
-			coeffs1[ sizeLN ] = -1;
-			factor.setVariable( sizeLN, segVar );
-			for ( int i = 0; i < sizeLN; i++ ) {
-				coeffs1[ i ] = 1;
-				factor.setVariable( i, segVar.getLeftNeighbors().get( i ) );
-			}
-			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs1, Relation.EQ, 0 ) );
-			factors.add( factor );
-
-			// add first constraint to left neighbors
+			// add constraint to right neighbors
 			final BooleanFunctionDomain bfd2 = new BooleanFunctionDomain( sizeRN + 1 );
 			factor = new BooleanFactor( bfd2, consumeNextFactorId() );
 			final double[] coeffs2 = new double[ sizeRN + 1 ];
@@ -202,12 +181,47 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs2, Relation.EQ, 0 ) );
 			factors.add( factor );
 
-			numContinuationConstraintPairs++;
+			numRightContinuationConstraints++;
 		}
 		System.out.println(
 				String.format(
-						"\n\t\tContinuation Constraint Pairs added: %d",
-						numContinuationConstraintPairs ) );
+						"\n\t\tRight Continuation Constraints added: %d",
+						numRightContinuationConstraints ) );
+	}
+
+	/**
+	 * Add constraint requesting that all left adjacent assignment variables
+	 * sum to the same value as the segmentation variable.
+	 *
+	 * @param factorGraphPlus
+	 */
+	private void addLeftContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
+		BooleanFactor factor;
+		int numLeftContinuationConstraints = 0;
+
+		for ( final SegmentHypothesisVariable< Segment > segVar : frameFG.getSegmentVariables() ) {
+			final int sizeLN = segVar.getLeftNeighbors().size();
+
+
+			// add constraint to left neighbors
+			final BooleanFunctionDomain bfd1 = new BooleanFunctionDomain( sizeLN + 1 );
+			factor = new BooleanFactor( bfd1, consumeNextFactorId() );
+			final double[] coeffs1 = new double[ sizeLN + 1 ];
+			coeffs1[ sizeLN ] = -1;
+			factor.setVariable( sizeLN, segVar );
+			for ( int i = 0; i < sizeLN; i++ ) {
+				coeffs1[ i ] = 1;
+				factor.setVariable( i, segVar.getLeftNeighbors().get( i ) );
+			}
+			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs1, Relation.EQ, 0 ) );
+			factors.add( factor );
+
+			numLeftContinuationConstraints++;
+		}
+		System.out.println(
+				String.format(
+						"\n\t\tLeft Continuation Constraints added: %d",
+						numLeftContinuationConstraints ) );
 	}
 
 	public int consumeNextFactorId() {
@@ -216,6 +230,20 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 
 	public int consumeNextFunctionId() {
 		return functionId++;
+	}
+
+	/**
+	 * @return the frameFGs
+	 */
+	public List< FactorGraphPlus< Segment > > getFrameFGs() {
+		return frameFGs;
+	}
+
+	/**
+	 * @return the transFGs
+	 */
+	public List< FactorGraphPlus< Segment > > getTransFGs() {
+		return transFGs;
 	}
 
 }
