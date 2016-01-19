@@ -87,22 +87,6 @@ public class Tr2dSegmentationModel implements SegmentationModel {
 		return ret;
 	}
 
-	/**
-	 * @see com.indago.models.SegmentationModel#getInAssignments()
-	 */
-	@Override
-	public AssignmentVars getInAssignments() {
-		return inAssignments;
-	}
-
-	/**
-	 * @see com.indago.models.SegmentationModel#getOutAssignments()
-	 */
-	@Override
-	public AssignmentVars getOutAssignments() {
-		return outAssignments;
-	}
-
 	public SegmentVar getSegmentVar( final LabelingSegment segment ) {
 		return segmentBimap.getA( segment );
 	}
