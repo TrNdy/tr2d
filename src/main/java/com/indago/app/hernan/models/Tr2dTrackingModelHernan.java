@@ -30,7 +30,7 @@ public class Tr2dTrackingModelHernan {
 
 	private final SumImageMovieSequence sumImgMovie;;
 
-	private final Tr2dTrackingModel trackingProblem;
+	private final Tr2dTrackingModel tr2dTraModel;
 	private final CostsFactory< LabelingSegment > segmentCosts;
 	private final CostsFactory< LabelingSegment > appearanceCosts;
 	private final CostsFactory< Pair< LabelingSegment, LabelingSegment > > moveCosts;
@@ -56,7 +56,7 @@ public class Tr2dTrackingModelHernan {
 		this.moveCosts = movementCosts;
 		this.divisionCosts = divisionCosts;
 		this.disappearanceCosts = disappearanceCosts;
-		this.trackingProblem =
+		this.tr2dTraModel =
 				new Tr2dTrackingModel( appearanceCosts,
 						movementCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
 						divisionCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
@@ -116,7 +116,7 @@ public class Tr2dTrackingModelHernan {
 			// add to Tr2dTrackingProblem
 			// ==========================
 			tictoc.tic( "Constructing Tr2dSegmentationProblem..." );
-			trackingProblem.addSegmentationProblem( segmentationProblem );
+			tr2dTraModel.addSegmentationProblem( segmentationProblem );
 			tictoc.toc( "done!" );
 		}
 		System.out.println( "Tracking graph was built sucessfully!" );
