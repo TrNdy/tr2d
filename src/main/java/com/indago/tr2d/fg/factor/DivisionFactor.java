@@ -3,8 +3,8 @@
  */
 package com.indago.tr2d.fg.factor;
 
-import com.indago.fg.domain.BooleanFunctionDomain;
-import com.indago.fg.factor.BooleanFactor;
+import com.indago.old_fg.domain.BooleanFunctionDomain;
+import com.indago.old_fg.factor.BooleanFactor;
 
 
 /**

@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.tr2d.hernan.costs;
+package com.indago.app.hernan.costs;
 
 
 /**

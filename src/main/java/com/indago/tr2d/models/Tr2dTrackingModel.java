@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.fg.CostsFactory;
 import com.indago.models.TrackingModel;
 import com.indago.models.assignments.AppearanceHypothesis;
 import com.indago.models.assignments.DisappearanceHypothesis;
 import com.indago.models.assignments.DivisionHypothesis;
 import com.indago.models.assignments.MovementHypothesis;
 import com.indago.models.segments.SegmentVar;
+import com.indago.old_fg.CostsFactory;
 
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;

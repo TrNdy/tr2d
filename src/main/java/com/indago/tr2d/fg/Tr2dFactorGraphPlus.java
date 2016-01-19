@@ -10,15 +10,15 @@ import java.util.List;
 import com.indago.data.segmentation.Segment;
 import com.indago.data.segmentation.fg.FactorGraphPlus;
 import com.indago.data.segmentation.fg.SegmentHypothesisVariable;
-import com.indago.fg.FactorGraph;
-import com.indago.fg.domain.BooleanFunctionDomain;
-import com.indago.fg.factor.BooleanFactor;
-import com.indago.fg.factor.Factor;
-import com.indago.fg.function.BooleanWeightedIndexSumConstraint;
-import com.indago.fg.function.Function;
-import com.indago.fg.function.WeightedIndexSumConstraint.Relation;
-import com.indago.fg.variable.BooleanVariable;
-import com.indago.fg.variable.Variable;
+import com.indago.old_fg.FactorGraph;
+import com.indago.old_fg.domain.BooleanFunctionDomain;
+import com.indago.old_fg.factor.BooleanFactor;
+import com.indago.old_fg.factor.Factor;
+import com.indago.old_fg.function.BooleanWeightedIndexSumConstraint;
+import com.indago.old_fg.function.Function;
+import com.indago.old_fg.function.WeightedIndexSumConstraint.Relation;
+import com.indago.old_fg.variable.BooleanVariable;
+import com.indago.old_fg.variable.Variable;
 import com.indago.tr2d.fg.factor.AppearanceFactor;
 import com.indago.tr2d.fg.factor.DisappearanceFactor;
 import com.indago.tr2d.fg.factor.DivisionFactor;
@@ -65,7 +65,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	}
 
 	/**
-	 * @see com.indago.fg.FactorGraph#getVariables()
+	 * @see com.indago.old_fg.FactorGraph#getVariables()
 	 */
 	@Override
 	public Collection< ? extends Variable< ? > > getVariables() {
@@ -73,7 +73,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	}
 
 	/**
-	 * @see com.indago.fg.FactorGraph#getFactors()
+	 * @see com.indago.old_fg.FactorGraph#getFactors()
 	 */
 	@Override
 	public Collection< ? extends Factor< ?, ?, ? > > getFactors() {
@@ -81,7 +81,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	}
 
 	/**
-	 * @see com.indago.fg.FactorGraph#getFunctions()
+	 * @see com.indago.old_fg.FactorGraph#getFunctions()
 	 */
 	@Override
 	public Collection< ? extends Function< ?, ? > > getFunctions() {

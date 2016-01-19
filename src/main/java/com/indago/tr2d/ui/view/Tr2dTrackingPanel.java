@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.indago.tr2d.hernan.models.Tr2dTrackingModelHernan;
+import com.indago.app.hernan.models.Tr2dTrackingModelHernan;
 
 /**
  * @author jug

@@ -1,15 +1,15 @@
 /**
  *
  */
-package com.indago.tr2d.hernan.models;
+package com.indago.app.hernan.models;
 
 import java.util.List;
 
+import com.indago.app.hernan.costs.HernanCostConstants;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.fg.CostsFactory;
+import com.indago.old_fg.CostsFactory;
 import com.indago.segmentation.SumImageMovieSequence;
-import com.indago.tr2d.hernan.costs.HernanCostConstants;
 import com.indago.tr2d.models.Tr2dSegmentationModel;
 import com.indago.tr2d.models.Tr2dTrackingModel;
 import com.indago.tr2d.ui.model.Tr2dModel;

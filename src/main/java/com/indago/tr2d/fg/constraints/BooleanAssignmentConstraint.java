@@ -3,9 +3,9 @@
  */
 package com.indago.tr2d.fg.constraints;
 
-import com.indago.fg.domain.BooleanFunctionDomain;
-import com.indago.fg.function.BooleanWeightedIndexSumConstraint;
-import com.indago.fg.function.WeightedIndexSumConstraint.Relation;
+import com.indago.old_fg.domain.BooleanFunctionDomain;
+import com.indago.old_fg.function.BooleanWeightedIndexSumConstraint;
+import com.indago.old_fg.function.WeightedIndexSumConstraint.Relation;
 
 /**
  * @author jug

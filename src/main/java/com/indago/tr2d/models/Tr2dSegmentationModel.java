@@ -6,11 +6,11 @@ import java.util.List;
 
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.fg.CostsFactory;
 import com.indago.models.SegmentationModel;
 import com.indago.models.assignments.AssignmentVars;
 import com.indago.models.segments.ConflictSet;
 import com.indago.models.segments.SegmentVar;
+import com.indago.old_fg.CostsFactory;
 import com.indago.util.Bimap;
 
 public class Tr2dSegmentationModel implements SegmentationModel {

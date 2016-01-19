@@ -18,12 +18,12 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.indago.tr2d.hernan.costs.HernanAppearanceCostFactory;
-import com.indago.tr2d.hernan.costs.HernanDisappearanceCostFactory;
-import com.indago.tr2d.hernan.costs.HernanDivisionCostFactory;
-import com.indago.tr2d.hernan.costs.HernanMappingCostFactory;
-import com.indago.tr2d.hernan.costs.HernanSegmentCostFactory;
-import com.indago.tr2d.hernan.models.Tr2dTrackingModelHernan;
+import com.indago.app.hernan.costs.HernanAppearanceCostFactory;
+import com.indago.app.hernan.costs.HernanDisappearanceCostFactory;
+import com.indago.app.hernan.costs.HernanDivisionCostFactory;
+import com.indago.app.hernan.costs.HernanMappingCostFactory;
+import com.indago.app.hernan.costs.HernanSegmentCostFactory;
+import com.indago.app.hernan.models.Tr2dTrackingModelHernan;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.converter.RealDoubleNormalizeConverter;

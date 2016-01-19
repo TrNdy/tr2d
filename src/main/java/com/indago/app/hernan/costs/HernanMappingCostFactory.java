@@ -1,10 +1,10 @@
 /**
  *
  */
-package com.indago.tr2d.hernan.costs;
+package com.indago.app.hernan.costs;
 
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.fg.CostsFactory;
+import com.indago.old_fg.CostsFactory;
 import com.indago.util.math.VectorUtil;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -32,7 +32,7 @@ public class HernanMappingCostFactory
 	}
 
 	/**
-	 * @see com.indago.fg.CostsFactory#getCost(java.lang.Object)
+	 * @see com.indago.old_fg.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
 	public double getCost( final Pair< LabelingSegment, LabelingSegment > segments ) {
