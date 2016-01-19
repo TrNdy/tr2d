@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.tr2d;
+package com.indago.tr2d.ui.model;
 
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;

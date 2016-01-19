@@ -1,10 +1,10 @@
 /**
  *
  */
-package com.indago.tr2d.datasets.hernan;
+package com.indago.tr2d.hernan.costs;
 
+import com.indago.data.segmentation.LabelingSegment;
 import com.indago.fg.CostsFactory;
-import com.indago.segment.LabelingSegment;
 import com.indago.util.math.VectorUtil;
 
 import net.imglib2.RandomAccessibleInterval;

@@ -3,9 +3,9 @@
  */
 package com.indago.tr2d.fg.variables;
 
+import com.indago.data.segmentation.Segment;
+import com.indago.data.segmentation.fg.SegmentHypothesisVariable;
 import com.indago.fg.variable.BooleanVariable;
-import com.indago.segment.Segment;
-import com.indago.segment.fg.SegmentHypothesisVariable;
 
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;

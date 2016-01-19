@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.tr2d.gui;
+package com.indago.tr2d.ui.util;
 
 import java.awt.Component;
 import java.awt.FileDialog;

@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.tr2d.datasets.hernan;
+package com.indago.tr2d.hernan.costs;
 
 
 /**

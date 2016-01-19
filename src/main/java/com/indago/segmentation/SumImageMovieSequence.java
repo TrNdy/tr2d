@@ -6,15 +6,15 @@ package com.indago.segmentation;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.indago.segment.ConflictGraph;
-import com.indago.segment.LabelingBuilder;
-import com.indago.segment.LabelingForest;
-import com.indago.segment.LabelingSegment;
-import com.indago.segment.MinimalOverlapConflictGraph;
-import com.indago.segment.filteredcomponents.FilteredComponentTree;
-import com.indago.segment.filteredcomponents.FilteredComponentTree.Filter;
-import com.indago.segment.filteredcomponents.FilteredComponentTree.MaxGrowthPerStep;
-import com.indago.tr2d.Tr2dWekaSegmentationModel;
+import com.indago.data.segmentation.ConflictGraph;
+import com.indago.data.segmentation.LabelingBuilder;
+import com.indago.data.segmentation.LabelingForest;
+import com.indago.data.segmentation.LabelingSegment;
+import com.indago.data.segmentation.MinimalOverlapConflictGraph;
+import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree;
+import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree.Filter;
+import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree.MaxGrowthPerStep;
+import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 
 import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;

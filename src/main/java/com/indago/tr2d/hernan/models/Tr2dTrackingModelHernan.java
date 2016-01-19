@@ -1,17 +1,19 @@
 /**
  *
  */
-package com.indago.tr2d;
+package com.indago.tr2d.hernan.models;
 
 import java.util.List;
 
+import com.indago.data.segmentation.ConflictGraph;
+import com.indago.data.segmentation.LabelingSegment;
 import com.indago.fg.CostsFactory;
-import com.indago.segment.ConflictGraph;
-import com.indago.segment.LabelingSegment;
 import com.indago.segmentation.SumImageMovieSequence;
-import com.indago.tr2d.datasets.hernan.HernanCostConstants;
-import com.indago.tr2d.tracking.Tr2dSegmentationProblem;
-import com.indago.tr2d.tracking.Tr2dTrackingProblem;
+import com.indago.tr2d.hernan.costs.HernanCostConstants;
+import com.indago.tr2d.models.Tr2dSegmentationModel;
+import com.indago.tr2d.models.Tr2dTrackingModel;
+import com.indago.tr2d.ui.model.Tr2dModel;
+import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.TicToc;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -28,7 +30,7 @@ public class Tr2dTrackingModelHernan {
 
 	private final SumImageMovieSequence sumImgMovie;;
 
-	private final Tr2dTrackingProblem trackingProblem;
+	private final Tr2dTrackingModel trackingProblem;
 	private final CostsFactory< LabelingSegment > segmentCosts;
 	private final CostsFactory< LabelingSegment > appearanceCosts;
 	private final CostsFactory< Pair< LabelingSegment, LabelingSegment > > moveCosts;
@@ -55,7 +57,7 @@ public class Tr2dTrackingModelHernan {
 		this.divisionCosts = divisionCosts;
 		this.disappearanceCosts = disappearanceCosts;
 		this.trackingProblem =
-				new Tr2dTrackingProblem( appearanceCosts,
+				new Tr2dTrackingModel( appearanceCosts,
 						movementCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
 						divisionCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
 						disappearanceCosts );
@@ -72,6 +74,7 @@ public class Tr2dTrackingModelHernan {
 	public void run() {
 		processSegmentationInputs();
 		buildTrackingModel();
+		buildFactorGraph();
 	}
 
 	/**
@@ -105,8 +108,8 @@ public class Tr2dTrackingModelHernan {
 					sumImgMovie.getLabelingSegmentsForFrame( frameId );
 			final ConflictGraph< LabelingSegment > conflictGraph =
 					sumImgMovie.getConflictGraph( frameId );
-			final Tr2dSegmentationProblem segmentationProblem =
-					new Tr2dSegmentationProblem( frameId, segments, segmentCosts, conflictGraph );
+			final Tr2dSegmentationModel segmentationProblem =
+					new Tr2dSegmentationModel( frameId, segments, segmentCosts, conflictGraph );
 			tictoc.toc( "done!" );
 
 			// ==========================
@@ -119,4 +122,10 @@ public class Tr2dTrackingModelHernan {
 		System.out.println( "Tracking graph was built sucessfully!" );
 	}
 
+	/**
+	 *
+	 */
+	public void buildFactorGraph() {
+
+	}
 }

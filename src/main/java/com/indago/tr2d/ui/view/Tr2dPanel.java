@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.tr2d.gui;
+package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -18,14 +18,14 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.indago.tr2d.Tr2dModel;
-import com.indago.tr2d.Tr2dTrackingModelHernan;
-import com.indago.tr2d.Tr2dWekaSegmentationModel;
-import com.indago.tr2d.datasets.hernan.HernanAppearanceCostFactory;
-import com.indago.tr2d.datasets.hernan.HernanDisappearanceCostFactory;
-import com.indago.tr2d.datasets.hernan.HernanDivisionCostFactory;
-import com.indago.tr2d.datasets.hernan.HernanMappingCostFactory;
-import com.indago.tr2d.datasets.hernan.HernanSegmentCostFactory;
+import com.indago.tr2d.hernan.costs.HernanAppearanceCostFactory;
+import com.indago.tr2d.hernan.costs.HernanDisappearanceCostFactory;
+import com.indago.tr2d.hernan.costs.HernanDivisionCostFactory;
+import com.indago.tr2d.hernan.costs.HernanMappingCostFactory;
+import com.indago.tr2d.hernan.costs.HernanSegmentCostFactory;
+import com.indago.tr2d.hernan.models.Tr2dTrackingModelHernan;
+import com.indago.tr2d.ui.model.Tr2dModel;
+import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.converter.RealDoubleNormalizeConverter;
 
 import ij.IJ;

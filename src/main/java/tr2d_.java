@@ -1,4 +1,4 @@
-import com.indago.tr2d.gui.Tr2dPanel;
+import com.indago.tr2d.ui.view.Tr2dPanel;
 
 import ij.IJ;
 import ij.ImageJ;

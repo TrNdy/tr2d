@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.tr2d.gui;
+package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -15,7 +15,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
 import com.indago.tr2d.Tr2dProperties;
-import com.indago.tr2d.Tr2dWekaSegmentationModel;
+import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
+import com.indago.tr2d.ui.util.JDoubleListTextPane;
+import com.indago.tr2d.ui.util.OsDependentFileChooser;
 
 import view.component.IddeaComponent;
 import weka.gui.ExtensionFileFilter;

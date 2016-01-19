@@ -1,19 +1,19 @@
-package com.indago.tr2d.tracking;
+package com.indago.tr2d.models;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.indago.data.segmentation.ConflictGraph;
+import com.indago.data.segmentation.LabelingSegment;
 import com.indago.fg.CostsFactory;
-import com.indago.segment.ConflictGraph;
-import com.indago.segment.LabelingSegment;
-import com.indago.tracking.SegmentationProblem;
-import com.indago.tracking.map.AssignmentVars;
-import com.indago.tracking.seg.ConflictSet;
-import com.indago.tracking.seg.SegmentVar;
+import com.indago.models.SegmentationModel;
+import com.indago.models.assignments.AssignmentVars;
+import com.indago.models.segments.ConflictSet;
+import com.indago.models.segments.SegmentVar;
 import com.indago.util.Bimap;
 
-public class Tr2dSegmentationProblem implements SegmentationProblem {
+public class Tr2dSegmentationModel implements SegmentationModel {
 
 	private final int time;
 	private final CostsFactory< LabelingSegment > segmentCosts;
@@ -25,7 +25,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 
 	private final Bimap< SegmentVar, LabelingSegment > segmentBimap;
 
-	public Tr2dSegmentationProblem(
+	public Tr2dSegmentationModel(
 			final int time,
 			final List< LabelingSegment > labelingSegments,
 			final CostsFactory< LabelingSegment > segmentCosts,
@@ -56,7 +56,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.tracking.SegmentationProblem#getTime()
+	 * @see com.indago.models.SegmentationModel#getTime()
 	 */
 	@Override
 	public int getTime() {
@@ -64,7 +64,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.tracking.SegmentationProblem#getSegments()
+	 * @see com.indago.models.SegmentationModel#getSegments()
 	 */
 	@Override
 	public Collection< SegmentVar > getSegments() {
@@ -72,7 +72,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.tracking.SegmentationProblem#getConflictSets()
+	 * @see com.indago.models.SegmentationModel#getConflictSets()
 	 */
 	@Override
 	public Collection< ConflictSet > getConflictSets() {
@@ -88,7 +88,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.tracking.SegmentationProblem#getInAssignments()
+	 * @see com.indago.models.SegmentationModel#getInAssignments()
 	 */
 	@Override
 	public AssignmentVars getInAssignments() {
@@ -96,7 +96,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.tracking.SegmentationProblem#getOutAssignments()
+	 * @see com.indago.models.SegmentationModel#getOutAssignments()
 	 */
 	@Override
 	public AssignmentVars getOutAssignments() {
