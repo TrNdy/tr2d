@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.segmentation;
+package com.indago.data.segmentation;
 
 import java.util.ArrayList;
 import java.util.List;

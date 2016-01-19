@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.segmentation;
+package com.indago.data.segmentation;
 
 import com.indago.fkt.Constant1D;
 import com.indago.fkt.Function1D;

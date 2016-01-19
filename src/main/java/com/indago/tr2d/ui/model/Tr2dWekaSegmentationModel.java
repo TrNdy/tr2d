@@ -7,8 +7,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.indago.segmentation.SegmentationMagic;
-import com.indago.segmentation.SilentWekaSegmenter;
+import com.indago.data.segmentation.SegmentationMagic;
+import com.indago.data.segmentation.SilentWekaSegmenter;
 import com.indago.tr2d.Tr2dProperties;
 import com.indago.util.DataMover;
 import com.indago.util.converter.RealDoubleThresholdConverter;
