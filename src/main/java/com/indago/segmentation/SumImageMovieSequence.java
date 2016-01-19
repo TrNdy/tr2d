@@ -6,6 +6,7 @@ package com.indago.segmentation;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.indago.segment.ConflictGraph;
 import com.indago.segment.LabelingBuilder;
 import com.indago.segment.LabelingForest;
 import com.indago.segment.LabelingSegment;
@@ -14,7 +15,6 @@ import com.indago.segment.filteredcomponents.FilteredComponentTree;
 import com.indago.segment.filteredcomponents.FilteredComponentTree.Filter;
 import com.indago.segment.filteredcomponents.FilteredComponentTree.MaxGrowthPerStep;
 import com.indago.tr2d.Tr2dWekaSegmentationModel;
-import com.indago.tracking.seg.ConflictGraph;
 
 import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
@@ -36,9 +36,9 @@ public class SumImageMovieSequence {
 	private final Filter maxGrowthPerStep = new MaxGrowthPerStep( 1 );
 	private final boolean darkToBright = false;
 
-	private List< LabelingForest > frameLabelingForests;
-	private List< List< LabelingSegment > > frameLabelingSegments;
-	private List< ConflictGraph > frameConflictGraphs;
+	private final List< LabelingForest > frameLabelingForests;
+	private final List< List< LabelingSegment > > frameLabelingSegments;
+	private final List< ConflictGraph< LabelingSegment > > frameConflictGraphs;
 
 	/**
 	 * @param tr2dSegModel2
@@ -48,24 +48,21 @@ public class SumImageMovieSequence {
 		this.frameLabelingForests = new ArrayList< >();
 		this.frameLabelingSegments = new ArrayList< >();
 		this.frameConflictGraphs = new ArrayList< >();
-
-		// set dim
-		try {
-			dim = getSegmentHypothesesImage();
-			System.out.println( "Input image dimensions: " + dim.toString() );
-		} catch ( final IllegalAccessException e ) {
-			System.err.println( "Segmentation Hypotheses could not be accessed!" );
-			e.printStackTrace();
-			return;
-		}
-
-		processFrames();
 	}
 
 	/**
 	 *
 	 */
-	private void processFrames() {
+	private void setDim() throws IllegalAccessException {
+			dim = getSegmentHypothesesImage();
+//			System.out.println( "Input image dimensions: " + dim.toString() );
+	}
+
+	/**
+	 *
+	 */
+	public void processFrames() throws IllegalAccessException {
+		setDim();
 
 		for ( long frameId = 0; frameId < dim.dimension( 2 ); frameId++ ) {
 			// Hyperslize current frame out of complete dataset
@@ -128,7 +125,7 @@ public class SumImageMovieSequence {
 	 * @param frameId
 	 * @return
 	 */
-	public ConflictGraph getConflictGraph( final int frameId ) {
+	public ConflictGraph< LabelingSegment > getConflictGraph( final int frameId ) {
 		return frameConflictGraphs.get( frameId );
 	}
 

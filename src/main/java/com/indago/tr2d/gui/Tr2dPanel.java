@@ -19,8 +19,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.indago.tr2d.Tr2dModel;
-import com.indago.tr2d.Tr2dTrackingModel;
+import com.indago.tr2d.Tr2dTrackingModelHernan;
 import com.indago.tr2d.Tr2dWekaSegmentationModel;
+import com.indago.tr2d.datasets.hernan.HernanAppearanceCostFactory;
+import com.indago.tr2d.datasets.hernan.HernanDisappearanceCostFactory;
+import com.indago.tr2d.datasets.hernan.HernanDivisionCostFactory;
+import com.indago.tr2d.datasets.hernan.HernanMappingCostFactory;
 import com.indago.tr2d.datasets.hernan.HernanSegmentCostFactory;
 import com.indago.util.converter.RealDoubleNormalizeConverter;
 
@@ -86,9 +90,15 @@ public class Tr2dPanel extends JPanel implements ActionListener, ChangeListener 
 		tabData = new JPanel( new BorderLayout() );
 		final Tr2dWekaSegmentationModel segModel = new Tr2dWekaSegmentationModel( model );
 		tabSegmentation = new Tr2dWekaSegmentationPanel( segModel );
+		final RandomAccessibleInterval< DoubleType > imgOrig = model.getImgOrig();
 		tabTracking =
-				new Tr2dTrackingPanel( new Tr2dTrackingModel( model, segModel, 
-						new HernanSegmentCostFactory( model.getImgOrig() ) ) );
+				new Tr2dTrackingPanel(
+						new Tr2dTrackingModelHernan( model, segModel,
+								new HernanSegmentCostFactory( imgOrig ),
+								new HernanAppearanceCostFactory( imgOrig ),
+								new HernanMappingCostFactory( imgOrig ),
+								new HernanDivisionCostFactory( imgOrig ),
+ new HernanDisappearanceCostFactory( imgOrig ) ) );
 
 		icData = new IddeaComponent( model.getImgOrigNorm() );
 		icData.showMenu( false );

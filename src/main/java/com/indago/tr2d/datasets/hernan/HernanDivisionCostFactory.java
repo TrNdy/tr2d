@@ -4,7 +4,7 @@
 package com.indago.tr2d.datasets.hernan;
 
 import com.indago.fg.CostsFactory;
-import com.indago.segment.Segment;
+import com.indago.segment.LabelingSegment;
 import com.indago.util.math.VectorUtil;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -18,9 +18,8 @@ import net.imglib2.util.Pair;
  */
 public class HernanDivisionCostFactory
 		implements
-		CostsFactory< Pair< Segment, Pair< Segment, Segment > > > {
+		CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > {
 
-	private final long destframeId;
 	private final Object sourceImage;
 
 	/**
@@ -28,9 +27,7 @@ public class HernanDivisionCostFactory
     * @param sourceImage
     */
 	public HernanDivisionCostFactory(
-			final long destFrameId,
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
-		this.destframeId = destFrameId;
 		this.sourceImage = sourceImage;
     }
 
@@ -38,10 +35,11 @@ public class HernanDivisionCostFactory
 	 * @see com.indago.fg.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
-	public double getCost( final Pair< Segment, Pair< Segment, Segment > > segment ) {
-		final RealLocalizable posA = segment.getA().getCenterOfMass();
-		final RealLocalizable posBA = segment.getB().getA().getCenterOfMass();
-		final RealLocalizable posBB = segment.getB().getB().getCenterOfMass();
+	public double getCost(
+			final Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > segments ) {
+		final RealLocalizable posA = segments.getA().getCenterOfMass();
+		final RealLocalizable posBA = segments.getB().getA().getCenterOfMass();
+		final RealLocalizable posBB = segments.getB().getB().getCenterOfMass();
 		final double[] vecA = new double[ posA.numDimensions() ];
 		final double[] vecBA = new double[ posBA.numDimensions() ];
 		final double[] vecBB = new double[ posBB.numDimensions() ];

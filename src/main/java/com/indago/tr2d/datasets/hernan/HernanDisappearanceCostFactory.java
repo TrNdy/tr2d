@@ -4,7 +4,7 @@
 package com.indago.tr2d.datasets.hernan;
 
 import com.indago.fg.CostsFactory;
-import com.indago.segment.Segment;
+import com.indago.segment.LabelingSegment;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -13,9 +13,8 @@ import net.imglib2.type.numeric.real.DoubleType;
 /**
  * @author jug
  */
-public class HernanDisappearanceCostFactory implements CostsFactory< Segment > {
+public class HernanDisappearanceCostFactory implements CostsFactory< LabelingSegment > {
 
-	private final long frameId;
 	private final RandomAccessibleInterval< DoubleType > imgOrig;
 
 	/**
@@ -23,9 +22,7 @@ public class HernanDisappearanceCostFactory implements CostsFactory< Segment > {
 	 * @param imgOrig
 	 */
 	public HernanDisappearanceCostFactory(
-			final long frameId,
 			final RandomAccessibleInterval< DoubleType > imgOrig ) {
-		this.frameId = frameId;
 		this.imgOrig = imgOrig;
 	}
 
@@ -33,7 +30,7 @@ public class HernanDisappearanceCostFactory implements CostsFactory< Segment > {
 	 * @see com.indago.fg.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
-	public double getCost( final Segment segment ) {
+	public double getCost( final LabelingSegment segment ) {
 		final double posX = segment.getCenterOfMass().getDoublePosition( 0 );
 		final double posY = segment.getCenterOfMass().getDoublePosition( 1 );
 		double distBorder = Math.min( posX - imgOrig.min( 0 ), posY - imgOrig.min( 1 ) );

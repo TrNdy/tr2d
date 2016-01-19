@@ -26,7 +26,7 @@ import com.indago.tr2d.fg.factor.MappingFactor;
 import com.indago.tr2d.fg.variables.AppearanceHypothesisVariable;
 import com.indago.tr2d.fg.variables.DisappearanceHypothesisVariable;
 import com.indago.tr2d.fg.variables.DivisionHypothesisVariable;
-import com.indago.tr2d.fg.variables.MappingHypothesisVariable;
+import com.indago.tr2d.fg.variables.MovementHypothesisVariable;
 
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
@@ -157,8 +157,8 @@ public class Tr2dFactorGraphFactory {
 				if ( cost <= maxMappingCost ) {
 
 					// create mapping variable
-					final MappingHypothesisVariable< Segment, SegmentHypothesisVariable< Segment > > newMappingVariable =
-							new MappingHypothesisVariable< >( sourceVar, destVar );
+					final MovementHypothesisVariable< Segment, SegmentHypothesisVariable< Segment > > newMappingVariable =
+							new MovementHypothesisVariable< >( sourceVar, destVar );
 					variables.add( newMappingVariable );
 
 					// add unary mapping factor

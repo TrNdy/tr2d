@@ -4,7 +4,7 @@
 package com.indago.tr2d.datasets.hernan;
 
 import com.indago.fg.CostsFactory;
-import com.indago.segment.Segment;
+import com.indago.segment.LabelingSegment;
 import com.indago.util.math.VectorUtil;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -18,9 +18,8 @@ import net.imglib2.util.Pair;
  */
 public class HernanMappingCostFactory
 		implements
-		CostsFactory< Pair< Segment, Segment > > {
+		CostsFactory< Pair< LabelingSegment, LabelingSegment > > {
 
-	private final long destframeId;
 	private final Object sourceImage;
 
 	/**
@@ -28,9 +27,7 @@ public class HernanMappingCostFactory
 	 * @param sourceImage
 	 */
 	public HernanMappingCostFactory(
-			final long destFrameId,
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
-		this.destframeId = destFrameId;
 		this.sourceImage = sourceImage;
 	}
 
@@ -38,16 +35,16 @@ public class HernanMappingCostFactory
 	 * @see com.indago.fg.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
-	public double getCost( final Pair< Segment, Segment > segment ) {
-		final RealLocalizable posA = segment.getA().getCenterOfMass();
-		final RealLocalizable posB = segment.getB().getCenterOfMass();
+	public double getCost( final Pair< LabelingSegment, LabelingSegment > segments ) {
+		final RealLocalizable posA = segments.getA().getCenterOfMass();
+		final RealLocalizable posB = segments.getB().getCenterOfMass();
 		final double[] vecA = new double[ posA.numDimensions() ];
 		final double[] vecB = new double[ posB.numDimensions() ];
 		posA.localize( vecA );
 		posB.localize( vecB );
 		final double centroidDistance = VectorUtil.getSquaredDistance( vecA, vecB );
 
-		if ( centroidDistance > HernanCostConstants.MAX_MAPPING_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
+		if ( centroidDistance > HernanCostConstants.MAX_MOVEMENT_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 
 		return .0 * centroidDistance / Math.PI;
 	}

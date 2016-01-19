@@ -4,7 +4,7 @@
 package com.indago.tr2d.datasets.hernan;
 
 import com.indago.fg.CostsFactory;
-import com.indago.segment.Segment;
+import com.indago.segment.LabelingSegment;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -13,7 +13,7 @@ import net.imglib2.type.numeric.real.DoubleType;
 /**
  * @author jug
  */
-public class HernanSegmentCostFactory implements CostsFactory< Segment > {
+public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment > {
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
 
@@ -31,7 +31,7 @@ public class HernanSegmentCostFactory implements CostsFactory< Segment > {
 	 * @see com.indago.fg.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
-	public double getCost( final Segment segment ) {
+	public double getCost( final LabelingSegment segment ) {
 		return -1 * segment.getArea();
 	}
 

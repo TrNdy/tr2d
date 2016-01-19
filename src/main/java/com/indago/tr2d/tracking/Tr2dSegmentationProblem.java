@@ -2,10 +2,11 @@ package com.indago.tr2d.tracking;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import com.indago.fg.CostsFactory;
+import com.indago.segment.ConflictGraph;
 import com.indago.segment.LabelingSegment;
-import com.indago.segment.Segment;
 import com.indago.tracking.SegmentationProblem;
 import com.indago.tracking.map.AssignmentVars;
 import com.indago.tracking.seg.ConflictSet;
@@ -15,24 +16,43 @@ import com.indago.util.Bimap;
 public class Tr2dSegmentationProblem implements SegmentationProblem {
 
 	private final int time;
-	private final CostsFactory< Segment > segmentCosts;
+	private final CostsFactory< LabelingSegment > segmentCosts;
 
 	private final Collection< SegmentVar > segments;
-	private final Collection< ConflictSet > conflictSets;
+	private final ConflictGraph< LabelingSegment > conflictGraph;
 	private final AssignmentVars inAssignments;
 	private final AssignmentVars outAssignments;
 
 	private final Bimap< SegmentVar, LabelingSegment > segmentBimap;
 
-	public Tr2dSegmentationProblem( final int time, final CostsFactory< Segment > segmentCosts ) {
-		this.time = time;
-		this.segmentCosts = segmentCosts;
-
-		segments = new ArrayList< SegmentVar >();
-		conflictSets = new ArrayList< ConflictSet >();
+	public Tr2dSegmentationProblem(
+			final int time,
+			final List< LabelingSegment > labelingSegments,
+			final CostsFactory< LabelingSegment > segmentCosts,
+			final ConflictGraph< LabelingSegment > conflictGraph ) {
 		inAssignments = new AssignmentVars();
 		outAssignments = new AssignmentVars();
 		segmentBimap = new Bimap< >();
+
+		this.time = time;
+		this.segmentCosts = segmentCosts;
+		this.conflictGraph = conflictGraph;
+
+		segments = new ArrayList< SegmentVar >();
+		createSegmentVars( labelingSegments );
+	}
+
+	/**
+	 * @param labelingSegments
+	 * @param segmentCosts
+	 */
+	private void createSegmentVars( final List< LabelingSegment > labelingSegments ) {
+		for ( final LabelingSegment labelingSegment : labelingSegments ) {
+			final SegmentVar segVar =
+					new SegmentVar( labelingSegment, segmentCosts.getCost( labelingSegment ) );
+			segments.add( segVar );
+			segmentBimap.add( segVar, labelingSegment );
+		}
 	}
 
 	/**
@@ -56,7 +76,15 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 */
 	@Override
 	public Collection< ConflictSet > getConflictSets() {
-		return conflictSets;
+		final ArrayList< ConflictSet > ret = new ArrayList< ConflictSet >();
+		for ( final Collection< LabelingSegment > clique : conflictGraph.getConflictGraphCliques() ) {
+			final ConflictSet cs = new ConflictSet();
+			for ( final LabelingSegment ls : clique ) {
+				cs.add( segmentBimap.getA( ls ) );
+			}
+			ret.add( cs );
+		}
+		return ret;
 	}
 
 	/**
@@ -79,7 +107,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		return segmentBimap.getA( segment );
 	}
 
-	public LabelingSegment getSegmentVar( final SegmentVar segment ) {
+	public LabelingSegment getLabelingSegment( final SegmentVar segment ) {
 		return segmentBimap.getB( segment );
 	}
 }

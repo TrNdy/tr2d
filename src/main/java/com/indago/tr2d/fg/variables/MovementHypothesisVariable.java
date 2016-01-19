@@ -10,7 +10,7 @@ import com.indago.segment.fg.SegmentHypothesisVariable;
 /**
  * @author jug
  */
-public class MappingHypothesisVariable< S extends Segment, T extends SegmentHypothesisVariable< S > >
+public class MovementHypothesisVariable< S extends Segment, T extends SegmentHypothesisVariable< S > >
 		extends
 		BooleanVariable {
 
@@ -20,7 +20,7 @@ public class MappingHypothesisVariable< S extends Segment, T extends SegmentHypo
 	/**
 	 * @param value
 	 */
-	public MappingHypothesisVariable( final T sourceSegment, final T destSegment ) {
+	public MovementHypothesisVariable( final T sourceSegment, final T destSegment ) {
 		this.sourceSegVar = sourceSegment;
 		this.destSegVar = destSegment;
 	}

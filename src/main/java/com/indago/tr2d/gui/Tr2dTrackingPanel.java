@@ -9,18 +9,18 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.indago.tr2d.Tr2dTrackingModel;
+import com.indago.tr2d.Tr2dTrackingModelHernan;
 
 /**
  * @author jug
  */
 public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 
-	private final Tr2dTrackingModel model;
+	private final Tr2dTrackingModelHernan model;
 
 	private JButton bRun;
 
-	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
+	public Tr2dTrackingPanel( final Tr2dTrackingModelHernan trackingModel ) {
 		this.model = trackingModel;
 		buildGui();
 	}
