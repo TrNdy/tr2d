@@ -9,6 +9,8 @@ import com.indago.app.hernan.costs.HernanCostConstants;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.data.segmentation.SumImageMovieSequence;
+import com.indago.fg.FactorGraphFactory;
+import com.indago.fg.MappedFactorGraph;
 import com.indago.old_fg.CostsFactory;
 import com.indago.tr2d.models.Tr2dSegmentationModel;
 import com.indago.tr2d.models.Tr2dTrackingModel;
@@ -27,10 +29,10 @@ public class Tr2dTrackingModelHernan {
 
 	private final Tr2dModel tr2dModel;
 	private final Tr2dWekaSegmentationModel tr2dSegModel;
+	private final Tr2dTrackingModel tr2dTraModel;
 
 	private final SumImageMovieSequence sumImgMovie;;
 
-	private final Tr2dTrackingModel tr2dTraModel;
 	private final CostsFactory< LabelingSegment > segmentCosts;
 	private final CostsFactory< LabelingSegment > appearanceCosts;
 	private final CostsFactory< Pair< LabelingSegment, LabelingSegment > > moveCosts;
@@ -38,6 +40,8 @@ public class Tr2dTrackingModelHernan {
 	private final CostsFactory< LabelingSegment > disappearanceCosts;
 
 	private final RandomAccessibleInterval< DoubleType > imgSolution = null;
+
+	private MappedFactorGraph fg;
 
 	/**
 	 * @param model
@@ -115,7 +119,7 @@ public class Tr2dTrackingModelHernan {
 			// ==========================
 			// add to Tr2dTrackingProblem
 			// ==========================
-			tictoc.tic( "Constructing Tr2dSegmentationProblem..." );
+			tictoc.tic( "Connect it to Tr2dTrackingProblem..." );
 			tr2dTraModel.addSegmentationProblem( segmentationProblem );
 			tictoc.toc( "done!" );
 		}
@@ -126,6 +130,9 @@ public class Tr2dTrackingModelHernan {
 	 *
 	 */
 	public void buildFactorGraph() {
-
+		final TicToc tictoc = new TicToc();
+		tictoc.tic( "Constructing FactorGraph for created Tr2dTrackingProblem..." );
+		fg = FactorGraphFactory.createFactorGraph( tr2dTraModel );
+		tictoc.toc( "done!" );
 	}
 }
