@@ -4,13 +4,20 @@
 package com.indago.app.hernan.models;
 
 import java.util.List;
+import java.util.Map;
 
 import com.indago.app.hernan.costs.HernanCostConstants;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.data.segmentation.SumImageMovieSequence;
+import com.indago.fg.Assignment;
+import com.indago.fg.AssignmentMapper;
 import com.indago.fg.FactorGraphFactory;
 import com.indago.fg.MappedFactorGraph;
+import com.indago.fg.UnaryCostConstraintGraph;
+import com.indago.fg.Variable;
+import com.indago.ilp.SolveGurobi;
+import com.indago.models.IndicatorVar;
 import com.indago.old_fg.CostsFactory;
 import com.indago.tr2d.models.Tr2dSegmentationModel;
 import com.indago.tr2d.models.Tr2dTrackingModel;
@@ -18,6 +25,7 @@ import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.TicToc;
 
+import gurobi.GRBException;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.Pair;
@@ -41,7 +49,7 @@ public class Tr2dTrackingModelHernan {
 
 	private final RandomAccessibleInterval< DoubleType > imgSolution = null;
 
-	private MappedFactorGraph fg;
+	private MappedFactorGraph mfg;
 
 	/**
 	 * @param model
@@ -79,6 +87,7 @@ public class Tr2dTrackingModelHernan {
 		processSegmentationInputs();
 		buildTrackingModel();
 		buildFactorGraph();
+		solveFactorGraph();
 	}
 
 	/**
@@ -132,7 +141,25 @@ public class Tr2dTrackingModelHernan {
 	public void buildFactorGraph() {
 		final TicToc tictoc = new TicToc();
 		tictoc.tic( "Constructing FactorGraph for created Tr2dTrackingProblem..." );
-		fg = FactorGraphFactory.createFactorGraph( tr2dTraModel );
+		mfg = FactorGraphFactory.createFactorGraph( tr2dTraModel );
 		tictoc.toc( "done!" );
+	}
+
+	/**
+	 *
+	 */
+	private void solveFactorGraph() {
+		final UnaryCostConstraintGraph fg = mfg.getFg();
+		final AssignmentMapper< Variable, IndicatorVar > assMapper = mfg.getAssmntMapper();
+		final Map< IndicatorVar, Variable > varMapper = mfg.getVarmap();
+
+		Assignment< Variable > fgSolution = null;
+		try {
+			fgSolution = SolveGurobi.staticSolve( fg );
+			final Assignment< IndicatorVar > problemSolution = assMapper.map( fgSolution );
+		} catch ( final GRBException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
