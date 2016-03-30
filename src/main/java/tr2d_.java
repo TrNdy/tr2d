@@ -42,11 +42,12 @@ public class tr2d_ implements PlugIn {
 		new ImageJ();
 
 		// open the Clown sample
-//		final ImagePlus image = IJ.openImage("http://imagej.net/images/clown.jpg");
 //		final ImagePlus image = IJ.openImage(
-//				"/Volumes/FastData/ProjectHernan/SimpleDataSet/2012-06-16-MCP(10)TM3-X1-His_018.tif" );
+//				"/Volumes/FastData/ProjectHernan/DebugStack00.tif" );
 		final ImagePlus image = IJ.openImage(
-				"/Volumes/FastData/ProjectHernan/HarderDataSet/2015-03-27-P2P-MS2-PP7-lacZ-His_023.tif" );
+				"/Volumes/FastData/ProjectHernan/DebugStack03-crop1.tif" );
+//		final ImagePlus image = IJ.openImage(
+//				"/Volumes/FastData/ProjectHernan/HarderDataSet/2015-03-27-P2P-MS2-PP7-lacZ-His_023.tif" );
 		image.show();
 
 		// run the plugin

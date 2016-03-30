@@ -18,17 +18,25 @@ import com.indago.fg.UnaryCostConstraintGraph;
 import com.indago.fg.Variable;
 import com.indago.ilp.SolveGurobi;
 import com.indago.models.IndicatorVar;
+import com.indago.models.assignments.DivisionHypothesis;
+import com.indago.models.assignments.MovementHypothesis;
+import com.indago.models.segments.SegmentVar;
 import com.indago.old_fg.CostsFactory;
 import com.indago.tr2d.models.Tr2dSegmentationModel;
 import com.indago.tr2d.models.Tr2dTrackingModel;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
+import com.indago.util.DataMover;
 import com.indago.util.TicToc;
 
 import gurobi.GRBException;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.roi.IterableRegion;
+import net.imglib2.roi.Regions;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.Pair;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 /**
  * @author jug
@@ -39,7 +47,7 @@ public class Tr2dTrackingModelHernan {
 	private final Tr2dWekaSegmentationModel tr2dSegModel;
 	private final Tr2dTrackingModel tr2dTraModel;
 
-	private final SumImageMovieSequence sumImgMovie;;
+	private final SumImageMovieSequence sumImgMovie;
 
 	private final CostsFactory< LabelingSegment > segmentCosts;
 	private final CostsFactory< LabelingSegment > appearanceCosts;
@@ -47,9 +55,11 @@ public class Tr2dTrackingModelHernan {
 	private final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
 	private final CostsFactory< LabelingSegment > disappearanceCosts;
 
-	private final RandomAccessibleInterval< DoubleType > imgSolution = null;
+	private RandomAccessibleInterval< DoubleType > imgSolution = null;
 
 	private MappedFactorGraph mfg;
+	private Assignment< Variable > fgSolution;
+	private Assignment< IndicatorVar > problemSolution;
 
 	/**
 	 * @param model
@@ -88,6 +98,7 @@ public class Tr2dTrackingModelHernan {
 		buildTrackingModel();
 		buildFactorGraph();
 		solveFactorGraph();
+		drawSolution();
 	}
 
 	/**
@@ -125,9 +136,9 @@ public class Tr2dTrackingModelHernan {
 					new Tr2dSegmentationModel( frameId, segments, segmentCosts, conflictGraph );
 			tictoc.toc( "done!" );
 
-			// ==========================
-			// add to Tr2dTrackingProblem
-			// ==========================
+			// =============================
+			// add it to Tr2dTrackingProblem
+			// =============================
 			tictoc.tic( "Connect it to Tr2dTrackingProblem..." );
 			tr2dTraModel.addSegmentationProblem( segmentationProblem );
 			tictoc.toc( "done!" );
@@ -153,13 +164,80 @@ public class Tr2dTrackingModelHernan {
 		final AssignmentMapper< Variable, IndicatorVar > assMapper = mfg.getAssmntMapper();
 		final Map< IndicatorVar, Variable > varMapper = mfg.getVarmap();
 
-		Assignment< Variable > fgSolution = null;
+		fgSolution = null;
 		try {
 			fgSolution = SolveGurobi.staticSolve( fg );
-			final Assignment< IndicatorVar > problemSolution = assMapper.map( fgSolution );
+			problemSolution = assMapper.map( fgSolution );
 		} catch ( final GRBException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 *
+	 */
+	private void drawSolution() {
+		final UnaryCostConstraintGraph fg = mfg.getFg();
+		final AssignmentMapper< Variable, IndicatorVar > assMapper = mfg.getAssmntMapper();
+		final Map< IndicatorVar, Variable > varMapper = mfg.getVarmap();
+
+		try {
+			this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getClassification(), new DoubleType() );
+
+//			int time = 0;
+//			for ( final Tr2dSegmentationModel segProblem : tr2dTraModel.getTimepoints() ) {
+//				final IntervalView< DoubleType > slice = Views.hyperSlice( imgSolution, 2, time );
+//
+//				for ( final SegmentVar segVar : segProblem.getSegments() ) {
+//					if ( problemSolution.getAssignment( segVar ) == 1 ) {
+//						final IterableRegion< ? > region = segVar.getSegment().getRegion();
+//						Regions.sample( region, slice ).forEach( t -> t.set( t.get() + 1 ) );
+//					}
+//				}
+//				time++;
+//			}
+
+			int curColorId = 1;
+			final Tr2dSegmentationModel tp1 = tr2dTraModel.getTimepoints().get( 0 );
+			for ( final SegmentVar segVar : tp1.getSegments() ) {
+				if ( problemSolution.getAssignment( segVar ) == 1 ) {
+					drawLineageWithId( 0, segVar, 10 + curColorId );
+					curColorId++;
+				}
+			}
+
+		} catch ( final IllegalAccessException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * @param segVar
+	 * @param curColorId
+	 */
+	private void drawLineageWithId( final int time, final SegmentVar segVar, final int curColorId ) {
+		final IntervalView< DoubleType > slice = Views.hyperSlice( imgSolution, 2, time );
+
+		if ( problemSolution.getAssignment( segVar ) == 1 ) {
+			final IterableRegion< ? > region = segVar.getSegment().getRegion();
+			Regions.sample( region, slice ).forEach( t -> t.set( curColorId ) );
+
+			for ( final MovementHypothesis move : segVar.getOutAssignments().getMoves() ) {
+				drawLineageWithId( time + 1, move.getDest(), curColorId );
+			}
+			for ( final DivisionHypothesis div : segVar.getOutAssignments().getDivisions() ) {
+				drawLineageWithId( time + 1, div.getDest1(), curColorId );
+				drawLineageWithId( time + 1, div.getDest2(), curColorId );
+			}
+		}
+	}
+
+	/**
+	 * @return the imgSolution
+	 */
+	public RandomAccessibleInterval< DoubleType > getImgSolution() {
+		return imgSolution;
 	}
 }
