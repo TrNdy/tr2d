@@ -13,7 +13,7 @@ public class HernanCostConstants {
 	@Deprecated  // remove asap
 	public static final double TRUNCATE_COST_VALUE = TRUNCATE_COST_THRESHOLD * 2;
 
-	public static final double MAX_MOVEMENT_DISTANCE = 50;
-	public static final double MAX_DIVISION_MOVE_DISTANCE = 75;
-	public static final double MAX_DIVISION_OFFSPRING_DISTANCE = 75;
+	public static final double MAX_SQUARED_MOVEMENT_DISTANCE = 20 * 20;
+	public static final double MAX_SQUARED_DIVISION_MOVE_DISTANCE = 25 * 25;
+	public static final double MAX_SQUARED_DIVISION_OFFSPRING_DISTANCE = 50 * 50;
 }

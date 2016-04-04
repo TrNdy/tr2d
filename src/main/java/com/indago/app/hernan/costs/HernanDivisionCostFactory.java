@@ -52,12 +52,11 @@ public class HernanDivisionCostFactory
 
 		if ( Math.max(
 				centroidDistanceABA,
-				centroidDistanceABB ) > HernanCostConstants.MAX_DIVISION_MOVE_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
-		if ( centroidDistanceBABB > HernanCostConstants.MAX_DIVISION_OFFSPRING_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
+				centroidDistanceABB ) > HernanCostConstants.MAX_SQUARED_DIVISION_MOVE_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
+		if ( centroidDistanceBABB > HernanCostConstants.MAX_SQUARED_DIVISION_OFFSPRING_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 
-//		return .5 * Math.min( centroidDistanceABA, centroidDistanceABB )/Math.PI
-//				+ 0.25 * centroidDistanceBABB/Math.PI;
-		return 0;
+		return .5 * Math.min( centroidDistanceABA, centroidDistanceABB ) / Math.PI + 0.25 * centroidDistanceBABB / Math.PI;
+//		return 0;
 	}
 
 }

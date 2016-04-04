@@ -32,7 +32,7 @@ public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment >
 	 */
 	@Override
 	public double getCost( final LabelingSegment segment ) {
-		return -1 * segment.getArea();
+		return -100 * segment.getArea();
 	}
 
 }

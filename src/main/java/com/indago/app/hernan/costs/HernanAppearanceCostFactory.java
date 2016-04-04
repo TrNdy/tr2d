@@ -31,6 +31,15 @@ public class HernanAppearanceCostFactory implements CostsFactory< LabelingSegmen
 	 */
 	@Override
 	public double getCost( final LabelingSegment segment ) {
+		final double posX = segment.getCenterOfMass().getDoublePosition( 0 );
+		final double posY = segment.getCenterOfMass().getDoublePosition( 1 );
+		double distBorder = Math.min( posX - imgOrig.min( 0 ), posY - imgOrig.min( 1 ) );
+		distBorder = Math.min(
+				distBorder,
+				Math.min( imgOrig.max( 0 ) - posX, imgOrig.max( 1 ) - posY ) );
+		double factor = distBorder / 25;
+		factor = Math.min( 1.5, factor );
+//		return segment.getArea() * ( 1 + factor );
 		return 3 * segment.getArea();
 	}
 

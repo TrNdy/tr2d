@@ -18,6 +18,8 @@ import com.indago.fg.UnaryCostConstraintGraph;
 import com.indago.fg.Variable;
 import com.indago.ilp.SolveGurobi;
 import com.indago.models.IndicatorVar;
+import com.indago.models.assignments.AppearanceHypothesis;
+import com.indago.models.assignments.DisappearanceHypothesis;
 import com.indago.models.assignments.DivisionHypothesis;
 import com.indago.models.assignments.MovementHypothesis;
 import com.indago.models.segments.SegmentVar;
@@ -31,6 +33,7 @@ import com.indago.util.TicToc;
 
 import gurobi.GRBException;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.Regions;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -143,6 +146,8 @@ public class Tr2dTrackingModelHernan {
 			tr2dTraModel.addSegmentationProblem( segmentationProblem );
 			tictoc.toc( "done!" );
 		}
+		tr2dTraModel.addDummyDisappearanceToFinishModel();
+
 		System.out.println( "Tracking graph was built sucessfully!" );
 	}
 
@@ -198,17 +203,32 @@ public class Tr2dTrackingModelHernan {
 //				time++;
 //			}
 
+			int time = 0;
 			int curColorId = 1;
-			final Tr2dSegmentationModel tp1 = tr2dTraModel.getTimepoints().get( 0 );
-			for ( final SegmentVar segVar : tp1.getSegments() ) {
-				if ( problemSolution.getAssignment( segVar ) == 1 ) {
-					drawLineageWithId( 0, segVar, 10 + curColorId );
-					curColorId++;
+			for ( final Tr2dSegmentationModel segProblem : tr2dTraModel.getTimepoints() ) {
+				for ( final SegmentVar segVar : segProblem.getSegments() ) {
+					System.out.print(
+							"time=" + time + " - #app/#disapp = " + segVar.getInAssignments().getAppearances().size() + "/" + segVar
+									.getOutAssignments()
+									.getDisappearances()
+									.size() + "\t" );
+					for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
+						System.out.print( "" + problemSolution.getAssignment( app ) );
+						if ( problemSolution.getAssignment( app ) == 1 ) { // || time == 0
+							drawLineageWithId( time, segVar, 10 + curColorId );
+							curColorId++;
+						}
+					}
+					for ( final DisappearanceHypothesis disapp : segVar.getOutAssignments().getDisappearances() ) {
+						System.out.println( "/" + problemSolution.getAssignment( disapp ) );
+					}
 				}
+				time++;
 			}
 
+			ImageJFunctions.show( imgSolution, "Solution" );
+
 		} catch ( final IllegalAccessException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -221,15 +241,28 @@ public class Tr2dTrackingModelHernan {
 		final IntervalView< DoubleType > slice = Views.hyperSlice( imgSolution, 2, time );
 
 		if ( problemSolution.getAssignment( segVar ) == 1 ) {
+			final int color = curColorId;
+
+//			for ( final DisappearanceHypothesis disapp : segVar.getOutAssignments().getDisappearances() ) {
+//				if ( problemSolution.getAssignment( disapp ) == 1 ) {
+//					color = 5;
+//				}
+//			}
+
 			final IterableRegion< ? > region = segVar.getSegment().getRegion();
-			Regions.sample( region, slice ).forEach( t -> t.set( curColorId ) );
+			final int c = color;
+			Regions.sample( region, slice ).forEach( t -> t.set( c ) );
 
 			for ( final MovementHypothesis move : segVar.getOutAssignments().getMoves() ) {
-				drawLineageWithId( time + 1, move.getDest(), curColorId );
+				if ( problemSolution.getAssignment( move ) == 1 ) {
+					drawLineageWithId( time + 1, move.getDest(), curColorId );
+				}
 			}
 			for ( final DivisionHypothesis div : segVar.getOutAssignments().getDivisions() ) {
-				drawLineageWithId( time + 1, div.getDest1(), curColorId );
-				drawLineageWithId( time + 1, div.getDest2(), curColorId );
+				if ( problemSolution.getAssignment( div ) == 1 ) {
+					drawLineageWithId( time + 1, div.getDest1(), curColorId );
+					drawLineageWithId( time + 1, div.getDest2(), curColorId );
+				}
 			}
 		}
 	}

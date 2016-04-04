@@ -44,9 +44,9 @@ public class HernanMappingCostFactory
 		posB.localize( vecB );
 		final double centroidDistance = VectorUtil.getSquaredDistance( vecA, vecB );
 
-		if ( centroidDistance > HernanCostConstants.MAX_MOVEMENT_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
+		if ( centroidDistance > HernanCostConstants.MAX_SQUARED_MOVEMENT_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 
-		return .0 * centroidDistance / Math.PI;
+		return centroidDistance / Math.PI; // *0.0;
 	}
 
 }

@@ -51,11 +51,14 @@ public class Tr2dTrackingModel implements TrackingModel {
 	 * @param segmentationProblem
 	 */
 	public void addSegmentationProblem( final Tr2dSegmentationModel segmentationProblem ) {
-		if ( timepoints.size() > 0 ) {
+		if ( timepoints.size() == 0 ) {
+			timepoints.add( segmentationProblem );
+			addAppearanceToLatestFrame( false );
+		} else {
 			addDisappearanceToLatestFrame();
+			timepoints.add( segmentationProblem );
+			addAppearanceToLatestFrame( true );
 		}
-		timepoints.add( segmentationProblem );
-		addAppearanceToLatestFrame();
 
 		if ( timepoints.size() >= 2 ) {
 			addMovesToLatestFramePair();
@@ -66,12 +69,15 @@ public class Tr2dTrackingModel implements TrackingModel {
 	/**
 	 *
 	 */
-	private void addAppearanceToLatestFrame() {
+	private void addAppearanceToLatestFrame( final boolean isFirstFrame ) {
 		final Tr2dSegmentationModel segProblem = timepoints.get( timepoints.size() - 1 );
 		for ( final SegmentVar segVar : segProblem.getSegments() ) {
-			final AppearanceHypothesis appHyp =
-					new AppearanceHypothesis( appearanceCosts
-							.getCost( segProblem.getLabelingSegment( segVar ) ), segVar );
+			AppearanceHypothesis appHyp = null;
+			if ( isFirstFrame ) {
+				appHyp = new AppearanceHypothesis( appearanceCosts.getCost( segProblem.getLabelingSegment( segVar ) ), segVar );
+			} else {
+				appHyp = new AppearanceHypothesis( 0, segVar );
+			}
 			segVar.getInAssignments().add( appHyp );
 		}
 	}
@@ -85,6 +91,19 @@ public class Tr2dTrackingModel implements TrackingModel {
 			final DisappearanceHypothesis disappHyp =
 					new DisappearanceHypothesis( disappearanceCosts
 							.getCost( segProblem.getLabelingSegment( segVar ) ), segVar );
+			segVar.getOutAssignments().add( disappHyp );
+		}
+	}
+
+	/**
+	 * Last frame needs to get disappearances in order for continuity
+	 * constraints to work out.
+	 * This is usually the last method to be called when creating the model.
+	 */
+	public void addDummyDisappearanceToFinishModel() {
+		final Tr2dSegmentationModel segProblem = timepoints.get( timepoints.size() - 1 );
+		for ( final SegmentVar segVar : segProblem.getSegments() ) {
+			final DisappearanceHypothesis disappHyp = new DisappearanceHypothesis( 0, segVar );
 			segVar.getOutAssignments().add( disappHyp );
 		}
 	}

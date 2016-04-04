@@ -38,9 +38,10 @@ public class Tr2dWekaSegmentationModel {
 	 */
 	public Tr2dWekaSegmentationModel( final Tr2dModel model ) {
 		this.model = model;
-		getListThresholds().add( 0.2 );
+//		getListThresholds().add( 0.2 );
 		getListThresholds().add( 0.5 );
 		getListThresholds().add( 0.7 );
+		getListThresholds().add( 0.95 );
 	}
 
 	/**
