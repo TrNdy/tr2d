@@ -17,15 +17,15 @@ import com.indago.fg.MappedFactorGraph;
 import com.indago.fg.UnaryCostConstraintGraph;
 import com.indago.fg.Variable;
 import com.indago.ilp.SolveGurobi;
-import com.indago.models.IndicatorVar;
+import com.indago.models.IndicatorNode;
 import com.indago.models.assignments.AppearanceHypothesis;
 import com.indago.models.assignments.DisappearanceHypothesis;
 import com.indago.models.assignments.DivisionHypothesis;
 import com.indago.models.assignments.MovementHypothesis;
-import com.indago.models.segments.SegmentVar;
+import com.indago.models.segments.SegmentNode;
 import com.indago.old_fg.CostsFactory;
-import com.indago.tr2d.models.Tr2dSegmentationModel;
-import com.indago.tr2d.models.Tr2dTrackingModel;
+import com.indago.tr2d.models.Tr2dSegmentationProblem;
+import com.indago.tr2d.models.Tr2dTrackingProblem;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.DataMover;
@@ -48,7 +48,7 @@ public class Tr2dTrackingModelHernan {
 
 	private final Tr2dModel tr2dModel;
 	private final Tr2dWekaSegmentationModel tr2dSegModel;
-	private final Tr2dTrackingModel tr2dTraModel;
+	private final Tr2dTrackingProblem tr2dTraModel;
 
 	private final SumImageMovieSequence sumImgMovie;
 
@@ -62,7 +62,7 @@ public class Tr2dTrackingModelHernan {
 
 	private MappedFactorGraph mfg;
 	private Assignment< Variable > fgSolution;
-	private Assignment< IndicatorVar > problemSolution;
+	private Assignment< IndicatorNode > problemSolution;
 
 	/**
 	 * @param model
@@ -82,7 +82,7 @@ public class Tr2dTrackingModelHernan {
 		this.divisionCosts = divisionCosts;
 		this.disappearanceCosts = disappearanceCosts;
 		this.tr2dTraModel =
-				new Tr2dTrackingModel( appearanceCosts,
+				new Tr2dTrackingProblem( appearanceCosts,
 						movementCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
 						divisionCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
 						disappearanceCosts );
@@ -135,8 +135,8 @@ public class Tr2dTrackingModelHernan {
 					sumImgMovie.getLabelingSegmentsForFrame( frameId );
 			final ConflictGraph< LabelingSegment > conflictGraph =
 					sumImgMovie.getConflictGraph( frameId );
-			final Tr2dSegmentationModel segmentationProblem =
-					new Tr2dSegmentationModel( frameId, segments, segmentCosts, conflictGraph );
+			final Tr2dSegmentationProblem segmentationProblem =
+					new Tr2dSegmentationProblem( frameId, segments, segmentCosts, conflictGraph );
 			tictoc.toc( "done!" );
 
 			// =============================
@@ -166,8 +166,8 @@ public class Tr2dTrackingModelHernan {
 	 */
 	private void solveFactorGraph() {
 		final UnaryCostConstraintGraph fg = mfg.getFg();
-		final AssignmentMapper< Variable, IndicatorVar > assMapper = mfg.getAssmntMapper();
-		final Map< IndicatorVar, Variable > varMapper = mfg.getVarmap();
+		final AssignmentMapper< Variable, IndicatorNode > assMapper = mfg.getAssmntMapper();
+		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
 
 		fgSolution = null;
 		try {
@@ -184,8 +184,8 @@ public class Tr2dTrackingModelHernan {
 	 */
 	private void drawSolution() {
 		final UnaryCostConstraintGraph fg = mfg.getFg();
-		final AssignmentMapper< Variable, IndicatorVar > assMapper = mfg.getAssmntMapper();
-		final Map< IndicatorVar, Variable > varMapper = mfg.getVarmap();
+		final AssignmentMapper< Variable, IndicatorNode > assMapper = mfg.getAssmntMapper();
+		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
 
 		try {
 			this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getClassification(), new DoubleType() );
@@ -205,8 +205,8 @@ public class Tr2dTrackingModelHernan {
 
 			int time = 0;
 			int curColorId = 1;
-			for ( final Tr2dSegmentationModel segProblem : tr2dTraModel.getTimepoints() ) {
-				for ( final SegmentVar segVar : segProblem.getSegments() ) {
+			for ( final Tr2dSegmentationProblem segProblem : tr2dTraModel.getTimepoints() ) {
+				for ( final SegmentNode segVar : segProblem.getSegments() ) {
 					System.out.print(
 							"time=" + time + " - #app/#disapp = " + segVar.getInAssignments().getAppearances().size() + "/" + segVar
 									.getOutAssignments()
@@ -237,7 +237,7 @@ public class Tr2dTrackingModelHernan {
 	 * @param segVar
 	 * @param curColorId
 	 */
-	private void drawLineageWithId( final int time, final SegmentVar segVar, final int curColorId ) {
+	private void drawLineageWithId( final int time, final SegmentNode segVar, final int curColorId ) {
 		final IntervalView< DoubleType > slice = Views.hyperSlice( imgSolution, 2, time );
 
 		if ( problemSolution.getAssignment( segVar ) == 1 ) {

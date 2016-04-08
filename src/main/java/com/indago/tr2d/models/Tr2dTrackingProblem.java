@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.models.TrackingModel;
+import com.indago.models.TrackingProblem;
 import com.indago.models.assignments.AppearanceHypothesis;
 import com.indago.models.assignments.DisappearanceHypothesis;
 import com.indago.models.assignments.DivisionHypothesis;
 import com.indago.models.assignments.MovementHypothesis;
-import com.indago.models.segments.SegmentVar;
+import com.indago.models.segments.SegmentNode;
 import com.indago.old_fg.CostsFactory;
 
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 
-public class Tr2dTrackingModel implements TrackingModel {
+public class Tr2dTrackingProblem implements TrackingProblem {
 
-	private final List< Tr2dSegmentationModel > timepoints;
+	private final List< Tr2dSegmentationProblem > timepoints;
 	private final CostsFactory< LabelingSegment > appearanceCosts;
 	private final CostsFactory< Pair< LabelingSegment, LabelingSegment > > movementCosts;
 	private final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
@@ -26,7 +26,7 @@ public class Tr2dTrackingModel implements TrackingModel {
 	private double maxRelevantMovementCost = Double.MAX_VALUE;
 	private double maxRelevantDivisionCost = Double.MAX_VALUE;
 
-	public Tr2dTrackingModel(
+	public Tr2dTrackingProblem(
 			final CostsFactory< LabelingSegment > appearanceCosts,
 			final CostsFactory< Pair< LabelingSegment, LabelingSegment > > movementCosts,
 			final double maxRelevantMovementCost,
@@ -43,14 +43,14 @@ public class Tr2dTrackingModel implements TrackingModel {
 	}
 
 	@Override
-	public List< Tr2dSegmentationModel > getTimepoints() {
+	public List< Tr2dSegmentationProblem > getTimepoints() {
 		return timepoints;
 	}
 
 	/**
 	 * @param segmentationProblem
 	 */
-	public void addSegmentationProblem( final Tr2dSegmentationModel segmentationProblem ) {
+	public void addSegmentationProblem( final Tr2dSegmentationProblem segmentationProblem ) {
 		if ( timepoints.size() == 0 ) {
 			timepoints.add( segmentationProblem );
 			addAppearanceToLatestFrame( false );
@@ -70,8 +70,8 @@ public class Tr2dTrackingModel implements TrackingModel {
 	 *
 	 */
 	private void addAppearanceToLatestFrame( final boolean isFirstFrame ) {
-		final Tr2dSegmentationModel segProblem = timepoints.get( timepoints.size() - 1 );
-		for ( final SegmentVar segVar : segProblem.getSegments() ) {
+		final Tr2dSegmentationProblem segProblem = timepoints.get( timepoints.size() - 1 );
+		for ( final SegmentNode segVar : segProblem.getSegments() ) {
 			AppearanceHypothesis appHyp = null;
 			if ( isFirstFrame ) {
 				appHyp = new AppearanceHypothesis( appearanceCosts.getCost( segProblem.getLabelingSegment( segVar ) ), segVar );
@@ -86,8 +86,8 @@ public class Tr2dTrackingModel implements TrackingModel {
 	 *
 	 */
 	private void addDisappearanceToLatestFrame() {
-		final Tr2dSegmentationModel segProblem = timepoints.get( timepoints.size() - 1 );
-		for ( final SegmentVar segVar : segProblem.getSegments() ) {
+		final Tr2dSegmentationProblem segProblem = timepoints.get( timepoints.size() - 1 );
+		for ( final SegmentNode segVar : segProblem.getSegments() ) {
 			final DisappearanceHypothesis disappHyp =
 					new DisappearanceHypothesis( disappearanceCosts
 							.getCost( segProblem.getLabelingSegment( segVar ) ), segVar );
@@ -101,8 +101,8 @@ public class Tr2dTrackingModel implements TrackingModel {
 	 * This is usually the last method to be called when creating the model.
 	 */
 	public void addDummyDisappearanceToFinishModel() {
-		final Tr2dSegmentationModel segProblem = timepoints.get( timepoints.size() - 1 );
-		for ( final SegmentVar segVar : segProblem.getSegments() ) {
+		final Tr2dSegmentationProblem segProblem = timepoints.get( timepoints.size() - 1 );
+		for ( final SegmentNode segVar : segProblem.getSegments() ) {
 			final DisappearanceHypothesis disappHyp = new DisappearanceHypothesis( 0, segVar );
 			segVar.getOutAssignments().add( disappHyp );
 		}
@@ -112,10 +112,10 @@ public class Tr2dTrackingModel implements TrackingModel {
 	 *
 	 */
 	private void addMovesToLatestFramePair() {
-		final Tr2dSegmentationModel segProblemL = timepoints.get( timepoints.size() - 2 );
-		final Tr2dSegmentationModel segProblemR = timepoints.get( timepoints.size() - 1 );
-		for ( final SegmentVar segVarL : segProblemL.getSegments() ) {
-			for ( final SegmentVar segVarR : segProblemR.getSegments() ) {
+		final Tr2dSegmentationProblem segProblemL = timepoints.get( timepoints.size() - 2 );
+		final Tr2dSegmentationProblem segProblemR = timepoints.get( timepoints.size() - 1 );
+		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
+			for ( final SegmentNode segVarR : segProblemR.getSegments() ) {
 				final double cost = movementCosts.getCost(
 						new ValuePair< LabelingSegment, LabelingSegment >(
 								segProblemL.getLabelingSegment(	segVarL ),
@@ -134,11 +134,11 @@ public class Tr2dTrackingModel implements TrackingModel {
 	 *
 	 */
 	private void addDivisionsToLatestFramePair() {
-		final Tr2dSegmentationModel segProblemL = timepoints.get( timepoints.size() - 2 );
-		final Tr2dSegmentationModel segProblemR = timepoints.get( timepoints.size() - 1 );
-		for ( final SegmentVar segVarL : segProblemL.getSegments() ) {
-			for ( final SegmentVar segVarR1 : segProblemR.getSegments() ) {
-				for ( final SegmentVar segVarR2 : segProblemR.getSegments() ) {
+		final Tr2dSegmentationProblem segProblemL = timepoints.get( timepoints.size() - 2 );
+		final Tr2dSegmentationProblem segProblemR = timepoints.get( timepoints.size() - 1 );
+		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
+			for ( final SegmentNode segVarR1 : segProblemR.getSegments() ) {
+				for ( final SegmentNode segVarR2 : segProblemR.getSegments() ) {
 					// avoid double enumerations
 					if ( segVarR2.hashCode() < segVarR1.hashCode() ) {
 						continue;

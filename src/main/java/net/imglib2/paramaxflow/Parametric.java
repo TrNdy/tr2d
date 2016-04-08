@@ -1,6 +1,6 @@
 package net.imglib2.paramaxflow;
 
-import com.indago.tr2d.ui.view.Tr2dPanel;
+import com.indago.tr2d.ui.view.Tr2dMainPanel;
 
 
 public class Parametric
@@ -9,7 +9,7 @@ public class Parametric
 	{
 		// Version number is added for loading the proper native library
 		NarHelper
-				.loadLibrary( Tr2dPanel.class, "net.imglib2", "paramaxflow-jni", "1.0.0-SNAPSHOT" );
+				.loadLibrary( Tr2dMainPanel.class, "net.imglib2", "paramaxflow-jni", "1.0.0-SNAPSHOT" );
 	}
 
 	private final long ptr_this;

@@ -1,4 +1,4 @@
-import com.indago.tr2d.ui.view.Tr2dPanel;
+import com.indago.tr2d.ui.view.Tr2dMainPanel;
 
 import ij.IJ;
 import ij.ImageJ;
@@ -18,7 +18,7 @@ public class tr2d_ implements PlugIn {
 	 */
 	@Override
 	public void run( final String arg ) {
-		Tr2dPanel.main( null );
+		Tr2dMainPanel.main( null );
 	}
 
 	/**

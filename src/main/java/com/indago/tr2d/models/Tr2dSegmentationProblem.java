@@ -6,39 +6,39 @@ import java.util.List;
 
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.models.SegmentationModel;
-import com.indago.models.assignments.AssignmentVars;
+import com.indago.models.SegmentationProblem;
+import com.indago.models.assignments.AssignmentNodes;
 import com.indago.models.segments.ConflictSet;
-import com.indago.models.segments.SegmentVar;
+import com.indago.models.segments.SegmentNode;
 import com.indago.old_fg.CostsFactory;
 import com.indago.util.Bimap;
 
-public class Tr2dSegmentationModel implements SegmentationModel {
+public class Tr2dSegmentationProblem implements SegmentationProblem {
 
 	private final int time;
 	private final CostsFactory< LabelingSegment > segmentCosts;
 
-	private final Collection< SegmentVar > segments;
+	private final Collection< SegmentNode > segments;
 	private final ConflictGraph< LabelingSegment > conflictGraph;
-	private final AssignmentVars inAssignments;
-	private final AssignmentVars outAssignments;
+	private final AssignmentNodes inAssignments;
+	private final AssignmentNodes outAssignments;
 
-	private final Bimap< SegmentVar, LabelingSegment > segmentBimap;
+	private final Bimap< SegmentNode, LabelingSegment > segmentBimap;
 
-	public Tr2dSegmentationModel(
+	public Tr2dSegmentationProblem(
 			final int time,
 			final List< LabelingSegment > labelingSegments,
 			final CostsFactory< LabelingSegment > segmentCosts,
 			final ConflictGraph< LabelingSegment > conflictGraph ) {
-		inAssignments = new AssignmentVars();
-		outAssignments = new AssignmentVars();
+		inAssignments = new AssignmentNodes();
+		outAssignments = new AssignmentNodes();
 		segmentBimap = new Bimap< >();
 
 		this.time = time;
 		this.segmentCosts = segmentCosts;
 		this.conflictGraph = conflictGraph;
 
-		segments = new ArrayList< SegmentVar >();
+		segments = new ArrayList< SegmentNode >();
 		createSegmentVars( labelingSegments );
 	}
 
@@ -48,15 +48,15 @@ public class Tr2dSegmentationModel implements SegmentationModel {
 	 */
 	private void createSegmentVars( final List< LabelingSegment > labelingSegments ) {
 		for ( final LabelingSegment labelingSegment : labelingSegments ) {
-			final SegmentVar segVar =
-					new SegmentVar( labelingSegment, segmentCosts.getCost( labelingSegment ) );
+			final SegmentNode segVar =
+					new SegmentNode( labelingSegment, segmentCosts.getCost( labelingSegment ) );
 			segments.add( segVar );
 			segmentBimap.add( segVar, labelingSegment );
 		}
 	}
 
 	/**
-	 * @see com.indago.models.SegmentationModel#getTime()
+	 * @see com.indago.models.SegmentationProblem#getTime()
 	 */
 	@Override
 	public int getTime() {
@@ -64,15 +64,15 @@ public class Tr2dSegmentationModel implements SegmentationModel {
 	}
 
 	/**
-	 * @see com.indago.models.SegmentationModel#getSegments()
+	 * @see com.indago.models.SegmentationProblem#getSegments()
 	 */
 	@Override
-	public Collection< SegmentVar > getSegments() {
+	public Collection< SegmentNode > getSegments() {
 		return segments;
 	}
 
 	/**
-	 * @see com.indago.models.SegmentationModel#getConflictSets()
+	 * @see com.indago.models.SegmentationProblem#getConflictSets()
 	 */
 	@Override
 	public Collection< ConflictSet > getConflictSets() {
@@ -87,11 +87,11 @@ public class Tr2dSegmentationModel implements SegmentationModel {
 		return ret;
 	}
 
-	public SegmentVar getSegmentVar( final LabelingSegment segment ) {
+	public SegmentNode getSegmentVar( final LabelingSegment segment ) {
 		return segmentBimap.getA( segment );
 	}
 
-	public LabelingSegment getLabelingSegment( final SegmentVar segment ) {
+	public LabelingSegment getLabelingSegment( final SegmentNode segment ) {
 		return segmentBimap.getB( segment );
 	}
 }

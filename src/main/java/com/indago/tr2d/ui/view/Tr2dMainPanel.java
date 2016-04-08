@@ -43,9 +43,9 @@ import view.component.IddeaComponent;
 /**
  * @author jug
  */
-public class Tr2dPanel extends JPanel implements ActionListener, ChangeListener {
+public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListener {
 
-	private static Tr2dPanel main;
+	private static Tr2dMainPanel main;
 	private final Tr2dModel model;
 
 	private static JFrame guiFrame;
@@ -62,7 +62,7 @@ public class Tr2dPanel extends JPanel implements ActionListener, ChangeListener 
 	 * @param imgPlus
 	 */
 	@SuppressWarnings( { "rawtypes", "unchecked" } )
-	public Tr2dPanel( final Frame frame, final Tr2dModel model ) {
+	public Tr2dMainPanel( final Frame frame, final Tr2dModel model ) {
 		super( new BorderLayout( 5, 5 ) );
 
 		setBorder( BorderFactory.createEmptyBorder( 10, 15, 5, 15 ) );
@@ -179,7 +179,7 @@ public class Tr2dPanel extends JPanel implements ActionListener, ChangeListener 
 
 		guiFrame = new JFrame( "tr2d" );
 		final Tr2dModel model = new Tr2dModel( imgPlus );
-		main = new Tr2dPanel( guiFrame, model );
+		main = new Tr2dMainPanel( guiFrame, model );
 
 		guiFrame.add( main );
 		guiFrame.setVisible( true );
