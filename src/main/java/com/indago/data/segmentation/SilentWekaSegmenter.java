@@ -16,6 +16,7 @@ import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.view.Views;
 import trainableSegmentation.WekaSegmentation;
 
 /**
@@ -53,7 +54,25 @@ public class SilentWekaSegmenter< T extends NumericType< T > > {
 	public RandomAccessibleInterval< DoubleType > classifyPixels( final RandomAccessibleInterval< T > img, final boolean probabilityMaps ) {
 		final List< RandomAccessibleInterval< T >> rais = new ArrayList< RandomAccessibleInterval< T >>();
 		rais.add( img );
-		return ( classifyPixels( rais, probabilityMaps ) ).get( 0 );
+		final List< RandomAccessibleInterval< DoubleType > > result = classifyPixels( rais, probabilityMaps );
+		return result.get( 0 );
+	}
+
+	public RandomAccessibleInterval< DoubleType > classifyPixelSlicesInThreads(
+			final RandomAccessibleInterval< T > img,
+			final int sliceDimension,
+			final boolean probabilityMaps ) {
+		final List< RandomAccessibleInterval< T > > rais = new ArrayList< RandomAccessibleInterval< T > >();
+		for ( long i = img.min( sliceDimension ); i <= img.max( sliceDimension ); i++ ) {
+			rais.add( Views.hyperSlice( img, sliceDimension, i ) );
+		}
+		final List< RandomAccessibleInterval< DoubleType > > slices3d = classifyPixels( rais, probabilityMaps );
+		final List< RandomAccessibleInterval< DoubleType > > slices = new ArrayList< >();
+		for ( int i = 0; i < slices3d.size(); i++ ) {
+			slices.add( Views.hyperSlice( slices3d.get( i ), 2, 0 ) );
+			slices.add( Views.hyperSlice( slices3d.get( i ), 2, 1 ) );
+		}
+		return Views.stack( slices );
 	}
 
 	public List< RandomAccessibleInterval< DoubleType >> classifyPixels( final List< RandomAccessibleInterval< T >> raiList, final boolean probabilityMaps ) {
@@ -93,7 +112,6 @@ public class SilentWekaSegmenter< T extends NumericType< T > > {
 					System.out.println( "Processing image " + ( i + 1 ) + " in thread " + ( numThread + 1 ) );
 
 					final ImagePlus segmentation = wekaSegmentation.applyClassifier( forWekaImagePlus, numFurtherThreads, probabilityMaps );
-//					segmentation.
 
 					if ( null != segmentation ) {
 						final RandomAccessibleInterval< ? > temp =

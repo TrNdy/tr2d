@@ -13,6 +13,6 @@ public class Tr2dProperties {
 			System.getProperty( "user.dir" ) + "/src/main/resources";
 
 	public static final String CLASSIFIER_PATH =
-			"/Volumes/FastData/ProjectHernan/Classifier/SimpleF01.model";
+			"/Users/jug/MPI/ProjectHernan/Classifier/SimpleF01.model";
 //			System.getProperty( "user.dir" ) + "/src/main/resources";
 }

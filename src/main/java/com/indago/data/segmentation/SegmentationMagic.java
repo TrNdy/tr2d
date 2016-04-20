@@ -47,7 +47,8 @@ public class SegmentationMagic {
 	}
 
 	public static RandomAccessibleInterval< DoubleType > returnClassification( final RandomAccessibleInterval< DoubleType > rai ) {
-		lastClassified = wekaClassifier.classifyPixels( rai, true );
+//		lastClassified = wekaClassifier.classifyPixels( rai, true );
+		lastClassified = wekaClassifier.classifyPixelSlicesInThreads( rai, 2, true );
 
 		final long[] min = new long[ lastClassified.numDimensions() ];
 		lastClassified.min( min );
