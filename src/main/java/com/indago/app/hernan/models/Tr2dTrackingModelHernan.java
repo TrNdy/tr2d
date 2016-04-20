@@ -48,7 +48,7 @@ public class Tr2dTrackingModelHernan {
 
 	private final Tr2dModel tr2dModel;
 	private final Tr2dWekaSegmentationModel tr2dSegModel;
-	private final Tr2dTrackingProblem tr2dTraModel;
+	private final Tr2dTrackingProblem tr2dTraProblem;
 
 	private final SumImageMovieSequence sumImgMovie;
 
@@ -81,7 +81,7 @@ public class Tr2dTrackingModelHernan {
 		this.moveCosts = movementCosts;
 		this.divisionCosts = divisionCosts;
 		this.disappearanceCosts = disappearanceCosts;
-		this.tr2dTraModel =
+		this.tr2dTraProblem =
 				new Tr2dTrackingProblem( appearanceCosts,
 						movementCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
 						divisionCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
@@ -143,10 +143,10 @@ public class Tr2dTrackingModelHernan {
 			// add it to Tr2dTrackingProblem
 			// =============================
 			tictoc.tic( "Connect it to Tr2dTrackingProblem..." );
-			tr2dTraModel.addSegmentationProblem( segmentationProblem );
+			tr2dTraProblem.addSegmentationProblem( segmentationProblem );
 			tictoc.toc( "done!" );
 		}
-		tr2dTraModel.addDummyDisappearanceToFinishModel();
+		tr2dTraProblem.addDummyDisappearanceToFinishModel();
 
 		System.out.println( "Tracking graph was built sucessfully!" );
 	}
@@ -157,7 +157,7 @@ public class Tr2dTrackingModelHernan {
 	public void buildFactorGraph() {
 		final TicToc tictoc = new TicToc();
 		tictoc.tic( "Constructing FactorGraph for created Tr2dTrackingProblem..." );
-		mfg = FactorGraphFactory.createFactorGraph( tr2dTraModel );
+		mfg = FactorGraphFactory.createFactorGraph( tr2dTraProblem );
 		tictoc.toc( "done!" );
 	}
 
@@ -205,7 +205,7 @@ public class Tr2dTrackingModelHernan {
 
 			int time = 0;
 			int curColorId = 1;
-			for ( final Tr2dSegmentationProblem segProblem : tr2dTraModel.getTimepoints() ) {
+			for ( final Tr2dSegmentationProblem segProblem : tr2dTraProblem.getTimepoints() ) {
 				for ( final SegmentNode segVar : segProblem.getSegments() ) {
 					System.out.print(
 							"time=" + time + " - #app/#disapp = " + segVar.getInAssignments().getAppearances().size() + "/" + segVar

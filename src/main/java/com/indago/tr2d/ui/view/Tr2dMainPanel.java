@@ -91,6 +91,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		final Tr2dWekaSegmentationModel segModel = new Tr2dWekaSegmentationModel( model );
 		tabSegmentation = new Tr2dWekaSegmentationPanel( segModel );
 		final RandomAccessibleInterval< DoubleType > imgOrig = model.getImgOrig();
+		//TODO this should at some point be a given model, not fixed the Hernan thing...
 		tabTracking =
 				new Tr2dTrackingPanel(
 						new Tr2dTrackingModelHernan( model, segModel,

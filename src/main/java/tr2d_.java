@@ -41,14 +41,17 @@ public class tr2d_ implements PlugIn {
 		// start ImageJ
 		new ImageJ();
 
+		final String folder = "/Users/jug/MPI/ProjectHernan"; //Florian
+//		final String folder = "/Users/jug/MPI/ProjectHernan"; //Tobi
+
 //		final ImagePlus image = IJ.openImage(
-//				"/Users/jug/MPI/ProjectHernan/DebugStack00.tif" );
+//				folder + "/DebugStack00.tif" );
 //		final ImagePlus image = IJ.openImage(
-//				"/Users/jug/MPI/ProjectHernan/DebugStack03-crop1.tif" );
+//				folder + "/DebugStack03-crop1.tif" );
 		final ImagePlus image = IJ.openImage(
-				"/Users/jug/MPI/ProjectHernan/DebugStack03.tif" );
+				folder + "/DebugStack03.tif" );
 //		final ImagePlus image = IJ.openImage(
-//				"/Volumes/FastData/ProjectHernan/HarderDataSet/2015-03-27-P2P-MS2-PP7-lacZ-His_023.tif" );
+//				folder + "/HarderDataSet/2015-03-27-P2P-MS2-PP7-lacZ-His_023.tif" );
 		image.show();
 
 		// run the plugin
