@@ -140,7 +140,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			for ( final SegmentNode segVarR1 : segProblemR.getSegments() ) {
 				for ( final SegmentNode segVarR2 : segProblemR.getSegments() ) {
 					// avoid double enumerations
-					if ( segVarR2.hashCode() < segVarR1.hashCode() ) {
+					if ( segVarR2.hashCode() < segVarR1.hashCode() || segVarR1.equals( segVarR2 ) ) {
 						continue;
 					}
 					final double cost = divisionCosts.getCost(
