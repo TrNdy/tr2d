@@ -61,11 +61,38 @@ public class Tr2dApplication {
 		checkGurobiAvailability();
 
 		if ( inputStack == null ) {
-			inputStack = OsDependentFileChooser.showLoadFileChooser(
+			final Object[] options = { "Tr2d Project...", "TIFF Stack..." };
+			final int choice = JOptionPane.showOptionDialog(
 					guiFrame,
-					Tr2dProperties.RAW_DATA_PATH,
-					"Load input tiff stack...",
-					new ExtensionFileFilter( "tif", "TIFF Image Stack" ) );
+					"Please choose an input type to be opened.",
+					"Open...",
+					JOptionPane.DEFAULT_OPTION,
+					JOptionPane.QUESTION_MESSAGE,
+					null,
+					options,
+					options[ 0 ] );
+			if ( choice == 0 ) {
+				projectFolderBasePath = OsDependentFileChooser.showLoadFolderChooser(
+						guiFrame,
+						Tr2dProperties.DEFAULT_BASE_PATH,
+						"Choose tr2d project folder..." );
+				if ( projectFolderBasePath == null ) {
+					System.exit( 1 );
+				}
+				inputStack = new File( ProjectData.RAW_DATA.getAbsPathIn( projectFolderBasePath.getAbsolutePath() ) );
+				if ( !inputStack.canRead() || !inputStack.exists() ) {
+					final String msg = "Project folder empty, read protected, or invalid!";
+					JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
+					System.out.println( "ERROR: " + msg );
+					System.exit( 1 );
+				}
+			} else if ( choice == 1 ) {
+				inputStack = OsDependentFileChooser.showLoadFileChooser(
+						guiFrame,
+						Tr2dProperties.RAW_DATA_PATH,
+						"Load input tiff stack...",
+						new ExtensionFileFilter( "tif", "TIFF Image Stack" ) );
+			}
 			if ( inputStack == null ) {
 				System.exit( 1 );
 			}

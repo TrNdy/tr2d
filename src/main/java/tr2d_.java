@@ -1,7 +1,6 @@
 import com.indago.app.hernan.Tr2dApplication;
 
 import ij.IJ;
-import ij.ImageJ;
 import ij.ImagePlus;
 import ij.plugin.PlugIn;
 
@@ -37,22 +36,6 @@ public class tr2d_ implements PlugIn {
 		final String url = clazz.getResource("/" + clazz.getName().replace('.', '/') + ".class").toString();
 		final String pluginsDir = url.substring(5, url.length() - clazz.getName().length() - 6);
 		System.setProperty("plugins.dir", pluginsDir);
-
-		// start ImageJ
-		new ImageJ();
-
-		final String folder = "/Users/jug/MPI/ProjectHernan"; //Florian
-//		final String folder = "/Users/jug/MPI/ProjectHernan"; //Tobi
-
-//		final ImagePlus image = IJ.openImage(
-//				folder + "/DebugStack00.tif" );
-//		final ImagePlus image = IJ.openImage(
-//				folder + "/DebugStack03-crop1.tif" );
-//		final ImagePlus image = IJ.openImage(
-//				folder + "/DebugStack03.tif" );
-//		final ImagePlus image = IJ.openImage(
-//				folder + "/HarderDataSet/2015-03-27-P2P-MS2-PP7-lacZ-His_023.tif" );
-//		image.show();
 
 		// run the plugin
 		IJ.runPlugIn(clazz.getName(), "");
