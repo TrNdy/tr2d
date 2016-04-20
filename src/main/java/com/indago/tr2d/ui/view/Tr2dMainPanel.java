@@ -79,21 +79,9 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 	private void buildGui() {
 
+		// === TAB DATA ===========================================================================
 		tabs = new JTabbedPane();
 		tabData = new JPanel( new BorderLayout() );
-		final Tr2dWekaSegmentationModel segModel = new Tr2dWekaSegmentationModel( model );
-		tabSegmentation = new Tr2dWekaSegmentationPanel( segModel );
-		final RandomAccessibleInterval< DoubleType > imgOrig = model.getImgOrig();
-		//TODO this should at some point be a given model, not fixed the Hernan thing...
-		tabTracking =
-				new Tr2dTrackingPanel(
-						new Tr2dTrackingModelHernan( model, segModel,
-								new HernanSegmentCostFactory( imgOrig ),
-								new HernanAppearanceCostFactory( imgOrig ),
-								new HernanMappingCostFactory( imgOrig ),
-								new HernanDivisionCostFactory( imgOrig ),
- new HernanDisappearanceCostFactory( imgOrig ) ) );
-
 		icData = new IddeaComponent( model.getImgOrigNorm() );
 		icData.showMenu( false );
 		icData.setToolBarLocation( BorderLayout.WEST );
@@ -103,6 +91,24 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 //		icData.showStackSlider( true );
 //		icData.showTimeSlider( true );
 		tabData.add( icData, BorderLayout.CENTER );
+
+		// === TAB SEGMENTATION ===================================================================
+		final Tr2dWekaSegmentationModel segModel = new Tr2dWekaSegmentationModel( model );
+		tabSegmentation = new Tr2dWekaSegmentationPanel( segModel );
+
+		// === TAB TRACKING========================================================================
+		final RandomAccessibleInterval< DoubleType > imgOrig = model.getImgOrig();
+		//TODO this should at some point be a given model, not fixed the Hernan thing...
+		tabTracking =
+				new Tr2dTrackingPanel(
+						new Tr2dTrackingModelHernan( model, segModel,
+								new HernanSegmentCostFactory( imgOrig ),
+								new HernanAppearanceCostFactory( imgOrig ),
+								new HernanMappingCostFactory( imgOrig ),
+								new HernanDivisionCostFactory( imgOrig ),
+								new HernanDisappearanceCostFactory( imgOrig ) ) );
+
+		// --- ASSEMBLE PANEL ---------------------------------------------------------------------
 
 		tabs.add( "Dataset", tabData );
 		tabs.add( "Segmentation", tabSegmentation );

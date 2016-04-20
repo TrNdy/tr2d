@@ -3,6 +3,8 @@
  */
 package com.indago.tr2d.ui.model;
 
+import java.io.File;
+
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.DoubleType;
@@ -16,12 +18,16 @@ public class Tr2dModel {
 	private RandomAccessibleInterval< DoubleType > imgOrig;
 	private RandomAccessibleInterval< DoubleType > imgOrigNorm;
 
+	private final File projectFolderBasePath;
+
 	/**
 	 *
+	 * @param projectFolderBasePath
 	 * @param imgPlus
 	 */
-	public Tr2dModel( final ImagePlus imgPlus ) {
+	public Tr2dModel( final File projectFolderBasePath, final ImagePlus imgPlus ) {
 		this.imgPlus = imgPlus;
+		this.projectFolderBasePath = projectFolderBasePath;
 	}
 
 	/**
@@ -59,6 +65,13 @@ public class Tr2dModel {
 	 */
 	public void setImgOrigNorm( final RandomAccessibleInterval< DoubleType > imgOrigNorm ) {
 		this.imgOrigNorm = imgOrigNorm;
+	}
+
+	/**
+	 * @return the projectFolderBasePath
+	 */
+	public File getProjectFolderBasePath() {
+		return projectFolderBasePath;
 	}
 
 }

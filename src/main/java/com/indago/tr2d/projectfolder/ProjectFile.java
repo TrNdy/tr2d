@@ -29,22 +29,38 @@ public class ProjectFile {
 	}
 
 	public String getRelPath() {
-		return path + File.separator + filename;
+		if ( filename.equals( "" ) ) {
+			return path;
+		} else {
+			if ( path.equals( "" ) ) {
+				return filename;
+			} else {
+				return path + File.separator + filename;
+			}
+		}
 	}
 
-	public String getAbsPathIn( final String projectBasePath ) {
+	public String getAbsolutePathIn( final String projectBasePath ) {
 		return projectBasePath + File.separator + getRelPath();
 	}
 
+	public String getAbsolutePathIn( final File projectBasePath ) {
+		return projectBasePath.getAbsolutePath() + File.separator + getRelPath();
+	}
+
 	public boolean existsIn( final String projectBasePath ) {
-		return new File( getAbsPathIn( projectBasePath ) ).exists();
+		return existsIn( new File( getAbsolutePathIn( projectBasePath ) ) );
+	}
+
+	public boolean existsIn( final File projectBasePath ) {
+		return projectBasePath.exists();
 	}
 
 	public boolean readableIn( final String projectBasePath ) {
-		return new File( getAbsPathIn( projectBasePath ) ).canRead();
+		return new File( getAbsolutePathIn( projectBasePath ) ).canRead();
 	}
 
 	public boolean writeableIn( final String projectBasePath ) {
-		return new File( getAbsPathIn( projectBasePath ) ).canWrite();
+		return new File( getAbsolutePathIn( projectBasePath ) ).canWrite();
 	}
 }

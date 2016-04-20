@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -14,11 +15,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
-import com.indago.tr2d.Tr2dProperties;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.tr2d.ui.util.JDoubleListTextPane;
 import com.indago.tr2d.ui.util.OsDependentFileChooser;
 
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.real.DoubleType;
 import view.component.IddeaComponent;
 import weka.gui.ExtensionFileFilter;
 
@@ -53,7 +55,11 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 		lblClassifier = new JLabel( "classifier: " );
 		txtClassifierPath = new JTextPane();
-		txtClassifierPath.setText( modelWekaSeg.getClassifierPath() );
+		String fn = "";
+		try {
+			fn = modelWekaSeg.getClassifierFilenames().get( 0 );
+		} catch ( final IndexOutOfBoundsException e ) {}
+		txtClassifierPath.setText( fn );
 		bOpenClassifier = new JButton( "pick classifier" );
 		bOpenClassifier.addActionListener( this );
 
@@ -76,7 +82,11 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 		helper.add( bStartSegmentation );
 
-		icSegmentation = new IddeaComponent();
+		if ( modelWekaSeg.getSegmentHypotheses() != null ) {
+			icSegmentation = new IddeaComponent( modelWekaSeg.getSegmentHypotheses() );
+		} else {
+			icSegmentation = new IddeaComponent();
+		}
 		icSegmentation.showMenu( false );
 		icSegmentation.setToolBarLocation( BorderLayout.WEST );
 		icSegmentation.setToolBarVisible( false );
@@ -109,7 +119,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 				new ExtensionFileFilter( new String[] { "model", "MODEL" }, "weka-model-file" );
 		final File file = OsDependentFileChooser.showLoadFileChooser(
 				this,
-				Tr2dProperties.CLASSIFIER_PATH,
+				"",
 				"Classifier to be loaded...",
 				eff );
 		if ( file != null ) {
@@ -122,7 +132,9 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 	 */
 	private void actionStartSegmentaion() {
 		try {
-			modelWekaSeg.setClassifierPath( txtClassifierPath.getText() );
+			final ArrayList< String > paths = new ArrayList< >();
+			paths.add( txtClassifierPath.getText() );
+			modelWekaSeg.setClassifierPaths( paths );
 		} catch ( final IllegalArgumentException iae ) {
 			JOptionPane.showMessageDialog(
 					this,
@@ -146,15 +158,15 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		// in case all could be set fine:
 		modelWekaSeg.segment();
 
-		try {
-			icSegmentation.setSourceImage( modelWekaSeg.getSegmentHypotheses() );
-		} catch ( final IllegalAccessException e ) {
+		final RandomAccessibleInterval< DoubleType > seghyps = modelWekaSeg.getSegmentHypotheses();
+		if ( seghyps == null ) {
 			JOptionPane.showMessageDialog(
 					this,
-					e.getMessage(),
+					"Raw image data could not be segmented.",
 					"Segmentation error...",
 					JOptionPane.ERROR_MESSAGE );
-			e.printStackTrace();
+		} else {
+			icSegmentation.setSourceImage( seghyps );
 		}
 	}
 

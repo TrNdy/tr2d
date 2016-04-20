@@ -187,50 +187,45 @@ public class Tr2dTrackingModelHernan {
 		final AssignmentMapper< Variable, IndicatorNode > assMapper = mfg.getAssmntMapper();
 		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
 
-		try {
-			this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getClassification(), new DoubleType() );
+		this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getClassification(), new DoubleType() );
 
-//			int time = 0;
-//			for ( final Tr2dSegmentationModel segProblem : tr2dTraModel.getTimepoints() ) {
-//				final IntervalView< DoubleType > slice = Views.hyperSlice( imgSolution, 2, time );
+//		int time = 0;
+//		for ( final Tr2dSegmentationModel segProblem : tr2dTraModel.getTimepoints() ) {
+//			final IntervalView< DoubleType > slice = Views.hyperSlice( imgSolution, 2, time );
 //
-//				for ( final SegmentVar segVar : segProblem.getSegments() ) {
-//					if ( problemSolution.getAssignment( segVar ) == 1 ) {
-//						final IterableRegion< ? > region = segVar.getSegment().getRegion();
-//						Regions.sample( region, slice ).forEach( t -> t.set( t.get() + 1 ) );
-//					}
+//			for ( final SegmentVar segVar : segProblem.getSegments() ) {
+//				if ( problemSolution.getAssignment( segVar ) == 1 ) {
+//					final IterableRegion< ? > region = segVar.getSegment().getRegion();
+//					Regions.sample( region, slice ).forEach( t -> t.set( t.get() + 1 ) );
 //				}
-//				time++;
 //			}
+//			time++;
+//		}
 
-			int time = 0;
-			int curColorId = 1;
-			for ( final Tr2dSegmentationProblem segProblem : tr2dTraProblem.getTimepoints() ) {
-				for ( final SegmentNode segVar : segProblem.getSegments() ) {
-					System.out.print(
-							"time=" + time + " - #app/#disapp = " + segVar.getInAssignments().getAppearances().size() + "/" + segVar
-									.getOutAssignments()
-									.getDisappearances()
-									.size() + "\t" );
-					for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
-						System.out.print( "" + problemSolution.getAssignment( app ) );
-						if ( problemSolution.getAssignment( app ) == 1 ) { // || time == 0
-							drawLineageWithId( time, segVar, 10 + curColorId );
-							curColorId++;
-						}
-					}
-					for ( final DisappearanceHypothesis disapp : segVar.getOutAssignments().getDisappearances() ) {
-						System.out.println( "/" + problemSolution.getAssignment( disapp ) );
+		int time = 0;
+		int curColorId = 1;
+		for ( final Tr2dSegmentationProblem segProblem : tr2dTraProblem.getTimepoints() ) {
+			for ( final SegmentNode segVar : segProblem.getSegments() ) {
+				System.out.print(
+						"time=" + time + " - #app/#disapp = " + segVar.getInAssignments().getAppearances().size() + "/" + segVar
+								.getOutAssignments()
+								.getDisappearances()
+								.size() + "\t" );
+				for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
+					System.out.print( "" + problemSolution.getAssignment( app ) );
+					if ( problemSolution.getAssignment( app ) == 1 ) { // || time == 0
+						drawLineageWithId( time, segVar, 10 + curColorId );
+						curColorId++;
 					}
 				}
-				time++;
+				for ( final DisappearanceHypothesis disapp : segVar.getOutAssignments().getDisappearances() ) {
+					System.out.println( "/" + problemSolution.getAssignment( disapp ) );
+				}
 			}
-
-			ImageJFunctions.show( imgSolution, "Solution" );
-
-		} catch ( final IllegalAccessException e ) {
-			e.printStackTrace();
+			time++;
 		}
+
+		ImageJFunctions.show( imgSolution, "Solution" );
 	}
 
 	/**
