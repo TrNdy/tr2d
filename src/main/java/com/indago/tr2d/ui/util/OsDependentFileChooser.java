@@ -9,6 +9,7 @@ import java.io.File;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
@@ -28,12 +29,18 @@ public class OsDependentFileChooser {
 
 		JFrame frame = null;
 		try {
-			frame = ( JFrame ) SwingUtilities.getWindowAncestor( parent );
+			if ( parent instanceof JFrame ) {
+				frame = ( JFrame ) parent;
+			} else {
+				frame = ( JFrame ) SwingUtilities.getWindowAncestor( parent );
+			}
 		} catch ( final ClassCastException e ) {
 			frame = null;
 		}
 
 		if ( OSValidator.isMac() && frame != null ) {
+
+			JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a folder...", JOptionPane.INFORMATION_MESSAGE );
 
 			System.setProperty( "apple.awt.fileDialogForDirectories", "true" );
 			final FileDialog fd = new FileDialog( frame, title, FileDialog.LOAD );
@@ -82,12 +89,18 @@ public class OsDependentFileChooser {
 
 		JFrame frame = null;
 		try {
-			frame = ( JFrame ) SwingUtilities.getWindowAncestor( parent );
+			if ( parent instanceof JFrame ) {
+				frame = ( JFrame ) parent;
+			} else {
+				frame = ( JFrame ) SwingUtilities.getWindowAncestor( parent );
+			}
 		} catch ( final ClassCastException e ) {
 			frame = null;
 		}
 
 		if ( OSValidator.isMac() && frame != null ) {
+
+			JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a folder...", JOptionPane.INFORMATION_MESSAGE );
 
 			System.setProperty( "apple.awt.fileDialogForDirectories", "true" );
 			final FileDialog fd = new FileDialog( frame, title );
@@ -139,12 +152,18 @@ public class OsDependentFileChooser {
 
 		JFrame frame = null;
 		try {
-			frame = ( JFrame ) SwingUtilities.getWindowAncestor( parent );
+			if ( parent instanceof JFrame ) {
+				frame = ( JFrame ) parent;
+			} else {
+				frame = ( JFrame ) SwingUtilities.getWindowAncestor( parent );
+			}
 		} catch ( final ClassCastException e ) {
 			frame = null;
 		}
 
 		if ( OSValidator.isMac() && frame != null ) {
+
+			JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a file...", JOptionPane.INFORMATION_MESSAGE );
 
 			final FileDialog fd = new FileDialog( frame, title, FileDialog.SAVE );
 			fd.setDirectory( path );
@@ -205,13 +224,18 @@ public class OsDependentFileChooser {
 
 		JFrame frame = null;
 		try {
-			frame = ( JFrame ) SwingUtilities.getWindowAncestor( parent );
+			if ( parent instanceof JFrame ) {
+				frame = ( JFrame ) parent;
+			} else {
+				frame = ( JFrame ) SwingUtilities.getWindowAncestor( parent );
+			}
 		} catch ( final ClassCastException e ) {
 			frame = null;
 		}
 
 		if ( OSValidator.isMac() && frame != null ) {
 
+			JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a file...", JOptionPane.INFORMATION_MESSAGE );
 			final FileDialog fd = new FileDialog( frame, title, FileDialog.LOAD );
 			fd.setDirectory( path );
 			fd.setFilenameFilter( fileFilter );

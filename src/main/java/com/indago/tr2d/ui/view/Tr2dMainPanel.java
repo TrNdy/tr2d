@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
@@ -28,10 +27,6 @@ import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.converter.RealDoubleNormalizeConverter;
 
-import ij.IJ;
-import ij.ImageJ;
-import ij.ImagePlus;
-import ij.WindowManager;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.ImagePlusAdapter;
@@ -45,11 +40,9 @@ import view.component.IddeaComponent;
  */
 public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListener {
 
-	private static Tr2dMainPanel main;
-	private final Tr2dModel model;
-
-	private static JFrame guiFrame;
 	private final Frame frame;
+
+	private final Tr2dModel model;
 
 	private JTabbedPane tabs;
 	private JPanel tabData;
@@ -155,34 +148,5 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	@Override
 	public void stateChanged( final ChangeEvent e ) {
 		// TODO Auto-generated method stub
-	}
-
-	public static void main( final String[] args ) {
-		ImageJ temp = IJ.getInstance();
-
-		if ( temp == null ) {
-			temp = new ImageJ();
-
-			if ( args.length > 0 ) {
-				IJ.open( args[ 0 ] );
-			} else {
-				throw new IllegalArgumentException( "Please, set an image path in the program arguments." );
-//				IJ.open( "/Users/jug/Desktop/demo.tif" );
-			}
-		}
-
-		final ImagePlus imgPlus = WindowManager.getCurrentImage();
-		if ( imgPlus == null ) {
-			IJ.error( "There must be an active, open window!" );
-			// System.exit( 1 );
-			return;
-		}
-
-		guiFrame = new JFrame( "tr2d" );
-		final Tr2dModel model = new Tr2dModel( imgPlus );
-		main = new Tr2dMainPanel( guiFrame, model );
-
-		guiFrame.add( main );
-		guiFrame.setVisible( true );
 	}
 }

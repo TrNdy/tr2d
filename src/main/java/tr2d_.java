@@ -1,4 +1,4 @@
-import com.indago.tr2d.ui.view.Tr2dMainPanel;
+import com.indago.app.hernan.Tr2dApplication;
 
 import ij.IJ;
 import ij.ImageJ;
@@ -18,7 +18,7 @@ public class tr2d_ implements PlugIn {
 	 */
 	@Override
 	public void run( final String arg ) {
-		Tr2dMainPanel.main( null );
+		Tr2dApplication.main( null );
 	}
 
 	/**
@@ -48,11 +48,11 @@ public class tr2d_ implements PlugIn {
 //				folder + "/DebugStack00.tif" );
 //		final ImagePlus image = IJ.openImage(
 //				folder + "/DebugStack03-crop1.tif" );
-		final ImagePlus image = IJ.openImage(
-				folder + "/DebugStack03.tif" );
+//		final ImagePlus image = IJ.openImage(
+//				folder + "/DebugStack03.tif" );
 //		final ImagePlus image = IJ.openImage(
 //				folder + "/HarderDataSet/2015-03-27-P2P-MS2-PP7-lacZ-His_023.tif" );
-		image.show();
+//		image.show();
 
 		// run the plugin
 		IJ.runPlugIn(clazz.getName(), "");
