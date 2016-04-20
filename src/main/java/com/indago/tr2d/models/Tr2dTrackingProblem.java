@@ -12,6 +12,9 @@ import com.indago.models.assignments.MovementHypothesis;
 import com.indago.models.segments.SegmentNode;
 import com.indago.old_fg.CostsFactory;
 
+import net.imglib2.KDTree;
+import net.imglib2.RealLocalizable;
+import net.imglib2.neighborsearch.RadiusNeighborSearchOnKDTree;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 
@@ -114,12 +117,30 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	private void addMovesToLatestFramePair() {
 		final Tr2dSegmentationProblem segProblemL = timepoints.get( timepoints.size() - 2 );
 		final Tr2dSegmentationProblem segProblemR = timepoints.get( timepoints.size() - 1 );
+
+		List< SegmentNode > segmentList;
+		if ( segProblemR.getSegments() instanceof List )
+			segmentList = ( List< SegmentNode > ) segProblemR.getSegments();
+		else
+			segmentList = new ArrayList<>( segProblemR.getSegments() );
+		final ArrayList< RealLocalizable > positions = new ArrayList<>();
+		for ( final SegmentNode n : segmentList )
+			positions.add( n.getSegment().getCenterOfMass() );
+		final KDTree< SegmentNode > kdtree = new KDTree<>( segmentList, positions );
+		final RadiusNeighborSearchOnKDTree< SegmentNode > search = new RadiusNeighborSearchOnKDTree<>( kdtree );
+
 		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
-			for ( final SegmentNode segVarR : segProblemR.getSegments() ) {
+			final RealLocalizable pos = segVarL.getSegment().getCenterOfMass();
+			final double radius = 20; // TODO
+			search.search( pos, radius, false );
+			final int numNeighbors = search.numNeighbors();
+			for ( int i = 0; i < numNeighbors; ++i ) {
+				final SegmentNode segVarR = search.getSampler( i ).get();
+
 				final double cost = movementCosts.getCost(
 						new ValuePair< LabelingSegment, LabelingSegment >(
-								segProblemL.getLabelingSegment(	segVarL ),
-								segProblemR.getLabelingSegment(	segVarR ) ) );
+								segVarL.getSegment(),
+								segVarR.getSegment() ) );
 				if ( cost <= maxRelevantMovementCost ) {
 					final MovementHypothesis moveHyp =
 							new MovementHypothesis( cost, segVarL, segVarR );
@@ -136,19 +157,33 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	private void addDivisionsToLatestFramePair() {
 		final Tr2dSegmentationProblem segProblemL = timepoints.get( timepoints.size() - 2 );
 		final Tr2dSegmentationProblem segProblemR = timepoints.get( timepoints.size() - 1 );
+
+		List< SegmentNode > segmentList;
+		if ( segProblemR.getSegments() instanceof List )
+			segmentList = ( List< SegmentNode > ) segProblemR.getSegments();
+		else
+			segmentList = new ArrayList<>( segProblemR.getSegments() );
+		final ArrayList< RealLocalizable > positions = new ArrayList<>();
+		for ( final SegmentNode n : segmentList )
+			positions.add( n.getSegment().getCenterOfMass() );
+		final KDTree< SegmentNode > kdtree = new KDTree<>( segmentList, positions );
+		final RadiusNeighborSearchOnKDTree< SegmentNode > search = new RadiusNeighborSearchOnKDTree<>( kdtree );
+
 		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
-			for ( final SegmentNode segVarR1 : segProblemR.getSegments() ) {
-				for ( final SegmentNode segVarR2 : segProblemR.getSegments() ) {
-					// avoid double enumerations
-					if ( segVarR2.hashCode() < segVarR1.hashCode() || segVarR1.equals( segVarR2 ) ) {
-						continue;
-					}
+			final RealLocalizable pos = segVarL.getSegment().getCenterOfMass();
+			final double radius = 30; // TODO
+			search.search( pos, radius, false );
+			final int numNeighbors = search.numNeighbors();
+			for ( int i = 0; i < numNeighbors; ++i ) {
+				for ( int j = i + 1; j < numNeighbors; ++j ) {
+					final SegmentNode segVarR1 = search.getSampler( i ).get();
+					final SegmentNode segVarR2 = search.getSampler( j ).get();
 					final double cost = divisionCosts.getCost(
 							new ValuePair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > >(
-									segProblemL.getLabelingSegment( segVarL ),
+									segVarL.getSegment(),
 									new ValuePair< LabelingSegment, LabelingSegment> (
-											segProblemR.getLabelingSegment( segVarR1 ),
-											segProblemR.getLabelingSegment( segVarR2 ) ) ) );
+											segVarR1.getSegment(),
+											segVarR2.getSegment() ) ) );
 					if ( cost <= maxRelevantDivisionCost ) {
 						final DivisionHypothesis moveHyp =
 								new DivisionHypothesis( cost, segVarL, segVarR1, segVarR2 );
