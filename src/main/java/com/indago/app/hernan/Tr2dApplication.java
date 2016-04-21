@@ -19,7 +19,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import com.apple.eawt.Application;
-import com.indago.tr2d.projectfolder.ProjectData;
+import com.indago.tr2d.projectfolder.Tr2dProjectData;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.OsDependentFileChooser;
 import com.indago.tr2d.ui.view.Tr2dMainPanel;
@@ -93,7 +93,7 @@ public class Tr2dApplication {
 				if ( projectFolderBasePath == null ) {
 					System.exit( 1 );
 				}
-				inputStack = new File( ProjectData.RAW_DATA.getAbsolutePathIn( projectFolderBasePath.getAbsolutePath() ) );
+				inputStack = new File( Tr2dProjectData.RAW_DATA.getAbsolutePathIn( projectFolderBasePath.getAbsolutePath() ) );
 				if ( !inputStack.canRead() || !inputStack.exists() ) {
 					final String msg = "Project folder empty, read protected, or invalid!";
 					JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
@@ -122,13 +122,13 @@ public class Tr2dApplication {
 				if ( projectFolderBasePath == null ) {
 					System.exit( 2 );
 				}
-				if ( ProjectData.RAW_DATA.existsIn( projectFolderBasePath.getAbsolutePath() ) ) {
+				if ( Tr2dProjectData.RAW_DATA.existsIn( projectFolderBasePath.getAbsolutePath() ) ) {
 					final String msg = String.format(
 							"Chosen project folder exists (%s)./nShould this project be overwritten?\nAll data in this project will be overwritten...",
 							projectFolderBasePath );
 					final int overwrite = JOptionPane.showConfirmDialog( guiFrame, msg, "Project Folder Exists", JOptionPane.YES_NO_OPTION );
 					if ( overwrite == JOptionPane.YES_OPTION ) {
-						ProjectData.restartWith( projectFolderBasePath, inputStack.getAbsolutePath() );
+						Tr2dProjectData.restartWith( projectFolderBasePath, inputStack.getAbsolutePath() );
 						validSelection = true;
 					}
 				} else {
@@ -304,7 +304,7 @@ public class Tr2dApplication {
 				System.exit( 5 );
 			}
 		} else if ( projectFolderBasePath != null ) { // if a project folder was given load data from there!
-			inputStack = new File( ProjectData.RAW_DATA.getAbsolutePathIn( projectFolderBasePath.getAbsolutePath() ) );
+			inputStack = new File( Tr2dProjectData.RAW_DATA.getAbsolutePathIn( projectFolderBasePath.getAbsolutePath() ) );
 			if ( !inputStack.canRead() ) {
 				final String msg = String.format( "No raw tiff stack found in given project folder (%s)!", projectFolderBasePath );
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
@@ -351,5 +351,12 @@ public class Tr2dApplication {
 				System.out.println( "WARNING: " + msg );
 			}
 		}
+	}
+
+	/**
+	 * @return the guiFrame
+	 */
+	public static JFrame getGuiFrame() {
+		return guiFrame;
 	}
 }
