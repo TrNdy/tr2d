@@ -4,6 +4,7 @@
 package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -46,6 +47,11 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		super( new BorderLayout() );
 		modelWekaSeg = model;
 		buildGui();
+
+		final RandomAccessibleInterval< DoubleType > seghyps = modelWekaSeg.getSegmentHypotheses();
+		if ( seghyps != null ) {
+			icSegmentation.setSourceImage( seghyps );
+		}
 	}
 
 	/**
@@ -82,14 +88,14 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 		helper.add( bStartSegmentation );
 
-		if ( modelWekaSeg.getSegmentHypotheses() != null ) {
-			icSegmentation = new IddeaComponent( modelWekaSeg.getSegmentHypotheses() );
-		} else {
-			icSegmentation = new IddeaComponent();
-		}
+		icSegmentation = new IddeaComponent(
+				new Dimension(
+						(int) modelWekaSeg.getTr2dModel().getImgOrig().dimension( 0 ),
+						(int) modelWekaSeg.getTr2dModel().getImgOrig().dimension( 1 ) ) );
 		icSegmentation.showMenu( false );
 		icSegmentation.setToolBarLocation( BorderLayout.WEST );
 		icSegmentation.setToolBarVisible( false );
+//		icSegmentation.installDefaultToolBar();
 //		icSegmentation.setPreferredSize( new Dimension( imgPlus.getWidth(), imgPlus.getHeight() ) );
 //		icSegmentation.showStackSlider( true );
 //		icSegmentation.showTimeSlider( true );

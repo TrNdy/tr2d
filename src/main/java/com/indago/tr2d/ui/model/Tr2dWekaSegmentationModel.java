@@ -11,15 +11,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.data.segmentation.SegmentationMagic;
 import com.indago.data.segmentation.SilentWekaSegmenter;
 import com.indago.io.DataMover;
-import com.indago.tr2d.projectfolder.ProjectData;
+import com.indago.io.DoubleTypeImgLoader;
+import com.indago.tr2d.projectfolder.Tr2dProjectData;
 import com.indago.util.converter.RealDoubleThresholdConverter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
 import ij.IJ;
+import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -54,7 +59,7 @@ public class Tr2dWekaSegmentationModel {
 		this.model = model;
 		final CsvParser parser = new CsvParser( new CsvParserSettings() );
 
-		dataFolder = new File( ProjectData.WEKA_SEGMENTATION_FOLDER.getAbsolutePathIn( model.getProjectFolderBasePath() ) );
+		dataFolder = new File( Tr2dProjectData.WEKA_SEGMENTATION_FOLDER.getAbsolutePathIn( model.getProjectFolderBasePath() ) );
 		if ( !dataFolder.exists() ) {
 			dataFolder.mkdirs();
 		}
@@ -97,12 +102,17 @@ public class Tr2dWekaSegmentationModel {
 			i++;
 			System.out.println(
 					"Would load persistent classification and sum images here (if data handlig would not be a f****** mess in the ImageJ universe..." );
-//			final ImagePlus imgPlusClassificaiton =
-//					IJ.openImage( new File( dataFolder, FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ).getAbsolutePath() );
-//			imgClassification = ImageJFunctions.wrap( imgPlusClassificaiton );
-//			final ImagePlus imgPlusSumImage =
-//					IJ.openImage( new File( dataFolder, FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ).getAbsolutePath() );
-//			imgSegmentHypotheses = ImageJFunctions.wrap( imgPlusSumImage );
+			try {
+				imgClassification = DoubleTypeImgLoader.loadTiff( new File( dataFolder, FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ) );
+				imgSegmentHypotheses = DoubleTypeImgLoader.loadTiff( new File( dataFolder, FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) );
+			} catch ( final ImgIOException e ) {
+				JOptionPane.showMessageDialog(
+						Tr2dApplication.getGuiFrame(),
+						"Weka Segmentation Results could not be loaded from project folder.\n> " + e.getMessage(),
+						"Problem loading from project...",
+						JOptionPane.ERROR_MESSAGE );
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -159,7 +169,7 @@ public class Tr2dWekaSegmentationModel {
 			loadClassifier( cf );
 
     		// classify frames
-    		imgClassification = SegmentationMagic.returnClassification( model.getImgOrig() );
+			imgClassification = SegmentationMagic.returnClassification( getTr2dModel().getImgOrig() );
 			IJ.save(
 					ImageJFunctions.wrap( imgClassification, "classification image" ).duplicate(),
 					new File( dataFolder, FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ).getAbsolutePath() );
@@ -221,5 +231,12 @@ public class Tr2dWekaSegmentationModel {
 		} catch ( final IOException e ) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * @return the model
+	 */
+	public Tr2dModel getTr2dModel() {
+		return model;
 	}
 }

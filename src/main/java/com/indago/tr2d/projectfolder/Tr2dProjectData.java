@@ -12,7 +12,7 @@ import org.apache.commons.io.FileUtils;
 /**
  * @author jug
  */
-public class ProjectData {
+public class Tr2dProjectData {
 
 	public static final ProjectFile RAW_DATA = new ProjectFile( "RAW tiff stack", "", "raw.tif" );
 
