@@ -17,6 +17,7 @@ import com.indago.fg.MappedFactorGraph;
 import com.indago.fg.UnaryCostConstraintGraph;
 import com.indago.fg.Variable;
 import com.indago.ilp.SolveGurobi;
+import com.indago.io.DataMover;
 import com.indago.models.IndicatorNode;
 import com.indago.models.assignments.AppearanceHypothesis;
 import com.indago.models.assignments.DisappearanceHypothesis;
@@ -28,7 +29,6 @@ import com.indago.tr2d.models.Tr2dSegmentationProblem;
 import com.indago.tr2d.models.Tr2dTrackingProblem;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
-import com.indago.util.DataMover;
 import com.indago.util.TicToc;
 
 import gurobi.GRBException;

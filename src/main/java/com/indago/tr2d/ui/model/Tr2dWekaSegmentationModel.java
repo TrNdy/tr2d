@@ -13,8 +13,8 @@ import java.util.List;
 
 import com.indago.data.segmentation.SegmentationMagic;
 import com.indago.data.segmentation.SilentWekaSegmenter;
+import com.indago.io.DataMover;
 import com.indago.tr2d.projectfolder.ProjectData;
-import com.indago.util.DataMover;
 import com.indago.util.converter.RealDoubleThresholdConverter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
