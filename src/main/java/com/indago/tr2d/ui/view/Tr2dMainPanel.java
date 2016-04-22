@@ -23,6 +23,7 @@ import com.indago.app.hernan.costs.HernanDivisionCostFactory;
 import com.indago.app.hernan.costs.HernanMappingCostFactory;
 import com.indago.app.hernan.costs.HernanSegmentCostFactory;
 import com.indago.app.hernan.models.Tr2dTrackingModelHernan;
+import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.converter.RealDoubleNormalizeConverter;
@@ -33,7 +34,6 @@ import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
-import view.component.IddeaComponent;
 
 /**
  * @author jug
@@ -83,6 +83,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabs = new JTabbedPane();
 		tabData = new JPanel( new BorderLayout() );
 		icData = new IddeaComponent( model.getImgOrigNorm() );
+		icData.setSourceImage( model.getImgOrigNorm() );
 		icData.showMenu( false );
 		icData.setToolBarLocation( BorderLayout.WEST );
 		icData.setToolBarVisible( false );

@@ -79,9 +79,9 @@
 			<version>1.3.9</version>
 		</dependency>
 		<dependency>
-			<groupId>InteractiveDisplay</groupId>
-			<artifactId>InteractiveDisplay</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<groupId>com.indago</groupId>
+			<artifactId>iddea</artifactId>
+			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.indago</groupId>

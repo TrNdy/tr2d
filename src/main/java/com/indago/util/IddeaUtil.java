@@ -12,6 +12,7 @@ import java.util.Set;
 import org.jhotdraw.draw.Figure;
 
 import com.indago.fkt.SampledFunction1D;
+import com.indago.iddea.view.component.IddeaComponent;
 
 import net.imglib2.IterableInterval;
 import net.imglib2.Localizable;
@@ -26,7 +27,6 @@ import net.imglib2.roi.Regions;
 import net.imglib2.type.logic.BoolType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
-import view.component.IddeaComponent;
 
 /**
  * @author jug

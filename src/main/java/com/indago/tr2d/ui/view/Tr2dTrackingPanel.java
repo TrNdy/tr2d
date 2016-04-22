@@ -11,8 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import com.indago.app.hernan.models.Tr2dTrackingModelHernan;
-
-import view.component.IddeaComponent;
+import com.indago.iddea.view.component.IddeaComponent;
 
 /**
  * @author jug

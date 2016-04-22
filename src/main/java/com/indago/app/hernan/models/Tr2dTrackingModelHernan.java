@@ -20,7 +20,6 @@ import com.indago.ilp.SolveGurobi;
 import com.indago.io.DataMover;
 import com.indago.models.IndicatorNode;
 import com.indago.models.assignments.AppearanceHypothesis;
-import com.indago.models.assignments.DisappearanceHypothesis;
 import com.indago.models.assignments.DivisionHypothesis;
 import com.indago.models.assignments.MovementHypothesis;
 import com.indago.models.segments.SegmentNode;
@@ -206,20 +205,11 @@ public class Tr2dTrackingModelHernan {
 		int curColorId = 1;
 		for ( final Tr2dSegmentationProblem segProblem : tr2dTraProblem.getTimepoints() ) {
 			for ( final SegmentNode segVar : segProblem.getSegments() ) {
-				System.out.print(
-						"time=" + time + " - #app/#disapp = " + segVar.getInAssignments().getAppearances().size() + "/" + segVar
-								.getOutAssignments()
-								.getDisappearances()
-								.size() + "\t" );
 				for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
-					System.out.print( "" + problemSolution.getAssignment( app ) );
 					if ( problemSolution.getAssignment( app ) == 1 ) { // || time == 0
 						drawLineageWithId( time, segVar, 10 + curColorId );
 						curColorId++;
 					}
-				}
-				for ( final DisappearanceHypothesis disapp : segVar.getOutAssignments().getDisappearances() ) {
-					System.out.println( "/" + problemSolution.getAssignment( disapp ) );
 				}
 			}
 			time++;
