@@ -5,6 +5,7 @@ package com.indago.app.hernan;
 
 import java.awt.Image;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -19,7 +20,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import com.apple.eawt.Application;
-import com.indago.tr2d.projectfolder.Tr2dProjectData;
+import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.OsDependentFileChooser;
 import com.indago.tr2d.ui.view.Tr2dMainPanel;
@@ -43,8 +44,10 @@ public class Tr2dApplication {
 	private static JFrame guiFrame;
 	private static Tr2dMainPanel mainPanel;
 
-	private static File projectFolderBasePath;
+//	private static File projectFolderBasePath;
 	private static File inputStack;
+	private static Tr2dProjectFolder projectFolder;
+
 	private static File fileUserProps;
 	private static int minTime = 0;
 	private static int maxTime = Integer.MAX_VALUE;
@@ -63,7 +66,7 @@ public class Tr2dApplication {
 		checkGurobiAvailability();
 
 		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
-		final Tr2dModel model = new Tr2dModel( projectFolderBasePath, imgPlus );
+		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
 		mainPanel = new Tr2dMainPanel( guiFrame, model );
 
 		guiFrame.add( mainPanel );
@@ -74,6 +77,9 @@ public class Tr2dApplication {
 	 * @return
 	 */
 	private static ImagePlus openStackOrProjectUserInteraction() {
+		File projectFolderBasePath = null;
+		if ( projectFolder != null ) projectFolderBasePath = projectFolder.getFolder();
+
 		if ( inputStack == null ) {
 			final Object[] options = { "Tr2d Project...", "TIFF Stack..." };
 			final int choice = JOptionPane.showOptionDialog(
@@ -93,11 +99,19 @@ public class Tr2dApplication {
 				if ( projectFolderBasePath == null ) {
 					System.exit( 1 );
 				}
-				inputStack = new File( Tr2dProjectData.RAW_DATA.getAbsolutePathIn( projectFolderBasePath.getAbsolutePath() ) );
-				if ( !inputStack.canRead() || !inputStack.exists() ) {
-					final String msg = "Project folder empty, read protected, or invalid!";
-					JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-					System.out.println( "ERROR: " + msg );
+				try {
+					projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
+					inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
+					if ( !inputStack.canRead() || !inputStack.exists() ) {
+						final String msg = "Project folder empty, read protected, or invalid!";
+						JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
+						System.out.println( "ERROR: " + msg );
+						System.exit( 1 );
+					}
+				} catch ( final IOException e ) {
+					System.err.println(
+							String.format( "ERROR: Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
+					e.printStackTrace();
 					System.exit( 1 );
 				}
 			} else if ( choice == 1 ) {
@@ -122,13 +136,21 @@ public class Tr2dApplication {
 				if ( projectFolderBasePath == null ) {
 					System.exit( 2 );
 				}
-				if ( Tr2dProjectData.RAW_DATA.existsIn( projectFolderBasePath.getAbsolutePath() ) ) {
+				try {
+					projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
+				} catch ( final IOException e ) {
+					System.err.println(
+							String.format( "ERROR: Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
+					e.printStackTrace();
+					System.exit( 2 );
+				}
+				if ( projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).exists() ) {
 					final String msg = String.format(
 							"Chosen project folder exists (%s)./nShould this project be overwritten?\nAll data in this project will be overwritten...",
 							projectFolderBasePath );
 					final int overwrite = JOptionPane.showConfirmDialog( guiFrame, msg, "Project Folder Exists", JOptionPane.YES_NO_OPTION );
 					if ( overwrite == JOptionPane.YES_OPTION ) {
-						Tr2dProjectData.restartWith( projectFolderBasePath, inputStack.getAbsolutePath() );
+						projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
 						validSelection = true;
 					}
 				} else {
@@ -265,7 +287,7 @@ public class Tr2dApplication {
 			System.exit( 0 );
 		}
 
-		projectFolderBasePath = null;
+		File projectFolderBasePath = null;
 		if ( cmd.hasOption( "p" ) ) {
 			projectFolderBasePath = new File( cmd.getOptionValue( "p" ) );
 			if ( !projectFolderBasePath.exists() ) {
@@ -286,6 +308,15 @@ public class Tr2dApplication {
 				System.out.println( "ERROR: " + msg );
 				System.exit( 3 );
 			}
+//			try {
+//				projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
+//			} catch ( final IOException e ) {
+//				final String msg = "Given project folder could not be initialized!";
+//				JOptionPane.showMessageDialog( guiFrame, msg, "Unknown Error", JOptionPane.ERROR_MESSAGE );
+//				System.out.println( "ERROR: " + msg );
+//				System.exit( 4 );
+//				e.printStackTrace();
+//			}
 		}
 
 		inputStack = null;
@@ -295,21 +326,29 @@ public class Tr2dApplication {
 				final String msg = "Given input tiff stack could not be found!";
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
 				System.out.println( "ERROR: " + msg );
-				System.exit( 4 );
+				System.exit( 5 );
 			}
 			if ( !inputStack.canRead() ) {
 				final String msg = "Given input tiff stack is not readable!";
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
 				System.out.println( "ERROR: " + msg );
-				System.exit( 5 );
+				System.exit( 6 );
 			}
 		} else if ( projectFolderBasePath != null ) { // if a project folder was given load data from there!
-			inputStack = new File( Tr2dProjectData.RAW_DATA.getAbsolutePathIn( projectFolderBasePath.getAbsolutePath() ) );
-			if ( !inputStack.canRead() ) {
-				final String msg = String.format( "No raw tiff stack found in given project folder (%s)!", projectFolderBasePath );
-				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				System.out.println( "ERROR: " + msg );
-				System.exit( 6 );
+			try {
+				projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
+				inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
+				if ( !inputStack.canRead() ) {
+					final String msg = String.format( "No raw tiff stack found in given project folder (%s)!", projectFolderBasePath );
+					JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
+					System.out.println( "ERROR: " + msg );
+					System.exit( 7 );
+				}
+			} catch ( final IOException e ) {
+				System.err.println(
+						String.format( "ERROR: Project folder (%s) could not used to load data from.", projectFolderBasePath.getAbsolutePath() ) );
+				e.printStackTrace();
+				System.exit( 8 );
 			}
 		}
 
