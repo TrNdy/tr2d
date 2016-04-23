@@ -1,4 +1,4 @@
-package com.indago.tr2d.pgraphs;
+package com.indago.tr2d.pg;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,11 +6,11 @@ import java.util.List;
 
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.models.SegmentationProblem;
-import com.indago.models.assignments.AssignmentNodes;
-import com.indago.models.segments.ConflictSet;
-import com.indago.models.segments.SegmentNode;
 import com.indago.old_fg.CostsFactory;
+import com.indago.pg.SegmentationProblem;
+import com.indago.pg.assignments.AssignmentNodes;
+import com.indago.pg.segments.ConflictSet;
+import com.indago.pg.segments.SegmentNode;
 import com.indago.util.Bimap;
 
 public class Tr2dSegmentationProblem implements SegmentationProblem {
@@ -56,7 +56,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.models.SegmentationProblem#getTime()
+	 * @see com.indago.pg.SegmentationProblem#getTime()
 	 */
 	@Override
 	public int getTime() {
@@ -64,7 +64,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.models.SegmentationProblem#getSegments()
+	 * @see com.indago.pg.SegmentationProblem#getSegments()
 	 */
 	@Override
 	public Collection< SegmentNode > getSegments() {
@@ -72,7 +72,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.models.SegmentationProblem#getConflictSets()
+	 * @see com.indago.pg.SegmentationProblem#getConflictSets()
 	 */
 	@Override
 	public Collection< ConflictSet > getConflictSets() {

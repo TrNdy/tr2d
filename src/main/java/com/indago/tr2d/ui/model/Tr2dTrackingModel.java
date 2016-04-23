@@ -4,6 +4,7 @@
 package com.indago.tr2d.ui.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -21,15 +22,15 @@ import com.indago.ilp.SolveGurobi;
 import com.indago.io.DataMover;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFolder;
-import com.indago.models.IndicatorNode;
-import com.indago.models.assignments.AppearanceHypothesis;
-import com.indago.models.assignments.DivisionHypothesis;
-import com.indago.models.assignments.MovementHypothesis;
-import com.indago.models.segments.SegmentNode;
 import com.indago.old_fg.CostsFactory;
+import com.indago.pg.IndicatorNode;
+import com.indago.pg.assignments.AppearanceHypothesis;
+import com.indago.pg.assignments.DivisionHypothesis;
+import com.indago.pg.assignments.MovementHypothesis;
+import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
-import com.indago.tr2d.pgraphs.Tr2dSegmentationProblem;
-import com.indago.tr2d.pgraphs.Tr2dTrackingProblem;
+import com.indago.tr2d.pg.Tr2dSegmentationProblem;
+import com.indago.tr2d.pg.Tr2dTrackingProblem;
 import com.indago.util.TicToc;
 
 import gurobi.GRBException;
@@ -119,11 +120,27 @@ public class Tr2dTrackingModel {
 	@SuppressWarnings( "unchecked" )
 	public void run() {
 		processSegmentationInputs();
+
 		buildTrackingProblem();
+		saveTrackingProblem();
+
 		buildFactorGraph();
+
 		solveFactorGraph();
+
 		drawSolution();
 		saveSolution();
+	}
+
+	/**
+	 *
+	 */
+	private void saveTrackingProblem() {
+		try {
+			tr2dTraProblem.saveToFile( dataFolder.getFile( FILENAME_PGRAPH ).getFile() );
+		} catch ( final IOException e ) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

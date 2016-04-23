@@ -1,16 +1,18 @@
-package com.indago.tr2d.pgraphs;
+package com.indago.tr2d.pg;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.models.TrackingProblem;
-import com.indago.models.assignments.AppearanceHypothesis;
-import com.indago.models.assignments.DisappearanceHypothesis;
-import com.indago.models.assignments.DivisionHypothesis;
-import com.indago.models.assignments.MovementHypothesis;
-import com.indago.models.segments.SegmentNode;
 import com.indago.old_fg.CostsFactory;
+import com.indago.pg.TrackingProblem;
+import com.indago.pg.assignments.AppearanceHypothesis;
+import com.indago.pg.assignments.DisappearanceHypothesis;
+import com.indago.pg.assignments.DivisionHypothesis;
+import com.indago.pg.assignments.MovementHypothesis;
+import com.indago.pg.segments.SegmentNode;
 
 import net.imglib2.KDTree;
 import net.imglib2.RealLocalizable;
@@ -193,6 +195,17 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Saves the problem graph to file
+	 *
+	 * @param file
+	 */
+	public void saveToFile( final File file ) throws IOException {
+		for ( final Tr2dSegmentationProblem segProblem : timepoints ) {
+
 		}
 	}
 
