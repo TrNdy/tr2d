@@ -3,6 +3,7 @@
  */
 package com.indago.tr2d.ui.model;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -18,17 +19,22 @@ import com.indago.fg.UnaryCostConstraintGraph;
 import com.indago.fg.Variable;
 import com.indago.ilp.SolveGurobi;
 import com.indago.io.DataMover;
+import com.indago.io.DoubleTypeImgLoader;
+import com.indago.io.projectfolder.ProjectFolder;
 import com.indago.models.IndicatorNode;
 import com.indago.models.assignments.AppearanceHypothesis;
 import com.indago.models.assignments.DivisionHypothesis;
 import com.indago.models.assignments.MovementHypothesis;
 import com.indago.models.segments.SegmentNode;
 import com.indago.old_fg.CostsFactory;
-import com.indago.tr2d.models.Tr2dSegmentationProblem;
-import com.indago.tr2d.models.Tr2dTrackingProblem;
+import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
+import com.indago.tr2d.pgraphs.Tr2dSegmentationProblem;
+import com.indago.tr2d.pgraphs.Tr2dTrackingProblem;
 import com.indago.util.TicToc;
 
 import gurobi.GRBException;
+import ij.IJ;
+import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.roi.IterableRegion;
@@ -42,6 +48,10 @@ import net.imglib2.view.Views;
  * @author jug
  */
 public class Tr2dTrackingModel {
+
+	private final String FILENAME_PGRAPH = "tracking.pgraph";
+	private final String FILENAME_GUROBI_MODEL = "gurobiModel.jug";
+	private final String FILENAME_TRACKING = "tracking.tif";
 
 	private final Tr2dModel tr2dModel;
 	private final Tr2dWekaSegmentationModel tr2dSegModel;
@@ -61,6 +71,8 @@ public class Tr2dTrackingModel {
 	private Assignment< Variable > fgSolution;
 	private Assignment< IndicatorNode > problemSolution;
 
+	private final ProjectFolder dataFolder;
+
 	/**
 	 * @param model
 	 */
@@ -73,6 +85,9 @@ public class Tr2dTrackingModel {
 			final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
 			final CostsFactory< LabelingSegment > disappearanceCosts ) {
 		this.tr2dModel = model;
+
+		dataFolder = model.getProjectFolder().getFolder( Tr2dProjectFolder.TRACKING_FOLDER );
+		dataFolder.mkdirs();
 
 		this.appearanceCosts = appearanceCosts;
 		this.moveCosts = movementCosts;
@@ -87,6 +102,15 @@ public class Tr2dTrackingModel {
 
 		this.tr2dSegModel = modelSeg;
 		this.sumImgMovie = new SumImageMovieSequence( tr2dSegModel );
+
+		final File fImgSol = dataFolder.addFile( FILENAME_TRACKING );
+		if ( fImgSol.canRead() ) {
+			try {
+				imgSolution = DoubleTypeImgLoader.loadTiff( fImgSol );
+			} catch ( final ImgIOException e ) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -95,10 +119,20 @@ public class Tr2dTrackingModel {
 	@SuppressWarnings( "unchecked" )
 	public void run() {
 		processSegmentationInputs();
-		buildTrackingModel();
+		buildTrackingProblem();
 		buildFactorGraph();
 		solveFactorGraph();
 		drawSolution();
+		saveSolution();
+	}
+
+	/**
+	 *
+	 */
+	private void saveSolution() {
+		IJ.save(
+				ImageJFunctions.wrap( imgSolution, "tracking solution" ).duplicate(),
+				dataFolder.getFile( FILENAME_TRACKING ).getAbsolutePath() );
 	}
 
 	/**
@@ -118,7 +152,7 @@ public class Tr2dTrackingModel {
 	/**
 	 *
 	 */
-	public void buildTrackingModel() {
+	public void buildTrackingProblem() {
 		final TicToc tictoc = new TicToc();
 		for ( int frameId = 0; frameId < sumImgMovie.getNumFrames(); frameId++ ) {
 			System.out.println(
@@ -143,7 +177,7 @@ public class Tr2dTrackingModel {
 			tr2dTraProblem.addSegmentationProblem( segmentationProblem );
 			tictoc.toc( "done!" );
 		}
-		tr2dTraProblem.addDummyDisappearanceToFinishModel();
+		tr2dTraProblem.addDummyDisappearance();
 
 		System.out.println( "Tracking graph was built sucessfully!" );
 	}

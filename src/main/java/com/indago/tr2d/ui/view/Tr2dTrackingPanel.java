@@ -29,6 +29,9 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		super( new BorderLayout() );
 		this.model = trackingModel;
 		buildGui();
+		if ( model.getImgSolution() != null ) {
+			icSolution.setSourceImage( model.getImgSolution() );
+		}
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package com.indago.tr2d.models;
+package com.indago.tr2d.pgraphs;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package com.indago.tr2d.models;
+package com.indago.tr2d.pgraphs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,7 +103,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	 * constraints to work out.
 	 * This is usually the last method to be called when creating the model.
 	 */
-	public void addDummyDisappearanceToFinishModel() {
+	public void addDummyDisappearance() {
 		final Tr2dSegmentationProblem segProblem = timepoints.get( timepoints.size() - 1 );
 		for ( final SegmentNode segVar : segProblem.getSegments() ) {
 			final DisappearanceHypothesis disappHyp = new DisappearanceHypothesis( 0, segVar );

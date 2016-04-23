@@ -123,6 +123,16 @@ public class ProjectFolder {
 	}
 
 	/**
+	 * Adds a file to the ProjectFolder.
+	 * The filename will also be used as its id.
+	 *
+	 * @param filename
+	 */
+	public File addFile( final String filename ) {
+		return addFile( filename, filename );
+	}
+
+	/**
 	 * @param id
 	 * @param filename
 	 */
