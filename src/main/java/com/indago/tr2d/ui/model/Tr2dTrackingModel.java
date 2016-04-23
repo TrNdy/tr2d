@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.app.hernan.models;
+package com.indago.tr2d.ui.model;
 
 import java.util.List;
 import java.util.Map;
@@ -26,8 +26,6 @@ import com.indago.models.segments.SegmentNode;
 import com.indago.old_fg.CostsFactory;
 import com.indago.tr2d.models.Tr2dSegmentationProblem;
 import com.indago.tr2d.models.Tr2dTrackingProblem;
-import com.indago.tr2d.ui.model.Tr2dModel;
-import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.TicToc;
 
 import gurobi.GRBException;
@@ -43,7 +41,7 @@ import net.imglib2.view.Views;
 /**
  * @author jug
  */
-public class Tr2dTrackingModelHernan {
+public class Tr2dTrackingModel {
 
 	private final Tr2dModel tr2dModel;
 	private final Tr2dWekaSegmentationModel tr2dSegModel;
@@ -66,7 +64,7 @@ public class Tr2dTrackingModelHernan {
 	/**
 	 * @param model
 	 */
-	public Tr2dTrackingModelHernan(
+	public Tr2dTrackingModel(
 			final Tr2dModel model,
 			final Tr2dWekaSegmentationModel modelSeg,
 			final CostsFactory< LabelingSegment > segmentCosts,

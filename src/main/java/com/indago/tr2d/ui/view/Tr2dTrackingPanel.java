@@ -10,22 +10,22 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.indago.app.hernan.models.Tr2dTrackingModelHernan;
 import com.indago.iddea.view.component.IddeaComponent;
+import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 
 /**
  * @author jug
  */
 public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 
-	private final Tr2dTrackingModelHernan model;
+	private final Tr2dTrackingModel model;
 
 	private JButton bRun;
 
 	private IddeaComponent icSolution = null;
 
 
-	public Tr2dTrackingPanel( final Tr2dTrackingModelHernan trackingModel ) {
+	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
 		this.model = trackingModel;
 		buildGui();

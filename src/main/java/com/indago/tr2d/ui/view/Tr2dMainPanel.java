@@ -22,9 +22,9 @@ import com.indago.app.hernan.costs.HernanDisappearanceCostFactory;
 import com.indago.app.hernan.costs.HernanDivisionCostFactory;
 import com.indago.app.hernan.costs.HernanMappingCostFactory;
 import com.indago.app.hernan.costs.HernanSegmentCostFactory;
-import com.indago.app.hernan.models.Tr2dTrackingModelHernan;
 import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.tr2d.ui.model.Tr2dModel;
+import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.converter.RealDoubleNormalizeConverter;
 
@@ -102,7 +102,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		//TODO this should at some point be a given model, not fixed the Hernan thing...
 		tabTracking =
 				new Tr2dTrackingPanel(
-						new Tr2dTrackingModelHernan( model, segModel,
+						new Tr2dTrackingModel( model, segModel,
 								new HernanSegmentCostFactory( imgOrig ),
 								new HernanAppearanceCostFactory( imgOrig ),
 								new HernanMappingCostFactory( imgOrig ),
