@@ -73,8 +73,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 				new DoubleType() ) );
 
 		buildGui();
-
-		this.frame.setSize( 1200, 758 );
 	}
 
 	private void buildGui() {
@@ -112,7 +110,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		// --- ASSEMBLE PANEL ---------------------------------------------------------------------
 
 		tabs.add( "Dataset", tabData );
-		tabs.add( "Segmentation", tabSegmentation );
+		tabs.add( "Hypotheses collection", tabSegmentation );
 		tabs.add( "Tracking", tabTracking );
 
 		this.add( tabs, BorderLayout.CENTER );

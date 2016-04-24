@@ -19,6 +19,7 @@ public class Tr2dProjectFolder extends ProjectFolder {
 	public static String TRACKING_FOLDER = "TRACKING_FOLDER";
 
 	// FILES
+	public static String FRAME_PROPERTIES = "FRAME_PROPERTIES";
 	public static String RAW_DATA = "RAW_DATA";
 
 	/**
@@ -29,6 +30,7 @@ public class Tr2dProjectFolder extends ProjectFolder {
 	public Tr2dProjectFolder( final File baseFolder ) throws IOException {
 		super( "TR2D", baseFolder );
 		addFile( RAW_DATA, "raw.tif" );
+		addFile( FRAME_PROPERTIES, "frame.props" );
 		try {
 			addFolder( WEKA_SEGMENTATION_FOLDER, "segmentation_weka" );
 			addFolder( TRACKING_FOLDER, "tracking" );

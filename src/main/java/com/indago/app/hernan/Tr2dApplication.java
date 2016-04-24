@@ -25,6 +25,7 @@ import org.apache.commons.cli.ParseException;
 import com.apple.eawt.Application;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.ui.model.Tr2dModel;
+import com.indago.tr2d.ui.util.FrameProperties;
 import com.indago.tr2d.ui.util.OsDependentFileChooser;
 import com.indago.tr2d.ui.view.Tr2dMainPanel;
 import com.indago.util.OSValidator;
@@ -63,7 +64,30 @@ public class Tr2dApplication {
 			new ImageJ();
 		}
 
+		parseCommandLineArgs( args );
+
 		guiFrame = new JFrame( "tr2d" );
+		setFrameSizeAndCloseOperation();
+		setImageAppIcon();
+
+		checkGurobiAvailability();
+
+		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
+		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
+		mainPanel = new Tr2dMainPanel( guiFrame, model );
+
+		guiFrame.getContentPane().add( mainPanel );
+		guiFrame.setVisible( true );
+	}
+
+	private static void setFrameSizeAndCloseOperation() {
+		try {
+			FrameProperties.load( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
+		} catch ( final IOException e ) {
+			System.err.println( "WARNING: Frame properties not found. Will use default values." );
+			guiFrame.setBounds( FrameProperties.getCenteredRectangle( 1200, 1024 ) );
+		}
+
 		guiFrame.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
 		guiFrame.addWindowListener( new WindowAdapter() {
 
@@ -80,21 +104,16 @@ public class Tr2dApplication {
 						options,
 						options[ 0 ] );
 				if ( choice == 0 ) {
+					try {
+						FrameProperties.save( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
+					} catch ( final Exception e ) {
+						System.err.println( "ERROR: Could not save frame properties in project folder!" );
+						e.printStackTrace();
+					}
 					System.exit( 0 );
 				}
 			}
 		} );
-
-		setImageAppIcon();
-		parseCommandLineArgs( args );
-		checkGurobiAvailability();
-
-		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
-		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
-		mainPanel = new Tr2dMainPanel( guiFrame, model );
-
-		guiFrame.add( mainPanel );
-		guiFrame.setVisible( true );
 	}
 
 	/**
