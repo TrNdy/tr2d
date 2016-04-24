@@ -19,7 +19,6 @@ import com.indago.data.segmentation.SilentWekaSegmenter;
 import com.indago.io.DataMover;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFolder;
-import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.util.converter.RealDoubleThresholdConverter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -41,7 +40,8 @@ public class Tr2dWekaSegmentationModel {
 	private final String FILENAME_PREFIX_SUM_IMGS = "sumImage";
 	private final String FILENAME_PREFIX_CLASSIFICATION_IMGS = "classificationImage";
 
-	private final Tr2dModel model;
+	private final Tr2dSegmentationCollectionModel model;
+	private ProjectFolder projectFolder;
 
 	private SilentWekaSegmenter< DoubleType > segClassifier;
 
@@ -51,19 +51,24 @@ public class Tr2dWekaSegmentationModel {
 	private RandomAccessibleInterval< DoubleType > imgClassification = null;
 	private RandomAccessibleInterval< DoubleType > imgSegmentHypotheses = null;
 
-	private final ProjectFolder dataFolder;
-
 	/**
+	 * @param parentFolder
 	 *
 	 */
-	public Tr2dWekaSegmentationModel( final Tr2dModel model ) {
-		this.model = model;
+	public Tr2dWekaSegmentationModel( final Tr2dSegmentationCollectionModel tr2dSegmentationCollectionModel, final ProjectFolder parentFolder ) {
+		this.model = tr2dSegmentationCollectionModel;
+
+		try {
+			this.projectFolder = parentFolder.addFolder( "weka" );
+		} catch ( final IOException e ) {
+			this.projectFolder = null;
+			System.err.println( "ERROR: Subfolder for weka segmentation hypotheses could not be created." );
+			e.printStackTrace();
+		}
+
 		final CsvParser parser = new CsvParser( new CsvParserSettings() );
 
-		dataFolder = model.getProjectFolder().getFolder( Tr2dProjectFolder.WEKA_SEGMENTATION_FOLDER );
-		dataFolder.mkdirs();
-
-		final File thresholdValues = dataFolder.addFile( FILENAME_THRESHOLD_VALUES, FILENAME_THRESHOLD_VALUES );
+		final File thresholdValues = projectFolder.addFile( FILENAME_THRESHOLD_VALUES, FILENAME_THRESHOLD_VALUES );
 		try {
 			final List< String[] > rows = parser.parseAll( new FileReader( thresholdValues ) );
 			for ( final String[] strings : rows ) {
@@ -83,7 +88,7 @@ public class Tr2dWekaSegmentationModel {
 			listThresholds.add( 0.95 );
 		}
 
-		final File classifierFilenames = dataFolder.addFile( FILENAME_CLASSIFIERS, FILENAME_CLASSIFIERS );
+		final File classifierFilenames = projectFolder.addFile( FILENAME_CLASSIFIERS, FILENAME_CLASSIFIERS );
 		try {
 			final List< String[] > rows = parser.parseAll( new FileReader( classifierFilenames ) );
 			for ( final String[] strings : rows ) {
@@ -103,8 +108,8 @@ public class Tr2dWekaSegmentationModel {
 					"Would load persistent classification and sum images here (if data handlig would not be a f****** mess in the ImageJ universe..." );
 			try {
 				imgClassification =
-						DoubleTypeImgLoader.loadTiff( new File( dataFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ) );
-				imgSegmentHypotheses = DoubleTypeImgLoader.loadTiff( new File( dataFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) );
+						DoubleTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ) );
+				imgSegmentHypotheses = DoubleTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) );
 			} catch ( final ImgIOException e ) {
 				JOptionPane.showMessageDialog(
 						Tr2dApplication.getGuiFrame(),
@@ -141,7 +146,7 @@ public class Tr2dWekaSegmentationModel {
 		this.listClassifierFilenames = absolutePaths;
 
 		try {
-			final FileWriter writer = new FileWriter( new File( dataFolder.getFolder(), FILENAME_CLASSIFIERS ) );
+			final FileWriter writer = new FileWriter( new File( projectFolder.getFolder(), FILENAME_CLASSIFIERS ) );
 			for ( final String string : absolutePaths ) {
 				writer.append( string );
 				writer.append( "\n" );
@@ -169,10 +174,10 @@ public class Tr2dWekaSegmentationModel {
 			loadClassifier( cf );
 
     		// classify frames
-			imgClassification = SegmentationMagic.returnClassification( getTr2dModel().getImgOrig() );
+			imgClassification = SegmentationMagic.returnClassification( getModel().getModel().getImgOrig() );
 			IJ.save(
 					ImageJFunctions.wrap( imgClassification, "classification image" ).duplicate(),
-					new File( dataFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ).getAbsolutePath() );
+					new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ).getAbsolutePath() );
 
     		// collect thresholds in SumImage
     		RandomAccessibleInterval< DoubleType > imgTemp;
@@ -187,7 +192,7 @@ public class Tr2dWekaSegmentationModel {
     		}
 			IJ.save(
 					ImageJFunctions.wrap( imgSegmentHypotheses, "sum image" ).duplicate(),
-					new File( dataFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ).getAbsolutePath() );
+					new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ).getAbsolutePath() );
 		}
 	}
 
@@ -221,7 +226,7 @@ public class Tr2dWekaSegmentationModel {
 	public void setListThresholds( final List< Double > list ) {
 		this.listThresholds = list;
 		try {
-			final FileWriter writer = new FileWriter( new File( dataFolder.getFolder(), FILENAME_THRESHOLD_VALUES ) );
+			final FileWriter writer = new FileWriter( new File( projectFolder.getFolder(), FILENAME_THRESHOLD_VALUES ) );
 			for ( final Double value : listThresholds ) {
 				writer.append( value.toString() );
 				writer.append( ", " );
@@ -236,7 +241,7 @@ public class Tr2dWekaSegmentationModel {
 	/**
 	 * @return the model
 	 */
-	public Tr2dModel getTr2dModel() {
+	public Tr2dSegmentationCollectionModel getModel() {
 		return model;
 	}
 }

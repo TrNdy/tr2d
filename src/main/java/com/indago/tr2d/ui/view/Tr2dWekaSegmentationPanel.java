@@ -30,6 +30,8 @@ import weka.gui.ExtensionFileFilter;
  */
 public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener {
 
+	private static final long serialVersionUID = 9192569315077150275L;
+
 	private final Tr2dWekaSegmentationModel modelWekaSeg;
 
 	private JLabel lblClassifier;
@@ -90,8 +92,8 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 		icSegmentation = new IddeaComponent(
 				new Dimension(
-						(int) modelWekaSeg.getTr2dModel().getImgOrig().dimension( 0 ),
-						(int) modelWekaSeg.getTr2dModel().getImgOrig().dimension( 1 ) ) );
+						(int) modelWekaSeg.getModel().getModel().getImgOrig().dimension( 0 ),
+						(int) modelWekaSeg.getModel().getModel().getImgOrig().dimension( 1 ) ) );
 		icSegmentation.showMenu( false );
 		icSegmentation.setToolBarLocation( BorderLayout.WEST );
 		icSegmentation.setToolBarVisible( false );

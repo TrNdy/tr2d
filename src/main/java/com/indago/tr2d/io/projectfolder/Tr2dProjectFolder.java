@@ -15,7 +15,7 @@ import com.indago.io.projectfolder.ProjectFolder;
 public class Tr2dProjectFolder extends ProjectFolder {
 
 	// FOLDERS
-	public static String WEKA_SEGMENTATION_FOLDER = "WEKA_SEGMENTATION_FOLDER";
+	public static String SEGMENTATION_FOLDER = "SEGMENTATION_FOLDER";
 	public static String TRACKING_FOLDER = "TRACKING_FOLDER";
 
 	// FILES
@@ -32,7 +32,7 @@ public class Tr2dProjectFolder extends ProjectFolder {
 		addFile( RAW_DATA, "raw.tif" );
 		addFile( FRAME_PROPERTIES, "frame.props" );
 		try {
-			addFolder( WEKA_SEGMENTATION_FOLDER, "segmentation_weka" );
+			addFolder( SEGMENTATION_FOLDER, "segmentation" );
 			addFolder( TRACKING_FOLDER, "tracking" );
 		} catch ( final IOException ioe ) {
 			ioe.printStackTrace();

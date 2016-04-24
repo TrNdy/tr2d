@@ -16,6 +16,8 @@ import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
  */
 public class Tr2dSegmentationCollectionPanel extends JPanel {
 
+	private static final long serialVersionUID = -6328417825503609386L;
+
 	private final Tr2dSegmentationCollectionModel model;
 
 	private JTabbedPane tabs;
@@ -31,8 +33,10 @@ public class Tr2dSegmentationCollectionPanel extends JPanel {
 
 	private void buildGui() {
 		tabs = new JTabbedPane();
+		final JPanel tabFile = new Tr2dImportedSegmentationPanel( model.getImportedSegmentationModel() );
 		final JPanel tabWeka = new Tr2dWekaSegmentationPanel( model.getWekaModel() );
-		tabs.add( "Weka Segmentation", tabWeka );
+		tabs.add( "Imported Hypotheses", tabFile );
+		tabs.add( "Weka Hypotheses", tabWeka );
 		add( tabs, BorderLayout.CENTER );
 	}
 

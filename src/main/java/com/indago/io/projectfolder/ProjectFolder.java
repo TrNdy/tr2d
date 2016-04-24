@@ -143,6 +143,17 @@ public class ProjectFolder {
 	}
 
 	/**
+	 * Adds a folder to the given ProjectFolder.
+	 * The foldername will also be used as its id.
+	 *
+	 * @param filename
+	 * @throws IOException
+	 */
+	public ProjectFolder addFolder( final String foldername ) throws IOException {
+		return addFolder( foldername, foldername );
+	}
+
+	/**
 	 * @param id
 	 * @param foldername
 	 * @return
