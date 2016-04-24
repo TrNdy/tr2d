@@ -68,7 +68,7 @@ public class Tr2dWekaSegmentationModel {
 
 		final CsvParser parser = new CsvParser( new CsvParserSettings() );
 
-		final File thresholdValues = projectFolder.addFile( FILENAME_THRESHOLD_VALUES, FILENAME_THRESHOLD_VALUES );
+		final File thresholdValues = projectFolder.addFile( FILENAME_THRESHOLD_VALUES, FILENAME_THRESHOLD_VALUES ).getFile();
 		try {
 			final List< String[] > rows = parser.parseAll( new FileReader( thresholdValues ) );
 			for ( final String[] strings : rows ) {
@@ -88,7 +88,7 @@ public class Tr2dWekaSegmentationModel {
 			listThresholds.add( 0.95 );
 		}
 
-		final File classifierFilenames = projectFolder.addFile( FILENAME_CLASSIFIERS, FILENAME_CLASSIFIERS );
+		final File classifierFilenames = projectFolder.addFile( FILENAME_CLASSIFIERS, FILENAME_CLASSIFIERS ).getFile();
 		try {
 			final List< String[] > rows = parser.parseAll( new FileReader( classifierFilenames ) );
 			for ( final String[] strings : rows ) {

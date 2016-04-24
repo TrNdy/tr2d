@@ -99,7 +99,7 @@ public class Tr2dTrackingModel {
 
 		this.tr2dSegModel = modelSeg;
 
-		final File fImgSol = dataFolder.addFile( FILENAME_TRACKING );
+		final File fImgSol = dataFolder.addFile( FILENAME_TRACKING ).getFile();
 		if ( fImgSol.canRead() ) {
 			try {
 				imgSolution = DoubleTypeImgLoader.loadTiff( fImgSol );

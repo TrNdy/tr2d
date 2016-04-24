@@ -9,13 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.ListModel;
+
+import org.python.google.common.io.Files;
+
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFile;
 import com.indago.io.projectfolder.ProjectFolder;
+import com.jgoodies.common.collect.LinkedListModel;
 
 import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.DoubleType;
+import weka.gui.ExtensionFileFilter;
 
 /**
  * @author jug
@@ -28,6 +34,8 @@ public class Tr2dImportedSegmentationModel {
 
 	private final Vector< ProjectFile > files;
 	private final List< RandomAccessibleInterval< DoubleType > > imgs;
+
+	private LinkedListModel< ProjectFile > linkedListModel = null;
 
 	/**
 	 * @param parentFolder
@@ -46,15 +54,16 @@ public class Tr2dImportedSegmentationModel {
 		}
 
 		imgs = new ArrayList< >();
-		files = new Vector< >( projectFolder.getFiles() );
+		files = new Vector< ProjectFile >( projectFolder.getFiles( new ExtensionFileFilter( "tif", "TIFF Image Stack" ) ) );
 		for ( final ProjectFile pf : files ) {
 			try {
-				final RandomAccessibleInterval< DoubleType > rai = DoubleTypeImgLoader.loadTiffEnsureFloatType( pf.getFile() );
+				final RandomAccessibleInterval< DoubleType > rai = DoubleTypeImgLoader.loadTiffEnsureDoubleType( pf.getFile() );
 				imgs.add( rai );
 			} catch ( final ImgIOException e ) {
 				e.printStackTrace();
 			}
 		}
+		linkedListModel = new LinkedListModel< >( getLoadedFiles() );
 	}
 
 	/**
@@ -62,10 +71,6 @@ public class Tr2dImportedSegmentationModel {
 	 */
 	public List< RandomAccessibleInterval< DoubleType > > getSegmentHypothesesImages() {
 		return imgs;
-	}
-
-	public void importSegmentation( final File f ) {
-
 	}
 
 	/**
@@ -87,5 +92,43 @@ public class Tr2dImportedSegmentationModel {
 	 */
 	public Vector< ProjectFile > getLoadedFiles() {
 		return files;
+	}
+
+	/**
+	 * Copies the given file into the project folder.
+	 *
+	 * @param f
+	 * @throws IOException
+	 * @throws ImgIOException
+	 */
+	public void importSegmentation( final File f ) throws IOException, ImgIOException {
+		final ProjectFile pf = projectFolder.addFile( f.getName() );
+		Files.copy( f, pf.getFile() );
+
+		files.add( pf );
+		linkedListModel.add( pf );
+		RandomAccessibleInterval< DoubleType > rai;
+		rai = DoubleTypeImgLoader.loadTiffEnsureDoubleType( pf.getFile() );
+		imgs.add( rai );
+	}
+
+	/**
+	 * @param idx
+	 */
+	public void removeSegmentation( final int idx ) {
+		final ProjectFile pf = files.remove( idx );
+		linkedListModel.remove( pf );
+		imgs.remove( idx );
+
+		if ( !pf.getFile().delete() ) {
+			System.err.println( String.format( "ERROR: imported segmentation file %s could not be deleted from project folder.", pf ) );
+		}
+	}
+
+	/**
+	 * @return
+	 */
+	public ListModel< ProjectFile > getListModel() {
+		return linkedListModel;
 	}
 }

@@ -8,6 +8,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JList;
@@ -19,6 +21,12 @@ import javax.swing.event.ListSelectionListener;
 import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.io.projectfolder.ProjectFile;
 import com.indago.tr2d.ui.model.Tr2dImportedSegmentationModel;
+import com.indago.tr2d.ui.util.OsDependentFileChooser;
+
+import io.scif.img.ImgIOException;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.real.DoubleType;
+import weka.gui.ExtensionFileFilter;
 
 /**
  * @author jug
@@ -37,7 +45,7 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 	public Tr2dImportedSegmentationPanel( final Tr2dImportedSegmentationModel model ) {
 		super( new BorderLayout() );
 		this.model = model;
-		listSegmentations = new JList< ProjectFile >( model.getLoadedFiles() );
+		listSegmentations = new JList< ProjectFile >( model.getListModel() );
 		buildGui();
 	}
 
@@ -76,7 +84,27 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
 	@Override
-	public void actionPerformed( final ActionEvent e ) {}
+	public void actionPerformed( final ActionEvent e ) {
+		if ( e.getSource().equals( add ) ) {
+			final File file = OsDependentFileChooser.showLoadFileChooser(
+					this,
+					null,
+					"Choose a sum image tiff file to import...",
+					new ExtensionFileFilter( "tif", "TIFF Image Stack" ) );
+			try {
+				model.importSegmentation( file );
+				listSegmentations.setSelectedIndex( listSegmentations.getModel().getSize() - 1 );
+			} catch ( ImgIOException | IOException e1 ) {
+				e1.printStackTrace();
+			}
+		} else if ( e.getSource().equals( remove ) ) {
+			final int idx = listSegmentations.getSelectedIndex();
+			if ( idx > -1 ) {
+				model.removeSegmentation( idx );
+				updateViewer( idx );
+			}
+		}
+	}
 
 	/**
 	 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
@@ -87,9 +115,22 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 
 			final int idx = listSegmentations.getSelectedIndex();
 			if ( idx > -1 ) {
-				icSegmentation.setSourceImage( model.getSegmentHypothesesImages().get( idx ) );
+				updateViewer( idx );
+			} else {
+				listSegmentations.setSelectedIndex( 0 );
 			}
 		}
+	}
+
+	/**
+	 * Updates viewer to show the image associated with the loaded segmentation
+	 * at list index <code>idx</code>.
+	 *
+	 * @param idx
+	 */
+	private void updateViewer( final int idx ) {
+		final RandomAccessibleInterval< DoubleType > img = model.getSegmentHypothesesImages().get( idx );
+		icSegmentation.setSourceImage( img );
 	}
 
 }

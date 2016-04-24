@@ -36,7 +36,7 @@ public class DoubleTypeImgLoader {
 		return img;
 	}
 
-	public static RandomAccessibleInterval< DoubleType > loadTiffEnsureFloatType( final File file )
+	public static RandomAccessibleInterval< DoubleType > loadTiffEnsureDoubleType( final File file )
 			throws ImgIOException {
 //	    ALERT: THOSE FOLLOWING TWO LINES CAUSE THREAD LEAK!!!!
 //		final ImgFactory< DoubleType > imgFactory = new ArrayImgFactory< DoubleType >();

@@ -5,11 +5,14 @@ package com.indago.io.projectfolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+
+import weka.gui.ExtensionFileFilter;
 
 /**
  * @author jug
@@ -82,6 +85,24 @@ public class ProjectFolder {
 	}
 
 	/**
+	 * Returns all <code>ProjectFile</code>s stored in this
+	 * <code>ProjectFolder</code> that comply with the given
+	 * <code>ExtensionFileFilter</code>.
+	 *
+	 * @param extensionFileFilter
+	 * @return
+	 */
+	public Collection< ProjectFile > getFiles( final ExtensionFileFilter extensionFileFilter ) {
+		final ArrayList< ProjectFile > ret = new ArrayList< >();
+		for ( final ProjectFile pf : getFiles() ) {
+			if ( extensionFileFilter.accept( pf.getFile() ) ) {
+				ret.add( pf );
+			}
+		}
+		return ret;
+	}
+
+	/**
 	 * Returns the <code>ProjectFile</code> stored by the given id.
 	 *
 	 * @param id
@@ -128,7 +149,7 @@ public class ProjectFolder {
 	 *
 	 * @param filename
 	 */
-	public File addFile( final String filename ) {
+	public ProjectFile addFile( final String filename ) {
 		return addFile( filename, filename );
 	}
 
@@ -136,10 +157,10 @@ public class ProjectFolder {
 	 * @param id
 	 * @param filename
 	 */
-	public File addFile( final String id, final String filename ) {
+	public ProjectFile addFile( final String id, final String filename ) {
 		final ProjectFile pf = new ProjectFile( id, this, filename );
 		mapFiles.put( id, pf );
-		return pf.getFile();
+		return pf;
 	}
 
 	/**
