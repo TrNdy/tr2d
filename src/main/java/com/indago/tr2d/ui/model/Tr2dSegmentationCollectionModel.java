@@ -30,7 +30,7 @@ public class Tr2dSegmentationCollectionModel {
 	}
 
 	/**
-	 * @return the wekaModel
+	 * @return the importedSegmentationModel
 	 */
 	public Tr2dImportedSegmentationModel getImportedSegmentationModel() {
 		return importedSegmentationModel;
@@ -47,8 +47,7 @@ public class Tr2dSegmentationCollectionModel {
 	 * @return
 	 */
 	public ProjectFolder getProjectFolder() {
-		// TODO Auto-generated method stub
-		return null;
+		return projectFolder;
 	}
 
 	/**

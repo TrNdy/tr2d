@@ -190,4 +190,15 @@ public class ProjectFolder {
 		}
 		return false;
 	}
+
+	/**
+	 * Loads all files that are located in this <code>ProjectFolder</code>.
+	 * The filename is also used as the id.
+	 */
+	public void loadFiles() {
+		final File[] listOfFiles = getFolder().listFiles();
+		for ( final File file : listOfFiles ) {
+			this.addFile( file.getName() );
+		}
+	}
 }

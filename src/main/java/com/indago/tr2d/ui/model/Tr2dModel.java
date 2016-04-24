@@ -4,9 +4,14 @@
 package com.indago.tr2d.ui.model;
 
 import com.indago.io.projectfolder.ProjectFolder;
+import com.indago.util.converter.RealDoubleNormalizeConverter;
 
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converters;
+import net.imglib2.img.ImagePlusAdapter;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 
 /**
@@ -28,6 +33,15 @@ public class Tr2dModel {
 	public Tr2dModel( final ProjectFolder projectFolder, final ImagePlus imgPlus ) {
 		this.imgPlus = imgPlus;
 		this.projectFolder = projectFolder;
+		final Img< ? extends RealType > temp = ImagePlusAdapter.wrapNumeric( imgPlus );
+		setImgOrig( Converters.convert(
+				( RandomAccessibleInterval ) temp,
+				new RealDoubleNormalizeConverter( 1.0 ),
+				new DoubleType() ) );
+		setImgOrigNorm( Converters.convert(
+				( RandomAccessibleInterval ) temp,
+				new RealDoubleNormalizeConverter( imgPlus.getStatistics().max ),
+				new DoubleType() ) );
 	}
 
 	/**

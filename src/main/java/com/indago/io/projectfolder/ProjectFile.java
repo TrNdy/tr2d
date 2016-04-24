@@ -59,4 +59,9 @@ public class ProjectFile {
 	public boolean canWrite() {
 		return getFile().canWrite();
 	}
+
+	@Override
+	public String toString() {
+		return filename;
+	}
 }

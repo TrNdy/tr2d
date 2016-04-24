@@ -26,13 +26,8 @@ import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
-import com.indago.util.converter.RealDoubleNormalizeConverter;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.converter.Converters;
-import net.imglib2.img.ImagePlusAdapter;
-import net.imglib2.img.Img;
-import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
 
 /**
@@ -61,16 +56,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		setBorder( BorderFactory.createEmptyBorder( 10, 15, 5, 15 ) );
 		this.frame = frame;
 		this.model = model;
-
-		final Img< ? extends RealType > temp = ImagePlusAdapter.wrapNumeric( model.getImgPlus() );
-		model.setImgOrig( Converters.convert(
-				( RandomAccessibleInterval ) temp,
-				new RealDoubleNormalizeConverter( 1.0 ),
-				new DoubleType() ) );
-		model.setImgOrigNorm( Converters.convert(
-				( RandomAccessibleInterval ) temp,
-				new RealDoubleNormalizeConverter( model.getImgPlus().getStatistics().max ),
-				new DoubleType() ) );
 
 		buildGui();
 	}

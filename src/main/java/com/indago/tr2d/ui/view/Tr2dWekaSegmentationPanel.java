@@ -32,7 +32,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 	private static final long serialVersionUID = 9192569315077150275L;
 
-	private final Tr2dWekaSegmentationModel modelWekaSeg;
+	private final Tr2dWekaSegmentationModel model;
 
 	private JLabel lblClassifier;
 	private JTextPane txtClassifierPath;
@@ -47,10 +47,10 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 	public Tr2dWekaSegmentationPanel( final Tr2dWekaSegmentationModel model ) {
 		super( new BorderLayout() );
-		modelWekaSeg = model;
+		this.model = model;
 		buildGui();
 
-		final RandomAccessibleInterval< DoubleType > seghyps = modelWekaSeg.getSegmentHypotheses();
+		final RandomAccessibleInterval< DoubleType > seghyps = model.getSegmentHypotheses();
 		if ( seghyps != null ) {
 			icSegmentation.setSourceImage( seghyps );
 		}
@@ -65,14 +65,14 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		txtClassifierPath = new JTextPane();
 		String fn = "";
 		try {
-			fn = modelWekaSeg.getClassifierFilenames().get( 0 );
+			fn = model.getClassifierFilenames().get( 0 );
 		} catch ( final IndexOutOfBoundsException e ) {}
 		txtClassifierPath.setText( fn );
 		bOpenClassifier = new JButton( "pick classifier" );
 		bOpenClassifier.addActionListener( this );
 
 		lblThresholds = new JLabel( "thresholds: " );
-		txtThresholds = new JDoubleListTextPane( modelWekaSeg.getListThresholds() );
+		txtThresholds = new JDoubleListTextPane( model.getListThresholds() );
 
 		bStartSegmentation = new JButton( "start" );
 		bStartSegmentation.addActionListener( this );
@@ -92,8 +92,8 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 		icSegmentation = new IddeaComponent(
 				new Dimension(
-						(int) modelWekaSeg.getModel().getModel().getImgOrig().dimension( 0 ),
-						(int) modelWekaSeg.getModel().getModel().getImgOrig().dimension( 1 ) ) );
+						(int) model.getModel().getModel().getImgOrig().dimension( 0 ),
+						(int) model.getModel().getModel().getImgOrig().dimension( 1 ) ) );
 		icSegmentation.showMenu( false );
 		icSegmentation.setToolBarLocation( BorderLayout.WEST );
 		icSegmentation.setToolBarVisible( false );
@@ -142,7 +142,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		try {
 			final ArrayList< String > paths = new ArrayList< >();
 			paths.add( txtClassifierPath.getText() );
-			modelWekaSeg.setClassifierPaths( paths );
+			model.setClassifierPaths( paths );
 		} catch ( final IllegalArgumentException iae ) {
 			JOptionPane.showMessageDialog(
 					this,
@@ -153,7 +153,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		}
 
 		try {
-			modelWekaSeg.setListThresholds( txtThresholds.getList() );
+			model.setListThresholds( txtThresholds.getList() );
 		} catch ( final NumberFormatException nfe ) {
 			JOptionPane.showMessageDialog(
 					this,
@@ -164,9 +164,9 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		}
 
 		// in case all could be set fine:
-		modelWekaSeg.segment();
+		model.segment();
 
-		final RandomAccessibleInterval< DoubleType > seghyps = modelWekaSeg.getSegmentHypotheses();
+		final RandomAccessibleInterval< DoubleType > seghyps = model.getSegmentHypotheses();
 		if ( seghyps == null ) {
 			JOptionPane.showMessageDialog(
 					this,

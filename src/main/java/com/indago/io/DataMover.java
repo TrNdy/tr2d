@@ -16,6 +16,7 @@ import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 
@@ -185,7 +186,17 @@ public class DataMover {
 		boolean throwException = false;
 		if ( sourceType instanceof FloatType ) {
 
-			// FloatType --> ARGBType
+			if ( targetType instanceof DoubleType ) { // FloatType --> DoubleType
+				final Cursor< TT > targetCursor = target.localizingCursor();
+				final RandomAccess< ST > sourceRandomAccess = source.randomAccess();
+				final int v;
+				while ( targetCursor.hasNext() ) {
+					targetCursor.fwd();
+					sourceRandomAccess.setPosition( targetCursor );
+
+					( ( DoubleType ) targetCursor.get() ).set( ( ( FloatType ) sourceRandomAccess.get() ).getRealDouble() );
+				}
+			} else // FloatType --> ARGBType
 			if ( targetType instanceof ARGBType ) {
 				final Cursor< TT > targetCursor = target.localizingCursor();
 				final RandomAccess< ST > sourceRandomAccess = source.randomAccess();
@@ -207,7 +218,7 @@ public class DataMover {
 
 		} else if ( sourceType instanceof UnsignedShortType ) {
 
-			// RealType --> FloatType
+			// UnsignedShortType --> FloatType
 			if ( targetType instanceof FloatType ) {
 				final Cursor< TT > targetCursor = target.localizingCursor();
 				final RandomAccess< ST > sourceRandomAccess = source.randomAccess();
@@ -217,6 +228,17 @@ public class DataMover {
 					sourceRandomAccess.setPosition( targetCursor );
 
 					( ( FloatType ) targetCursor.get() ).set( ( ( UnsignedShortType ) sourceRandomAccess.get() ).getRealFloat() );
+				}
+			} else
+			if ( targetType instanceof DoubleType ) {
+				final Cursor< TT > targetCursor = target.localizingCursor();
+				final RandomAccess< ST > sourceRandomAccess = source.randomAccess();
+				final int v;
+				while ( targetCursor.hasNext() ) {
+					targetCursor.fwd();
+					sourceRandomAccess.setPosition( targetCursor );
+
+					( ( DoubleType ) targetCursor.get() ).set( ( ( UnsignedShortType ) sourceRandomAccess.get() ).getRealDouble() );
 				}
 			} else
 			// RealType --> ARGBType
@@ -264,7 +286,7 @@ public class DataMover {
 		}
 
 		if ( throwException )
-			throw new Exception( "Convertion between the given NativeTypes not implemented!" );
+			throw new Exception( "Convertion from " + sourceType.getClass().toString() + " to " + targetType.getClass() + " not implemented!" );
 	}
 //	@SuppressWarnings( "unchecked" )
 //	public static < ST extends NativeType< ST >, TT extends NativeType< TT > > void convertAndCopy(

@@ -104,8 +104,6 @@ public class Tr2dWekaSegmentationModel {
 		int i = 0;
 		for ( final String string : listClassifierFilenames ) {
 			i++;
-			System.out.println(
-					"Would load persistent classification and sum images here (if data handlig would not be a f****** mess in the ImageJ universe..." );
 			try {
 				imgClassification =
 						DoubleTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ) );
