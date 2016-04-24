@@ -4,11 +4,13 @@
 package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
@@ -20,6 +22,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 
 	private final Tr2dTrackingModel model;
 
+	private JTabbedPane tabs;
 	private JButton bRun;
 
 	private IddeaComponent icSolution = null;
@@ -38,6 +41,26 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	 * Builds the GUI of this panel.
 	 */
 	private void buildGui() {
+		tabs = new JTabbedPane( JTabbedPane.TOP );
+		tabs.add( "Frames", buildFramePanel() );
+		tabs.add( "Tracking", buildTrackingPanel() );
+		tabs.add( "Solver", buildSolverPanel() );
+		this.add( tabs, BorderLayout.CENTER );
+	}
+
+	private Component buildFramePanel() {
+		final JPanel panel = new JPanel( new BorderLayout() );
+		return panel;
+	}
+
+	private Component buildTrackingPanel() {
+		final JPanel panel = new JPanel( new BorderLayout() );
+		return panel;
+	}
+
+	private JPanel buildSolverPanel() {
+		final JPanel panel = new JPanel( new BorderLayout() );
+
 		bRun = new JButton( "run" );
 		bRun.addActionListener( this );
 
@@ -49,8 +72,10 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 //		icSegmentation.showStackSlider( true );
 //		icSegmentation.showTimeSlider( true );
 
-		this.add( bRun, BorderLayout.NORTH );
-		this.add( icSolution, BorderLayout.CENTER );
+		panel.add( bRun, BorderLayout.NORTH );
+		panel.add( icSolution, BorderLayout.CENTER );
+
+		return panel;
 	}
 
 	/**

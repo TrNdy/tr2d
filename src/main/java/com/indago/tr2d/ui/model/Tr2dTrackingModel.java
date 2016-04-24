@@ -45,6 +45,7 @@ import net.imglib2.util.Pair;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
+
 /**
  * @author jug
  */
@@ -56,9 +57,6 @@ public class Tr2dTrackingModel {
 
 	private final Tr2dModel tr2dModel;
 	private final Tr2dWekaSegmentationModel tr2dSegModel;
-	private final Tr2dTrackingProblem tr2dTraProblem;
-
-	private final SumImageMovieSequence sumImgMovie;
 
 	private final CostsFactory< LabelingSegment > segmentCosts;
 	private final CostsFactory< LabelingSegment > appearanceCosts;
@@ -66,11 +64,13 @@ public class Tr2dTrackingModel {
 	private final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
 	private final CostsFactory< LabelingSegment > disappearanceCosts;
 
+	private Tr2dTrackingProblem tr2dTraProblem;
+	private SumImageMovieSequence sumImgMovie;
 	private RandomAccessibleInterval< DoubleType > imgSolution = null;
 
 	private MappedFactorGraph mfg;
 	private Assignment< Variable > fgSolution;
-	private Assignment< IndicatorNode > problemSolution;
+	private Assignment< IndicatorNode > pgSolution;
 
 	private final ProjectFolder dataFolder;
 
@@ -94,15 +94,10 @@ public class Tr2dTrackingModel {
 		this.moveCosts = movementCosts;
 		this.divisionCosts = divisionCosts;
 		this.disappearanceCosts = disappearanceCosts;
-		this.tr2dTraProblem =
-				new Tr2dTrackingProblem( appearanceCosts,
-						movementCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
-						divisionCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD,
-						disappearanceCosts );
+
 		this.segmentCosts = segmentCosts;
 
 		this.tr2dSegModel = modelSeg;
-		this.sumImgMovie = new SumImageMovieSequence( tr2dSegModel );
 
 		final File fImgSol = dataFolder.addFile( FILENAME_TRACKING );
 		if ( fImgSol.canRead() ) {
@@ -115,16 +110,32 @@ public class Tr2dTrackingModel {
 	}
 
 	/**
-	 *
+	 * Prepares a tracking (builds pg and fg and stores intermediate data in
+	 * project folder).
 	 */
-	@SuppressWarnings( "unchecked" )
+	private void prepare() {
+		if ( sumImgMovie == null ) {
+			processSegmentationInputs();
+			tr2dTraProblem = null;
+		}
+
+		if ( tr2dTraProblem == null ) {
+			buildTrackingProblem();
+			saveTrackingProblem();
+			mfg = null;
+		}
+
+		if ( mfg == null ) {
+			buildFactorGraph();
+			saveFactorGraph();
+		}
+	}
+
+	/**
+	 * Runs the optimization for the prepared tracking.
+	 */
 	public void run() {
-		processSegmentationInputs();
-
-		buildTrackingProblem();
-		saveTrackingProblem();
-
-		buildFactorGraph();
+		prepare();
 
 		solveFactorGraph();
 
@@ -140,7 +151,17 @@ public class Tr2dTrackingModel {
 			tr2dTraProblem.saveToFile( dataFolder.getFile( FILENAME_PGRAPH ).getFile() );
 		} catch ( final IOException e ) {
 			e.printStackTrace();
+		} catch ( final NullPointerException npe ) {
+			System.err.println( "ERROR: PGraph could not be stored to disk!" );
 		}
+	}
+
+	/**
+	 *
+	 */
+	private void saveFactorGraph() {
+		// TODO Auto-generated method stub
+
 	}
 
 	/**
@@ -156,6 +177,7 @@ public class Tr2dTrackingModel {
 	 *
 	 */
 	public void processSegmentationInputs() {
+		this.sumImgMovie = new SumImageMovieSequence( tr2dSegModel );
 		try {
 			sumImgMovie.processFrames();
 		} catch ( final IllegalAccessException e ) {
@@ -171,6 +193,10 @@ public class Tr2dTrackingModel {
 	 */
 	public void buildTrackingProblem() {
 		final TicToc tictoc = new TicToc();
+
+		this.tr2dTraProblem =
+				new Tr2dTrackingProblem( appearanceCosts, moveCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD, divisionCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD, disappearanceCosts );
+
 		for ( int frameId = 0; frameId < sumImgMovie.getNumFrames(); frameId++ ) {
 			System.out.println(
 					String.format( "Working on frame %d of %d...", frameId + 1, sumImgMovie.getNumFrames() ) );
@@ -220,7 +246,7 @@ public class Tr2dTrackingModel {
 		fgSolution = null;
 		try {
 			fgSolution = SolveGurobi.staticSolve( fg );
-			problemSolution = assMapper.map( fgSolution );
+			pgSolution = assMapper.map( fgSolution );
 		} catch ( final GRBException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -255,7 +281,7 @@ public class Tr2dTrackingModel {
 		for ( final Tr2dSegmentationProblem segProblem : tr2dTraProblem.getTimepoints() ) {
 			for ( final SegmentNode segVar : segProblem.getSegments() ) {
 				for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
-					if ( problemSolution.getAssignment( app ) == 1 ) { // || time == 0
+					if ( pgSolution.getAssignment( app ) == 1 ) { // || time == 0
 						drawLineageWithId( time, segVar, 10 + curColorId );
 						curColorId++;
 					}
@@ -263,8 +289,14 @@ public class Tr2dTrackingModel {
 			}
 			time++;
 		}
+	}
 
-		ImageJFunctions.show( imgSolution, "Solution" );
+	/**
+	 * Opens the computed tracking solution image in ImageJ (if it was computed
+	 * already). Does nothing otherwise.
+	 */
+	public void showSolutionInImageJ() {
+		if ( imgSolution != null ) ImageJFunctions.show( imgSolution, "Solution" );
 	}
 
 	/**
@@ -274,7 +306,7 @@ public class Tr2dTrackingModel {
 	private void drawLineageWithId( final int time, final SegmentNode segVar, final int curColorId ) {
 		final IntervalView< DoubleType > slice = Views.hyperSlice( imgSolution, 2, time );
 
-		if ( problemSolution.getAssignment( segVar ) == 1 ) {
+		if ( pgSolution.getAssignment( segVar ) == 1 ) {
 			final int color = curColorId;
 
 //			for ( final DisappearanceHypothesis disapp : segVar.getOutAssignments().getDisappearances() ) {
@@ -288,12 +320,12 @@ public class Tr2dTrackingModel {
 			Regions.sample( region, slice ).forEach( t -> t.set( c ) );
 
 			for ( final MovementHypothesis move : segVar.getOutAssignments().getMoves() ) {
-				if ( problemSolution.getAssignment( move ) == 1 ) {
+				if ( pgSolution.getAssignment( move ) == 1 ) {
 					drawLineageWithId( time + 1, move.getDest(), curColorId );
 				}
 			}
 			for ( final DivisionHypothesis div : segVar.getOutAssignments().getDivisions() ) {
-				if ( problemSolution.getAssignment( div ) == 1 ) {
+				if ( pgSolution.getAssignment( div ) == 1 ) {
 					drawLineageWithId( time + 1, div.getDest1(), curColorId );
 					drawLineageWithId( time + 1, div.getDest2(), curColorId );
 				}
