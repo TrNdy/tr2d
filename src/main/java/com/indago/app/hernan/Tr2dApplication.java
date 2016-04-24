@@ -4,12 +4,15 @@
 package com.indago.app.hernan;
 
 import java.awt.Image;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -61,6 +64,27 @@ public class Tr2dApplication {
 		}
 
 		guiFrame = new JFrame( "tr2d" );
+		guiFrame.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+		guiFrame.addWindowListener( new WindowAdapter() {
+
+			@Override
+			public void windowClosing( final WindowEvent we ) {
+				final Object[] options = { "Quit", "Cancel" };
+				final int choice = JOptionPane.showOptionDialog(
+						guiFrame,
+						"Do you really want to quit Tr2d?",
+						"Quit?",
+						JOptionPane.DEFAULT_OPTION,
+						JOptionPane.QUESTION_MESSAGE,
+						null,
+						options,
+						options[ 0 ] );
+				if ( choice == 0 ) {
+					System.exit( 0 );
+				}
+			}
+		} );
+
 		setImageAppIcon();
 		parseCommandLineArgs( args );
 		checkGurobiAvailability();
