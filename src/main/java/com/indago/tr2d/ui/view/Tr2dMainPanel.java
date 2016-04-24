@@ -24,8 +24,8 @@ import com.indago.app.hernan.costs.HernanMappingCostFactory;
 import com.indago.app.hernan.costs.HernanSegmentCostFactory;
 import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.tr2d.ui.model.Tr2dModel;
+import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
-import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.util.converter.RealDoubleNormalizeConverter;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -92,8 +92,8 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabData.add( icData, BorderLayout.CENTER );
 
 		// === TAB SEGMENTATION ===================================================================
-		final Tr2dWekaSegmentationModel segModel = new Tr2dWekaSegmentationModel( model );
-		tabSegmentation = new Tr2dWekaSegmentationPanel( segModel );
+		final Tr2dSegmentationCollectionModel segModel = new Tr2dSegmentationCollectionModel( model );
+		tabSegmentation = new Tr2dSegmentationCollectionPanel( segModel );
 
 		// === TAB TRACKING========================================================================
 		final RandomAccessibleInterval< DoubleType > imgOrig = model.getImgOrig();

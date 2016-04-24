@@ -56,7 +56,7 @@ public class Tr2dTrackingModel {
 	private final String FILENAME_TRACKING = "tracking.tif";
 
 	private final Tr2dModel tr2dModel;
-	private final Tr2dWekaSegmentationModel tr2dSegModel;
+	private final Tr2dSegmentationCollectionModel tr2dSegModel;
 
 	private final CostsFactory< LabelingSegment > segmentCosts;
 	private final CostsFactory< LabelingSegment > appearanceCosts;
@@ -79,7 +79,7 @@ public class Tr2dTrackingModel {
 	 */
 	public Tr2dTrackingModel(
 			final Tr2dModel model,
-			final Tr2dWekaSegmentationModel modelSeg,
+			final Tr2dSegmentationCollectionModel modelSeg,
 			final CostsFactory< LabelingSegment > segmentCosts,
 			final CostsFactory< LabelingSegment > appearanceCosts,
 			final CostsFactory< Pair< LabelingSegment, LabelingSegment > > movementCosts,
@@ -177,7 +177,7 @@ public class Tr2dTrackingModel {
 	 *
 	 */
 	public void processSegmentationInputs() {
-		this.sumImgMovie = new SumImageMovieSequence( tr2dSegModel );
+		this.sumImgMovie = new SumImageMovieSequence( tr2dSegModel.getWekaModel() );
 		try {
 			sumImgMovie.processFrames();
 		} catch ( final IllegalAccessException e ) {
@@ -261,7 +261,7 @@ public class Tr2dTrackingModel {
 		final AssignmentMapper< Variable, IndicatorNode > assMapper = mfg.getAssmntMapper();
 		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
 
-		this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getClassification(), new DoubleType() );
+		this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getWekaModel().getClassification(), new DoubleType() );
 
 //		int time = 0;
 //		for ( final Tr2dSegmentationModel segProblem : tr2dTraModel.getTimepoints() ) {
