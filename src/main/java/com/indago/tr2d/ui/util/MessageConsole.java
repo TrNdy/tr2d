@@ -1,6 +1,8 @@
 package com.indago.tr2d.ui.util;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 
 import javax.swing.event.DocumentListener;
@@ -66,7 +68,29 @@ public class MessageConsole
 	public void redirectOut(final Color textColor, final PrintStream printStream)
 	{
 		final ConsoleOutputStream cos = new ConsoleOutputStream(textColor, printStream);
-		System.setOut( new PrintStream(cos, true) );
+		final OutputStream out = new OutputStream() {
+
+			private final PrintStream redirected = new PrintStream( cos, true );
+			private final PrintStream original = new PrintStream( System.out );
+
+			@Override
+			public void write( final int b ) throws IOException {
+				redirected.print( String.valueOf( ( char ) b ) );
+				original.print( String.valueOf( ( char ) b ) );
+			}
+
+			@Override
+			public void write( final byte[] b, final int off, final int len ) throws IOException {
+				redirected.print( new String( b, off, len ) );
+				original.print( new String( b, off, len ) );
+			}
+
+			@Override
+			public void write( final byte[] b ) throws IOException {
+				write( b, 0, b.length );
+			}
+		};
+		System.setOut( new PrintStream( out, true ) );
 	}
 
 	/*
@@ -86,8 +110,30 @@ public class MessageConsole
 	 */
 	public void redirectErr(final Color textColor, final PrintStream printStream)
 	{
-		final ConsoleOutputStream cos = new ConsoleOutputStream(textColor, printStream);
-		System.setErr( new PrintStream(cos, true) );
+		final ConsoleOutputStream cos = new ConsoleOutputStream( textColor, printStream );
+		final OutputStream err = new OutputStream() {
+
+			private final PrintStream redirected = new PrintStream( cos, true );
+			private final PrintStream original = new PrintStream( System.err );
+
+			@Override
+			public void write( final int b ) throws IOException {
+				redirected.print( String.valueOf( ( char ) b ) );
+				original.print( String.valueOf( ( char ) b ) );
+			}
+
+			@Override
+			public void write( final byte[] b, final int off, final int len ) throws IOException {
+				redirected.print( new String( b, off, len ) );
+				original.print( new String( b, off, len ) );
+			}
+
+			@Override
+			public void write( final byte[] b ) throws IOException {
+				write( b, 0, b.length );
+			}
+		};
+		System.setErr( new PrintStream( err, true ) );
 	}
 
 	/*
