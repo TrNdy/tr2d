@@ -6,7 +6,6 @@ package com.indago.io;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import ij.IJ;
@@ -71,47 +70,6 @@ public class FloatTypeImgLoader {
 		if ( listOfFiles == null ) { throw new Exception( "Given argument is not a valid folder!" ); }
 
 		final List< Img< FloatType >> images = loadTiffs( listOfFiles );
-		return images;
-	}
-
-	/**
-	 *
-	 * @param strFolder
-	 * @param minTime
-	 * @param maxTime
-	 * @param normalize
-	 * @param filterStrings
-	 * @return
-	 * @throws ImgIOException
-	 * @throws IncompatibleTypeException
-	 * @throws Exception
-	 */
-	public static List< Img< FloatType >> loadMMTiffsFromFolder( final String strFolder, final int minTime, final int maxTime, final boolean normalize, final String... filterStrings ) throws ImgIOException, IncompatibleTypeException, Exception {
-
-		final File folder = new File( strFolder );
-		final FilenameFilter filter = new FilenameFilter() {
-
-			@Override
-			public boolean accept( final File dir, final String name ) {
-				boolean isMatching = name.contains( ".tif" );
-				for ( final String filter : filterStrings ) {
-					isMatching = isMatching && name.contains( filter );
-				}
-				if ( isMatching == true ) {
-					final String strTime = name.split( "_t" )[ 1 ].substring( 0, 4 );
-					final int time = Integer.parseInt( strTime );
-					if ( ( minTime != -1 && time < minTime ) || ( maxTime != -1 && time > maxTime ) ) {
-						isMatching = false;
-					}
-				}
-				return isMatching;
-			}
-		};
-		final File[] listOfFiles = folder.listFiles( filter );
-		Arrays.sort( listOfFiles ); // LINUX does not do that by default!
-		if ( listOfFiles == null ) { throw new Exception( "Given argument is not a valid folder!" ); }
-
-		final List< Img< FloatType >> images = loadMMTiffSequence( listOfFiles, normalize );
 		return images;
 	}
 
@@ -185,102 +143,6 @@ public class FloatTypeImgLoader {
 	}
 
 	/**
-	 * Load and selectively normalize channels.
-	 * Assumptions: filename contains channel info in format "_c%04d".
-	 *
-	 * @param listOfFiles
-	 * @param normalizationFilterString
-	 *            if filename contains this string (not case sensitive), then
-	 *            the loaded image will be normalized to [0,1].
-	 * @return
-	 * @throws ImgIOException
-	 */
-	public static List< Img< FloatType >> loadMMTiffSequence( final File[] listOfFiles, final boolean normalize ) throws ImgIOException {
-		final List< Img< FloatType > > images = new ArrayList< Img< FloatType > >( listOfFiles.length );
-
-		for ( int i = 0; i < listOfFiles.length; i++ ) {
-			images.add( null );
-		}
-
-		final int numProcessors = Prefs.getThreads();
-		final int numThreads = Math.min( listOfFiles.length, numProcessors );
-
-		final ImgIOException ioe = new ImgIOException( "One of the image loading threads had a problem reading from file." );
-
-		final Thread[] threads = new Thread[ numThreads ];
-
-		class ImageProcessingThread extends Thread {
-
-			final int numThread;
-			final int numThreads;
-
-			public ImageProcessingThread( final int numThread, final int numThreads ) {
-				this.numThread = numThread;
-				this.numThreads = numThreads;
-			}
-
-			@Override
-			public void run() {
-
-				for ( int t = numThread; t < listOfFiles.length; t += numThreads ) {
-					try {
-						images.set( t, loadTiff( listOfFiles[ t ] ) );
-					} catch ( final ImgIOException e ) {
-						ioe.setStackTrace( e.getStackTrace() );
-					}
-					// Selective Normalization!
-					if ( normalize ) {
-						Normalize.normalize( images.get( t ), new FloatType( 0.0f ), new FloatType( 1.0f ) );
-					}
-				}
-			}
-		}
-
-		// start threads
-		for ( int i = 0; i < numThreads; i++ ) {
-			threads[ i ] = new ImageProcessingThread( i, numThreads );
-			threads[ i ].start();
-		}
-
-		// wait for all threads to terminate
-		for ( final Thread thread : threads ) {
-			try {
-				thread.join();
-			} catch ( final InterruptedException e ) {
-				System.out.println( "Thread.join was interrupted in FloatTypeImgLoader.loadTiffs - be aware of leaking Threads!" );
-				e.printStackTrace();
-			}
-		}
-
-		// SINGLE THREADED ALTERNATIVE
-		// ---------------------------
-//		for ( int i = 0; i < listOfFiles.length; i++ ) {
-//			try {
-//				images.set( i, loadTiff( listOfFiles[ i ] ) );
-//			} catch ( final ImgIOException e ) {
-//				e.printStackTrace();
-//			}
-//			// Selective Normalization!
-//			if ( normalize ) {
-//				Normalize.normalize( images.get( i ), new FloatType( 0f ), new FloatType( 1f ) );
-//			}
-//		}
-
-		// Add the last image twice. This is to trick the MM to not having tracking problems towards the last frame.
-		// Note that this also means that the GUI always has to show one frame less!!!
-		try {
-			images.add( loadTiff( listOfFiles[ listOfFiles.length - 1 ] ) );
-			if ( normalize ) {
-				Normalize.normalize( images.get( listOfFiles.length ), new FloatType( 0.0f ), new FloatType( 1.0f ) );
-			}
-		} catch ( final ImgIOException e ) {
-			e.printStackTrace();
-		}
-
-		return images;
-	}
-
-	/**
 	 * @param listOfFiles
 	 * @param imgFactory
 	 * @param images
@@ -313,17 +175,9 @@ public class FloatTypeImgLoader {
 	 * @return
 	 * @throws ImgIOException
 	 */
-	public static RandomAccessibleInterval< FloatType > loadTiffEnsureFloatType( final File file )
+	public static RandomAccessibleInterval< FloatType > loadTiffEnsureType( final File file )
 			throws ImgIOException {
-//	    ALERT: THOSE FOLLOWING TWO LINES CAUSE THREAD LEAK!!!!
-//		final ImgFactory< FloatType > imgFactory = new ArrayImgFactory< FloatType >();
-//		final ImgOpener imageOpener = new ImgOpener();
-
-		System.out.print( "\n >> Loading file '" + file.getName() + "' ..." );
-//		final List< SCIFIOImgPlus< FloatType >> imgs = imageOpener.openImgs( file.getAbsolutePath(), imgFactory, new FloatType() );
-//		final Img< FloatType > img = imgs.get( 0 ).getImg();
-		final Img< RealType > img =
-				ImagePlusAdapter.wrapReal( IJ.openImage( file.getAbsolutePath() ) );
+		final Img< FloatType > img = loadTiff( file );
 
 		final long dims[] = new long[ img.numDimensions() ];
 		img.dimensions( dims );
@@ -452,30 +306,6 @@ public class FloatTypeImgLoader {
 			if ( normalize ) {
 				Normalize.normalize( iterZSlize, new FloatType( 0.0f ), new FloatType( 1.0f ) );
 			}
-			i++;
-		}
-
-		return stack;
-	}
-
-	public static < T extends RealType< T > & NativeType< T > > Img< FloatType > loadMMPathAsStack( final String strFolder, final int minTime, final int maxTime, final boolean normalize, final String... filter ) throws ImgIOException, IncompatibleTypeException, Exception {
-
-		final List< Img< FloatType >> imageList = loadMMTiffsFromFolder( strFolder, minTime, maxTime, normalize, filter );
-		if ( imageList.size() == 0 ) return null;
-
-		Img< FloatType > stack = null;
-		final long width = imageList.get( 0 ).dimension( 0 );
-		final long height = imageList.get( 0 ).dimension( 1 );
-		final long frames = imageList.size();
-
-		stack = new ArrayImgFactory< FloatType >().create( new long[] { width, height, frames }, new FloatType() );
-
-		// Add images to stack...
-		int i = 0;
-		for ( final Img< FloatType > image : imageList ) {
-			final RandomAccessibleInterval< FloatType > viewZSlize = Views.hyperSlice( stack, 2, i );
-			final IterableInterval< FloatType > iterZSlize = Views.iterable( viewZSlize );
-			DataMover.copy( Views.extendZero( image ), iterZSlize );
 			i++;
 		}
 

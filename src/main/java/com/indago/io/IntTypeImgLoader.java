@@ -12,39 +12,39 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
-import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.view.Views;
 
 /**
  * @author jug
  *
  */
-public class DoubleTypeImgLoader {
+public class IntTypeImgLoader {
 
-	public static Img< DoubleType > loadTiff( final File file )
+	public static Img< IntType > loadTiff( final File file )
 			throws ImgIOException {
 //	    ALERT: THOSE FOLLOWING TWO LINES CAUSE THREAD LEAK!!!!
-//		final ImgFactory< DoubleType > imgFactory = new ArrayImgFactory< DoubleType >();
+//		final ImgFactory< IntType > imgFactory = new ArrayImgFactory< IntType >();
 //		final ImgOpener imageOpener = new ImgOpener();
 
 		System.out.print( "\n >> Loading file '" + file.getName() + "' ..." );
-//		final List< SCIFIOImgPlus< FloatType >> imgs = imageOpener.openImgs( file.getAbsolutePath(), imgFactory, new DoubleType() );
-//		final Img< RealType > img = imgs.get( 0 ).getImg();
-		final Img< DoubleType > img =
+//		final List< SCIFIOImgPlus< IntType >> imgs = imageOpener.openImgs( file.getAbsolutePath(), imgFactory, new IntType() );
+//		final Img< IntType > img = imgs.get( 0 ).getImg();
+		final Img< IntType > img =
 				ImagePlusAdapter.wrapReal( IJ.openImage( file.getAbsolutePath() ) );
 
 		return img;
 	}
 
-	public static RandomAccessibleInterval< DoubleType > loadTiffEnsureType( final File file )
+	public static RandomAccessibleInterval< IntType > loadTiffEnsureType( final File file )
 			throws ImgIOException {
-		final Img< DoubleType > img = loadTiff( file );
+		final Img< IntType > img = loadTiff( file );
 
 		final long dims[] = new long[ img.numDimensions() ];
 		img.dimensions( dims );
-		final RandomAccessibleInterval< DoubleType > ret =
-				new ArrayImgFactory< DoubleType >().create( dims, new DoubleType() );
-		final IterableInterval< DoubleType > iterRet = Views.iterable( ret );
+		final RandomAccessibleInterval< IntType > ret =
+				new ArrayImgFactory< IntType >().create( dims, new IntType() );
+		final IterableInterval< IntType > iterRet = Views.iterable( ret );
 		try {
 			DataMover.convertAndCopy( Views.extendZero( img ), iterRet );
 		} catch ( final Exception e ) {

@@ -13,14 +13,14 @@ import javax.swing.ListModel;
 
 import org.python.google.common.io.Files;
 
-import com.indago.io.DoubleTypeImgLoader;
+import com.indago.io.IntTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFile;
 import com.indago.io.projectfolder.ProjectFolder;
 import com.jgoodies.common.collect.LinkedListModel;
 
 import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.integer.IntType;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -33,7 +33,7 @@ public class Tr2dImportedSegmentationModel {
 	private ProjectFolder projectFolder;
 
 	private final Vector< ProjectFile > files;
-	private final List< RandomAccessibleInterval< DoubleType > > imgs;
+	private final List< RandomAccessibleInterval< IntType > > imgs;
 
 	private LinkedListModel< ProjectFile > linkedListModel = null;
 
@@ -57,7 +57,7 @@ public class Tr2dImportedSegmentationModel {
 		files = new Vector< ProjectFile >( projectFolder.getFiles( new ExtensionFileFilter( "tif", "TIFF Image Stack" ) ) );
 		for ( final ProjectFile pf : files ) {
 			try {
-				final RandomAccessibleInterval< DoubleType > rai = DoubleTypeImgLoader.loadTiffEnsureDoubleType( pf.getFile() );
+				final RandomAccessibleInterval< IntType > rai = IntTypeImgLoader.loadTiffEnsureType( pf.getFile() );
 				imgs.add( rai );
 			} catch ( final ImgIOException e ) {
 				e.printStackTrace();
@@ -69,7 +69,7 @@ public class Tr2dImportedSegmentationModel {
 	/**
 	 * @return
 	 */
-	public List< RandomAccessibleInterval< DoubleType > > getSegmentHypothesesImages() {
+	public List< RandomAccessibleInterval< IntType > > getSegmentHypothesesImages() {
 		return imgs;
 	}
 
@@ -107,8 +107,8 @@ public class Tr2dImportedSegmentationModel {
 
 		files.add( pf );
 		linkedListModel.add( pf );
-		RandomAccessibleInterval< DoubleType > rai;
-		rai = DoubleTypeImgLoader.loadTiffEnsureDoubleType( pf.getFile() );
+		RandomAccessibleInterval< IntType > rai;
+		rai = IntTypeImgLoader.loadTiffEnsureType( pf.getFile() );
 		imgs.add( rai );
 	}
 

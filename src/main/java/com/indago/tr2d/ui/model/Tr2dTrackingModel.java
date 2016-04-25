@@ -11,7 +11,7 @@ import java.util.Map;
 import com.indago.app.hernan.costs.HernanCostConstants;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.data.segmentation.SumImageMovieSequence;
+import com.indago.data.segmentation.LabelingTimeLapse;
 import com.indago.fg.Assignment;
 import com.indago.fg.AssignmentMapper;
 import com.indago.fg.FactorGraphFactory;
@@ -20,7 +20,7 @@ import com.indago.fg.UnaryCostConstraintGraph;
 import com.indago.fg.Variable;
 import com.indago.ilp.SolveGurobi;
 import com.indago.io.DataMover;
-import com.indago.io.DoubleTypeImgLoader;
+import com.indago.io.IntTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFolder;
 import com.indago.old_fg.CostsFactory;
 import com.indago.pg.IndicatorNode;
@@ -40,7 +40,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.Regions;
-import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Pair;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -65,8 +65,8 @@ public class Tr2dTrackingModel {
 	private final CostsFactory< LabelingSegment > disappearanceCosts;
 
 	private Tr2dTrackingProblem tr2dTraProblem;
-	private SumImageMovieSequence sumImgMovie;
-	private RandomAccessibleInterval< DoubleType > imgSolution = null;
+	private LabelingTimeLapse sumImgMovie;
+	private RandomAccessibleInterval< IntType > imgSolution = null;
 
 	private MappedFactorGraph mfg;
 	private Assignment< Variable > fgSolution;
@@ -102,7 +102,7 @@ public class Tr2dTrackingModel {
 		final File fImgSol = dataFolder.addFile( FILENAME_TRACKING ).getFile();
 		if ( fImgSol.canRead() ) {
 			try {
-				imgSolution = DoubleTypeImgLoader.loadTiff( fImgSol );
+				imgSolution = IntTypeImgLoader.loadTiffEnsureType( fImgSol );
 			} catch ( final ImgIOException e ) {
 				e.printStackTrace();
 			}
@@ -177,7 +177,7 @@ public class Tr2dTrackingModel {
 	 *
 	 */
 	public void processSegmentationInputs() {
-		this.sumImgMovie = new SumImageMovieSequence( tr2dSegModel.getWekaModel() );
+		this.sumImgMovie = new LabelingTimeLapse( tr2dSegModel );
 		try {
 			sumImgMovie.processFrames();
 		} catch ( final IllegalAccessException e ) {
@@ -261,7 +261,14 @@ public class Tr2dTrackingModel {
 		final AssignmentMapper< Variable, IndicatorNode > assMapper = mfg.getAssmntMapper();
 		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
 
-		this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getWekaModel().getClassification(), new DoubleType() );
+		try {
+			this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getWekaModel().getClassifications().get( 0 ), new IntType() );
+		} catch ( final ArrayIndexOutOfBoundsException e ) {
+			this.imgSolution =
+					DataMover.createEmptyArrayImgLike(
+							tr2dSegModel.getImportedSegmentationModel().getSegmentHypothesesImages().get( 0 ),
+							new IntType() );
+		}
 
 //		int time = 0;
 //		for ( final Tr2dSegmentationModel segProblem : tr2dTraModel.getTimepoints() ) {
@@ -304,7 +311,7 @@ public class Tr2dTrackingModel {
 	 * @param curColorId
 	 */
 	private void drawLineageWithId( final int time, final SegmentNode segVar, final int curColorId ) {
-		final IntervalView< DoubleType > slice = Views.hyperSlice( imgSolution, 2, time );
+		final IntervalView< IntType > slice = Views.hyperSlice( imgSolution, 2, time );
 
 		if ( pgSolution.getAssignment( segVar ) == 1 ) {
 			final int color = curColorId;
@@ -336,7 +343,7 @@ public class Tr2dTrackingModel {
 	/**
 	 * @return the imgSolution
 	 */
-	public RandomAccessibleInterval< DoubleType > getImgSolution() {
+	public RandomAccessibleInterval< IntType > getImgSolution() {
 		return imgSolution;
 	}
 }
