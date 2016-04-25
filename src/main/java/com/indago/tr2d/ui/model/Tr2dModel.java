@@ -21,7 +21,6 @@ public class Tr2dModel {
 
 	private final ImagePlus imgPlus;
 	private RandomAccessibleInterval< DoubleType > imgOrig;
-	private RandomAccessibleInterval< DoubleType > imgOrigNorm;
 
 	private final ProjectFolder projectFolder;
 
@@ -37,10 +36,6 @@ public class Tr2dModel {
 		setImgOrig( Converters.convert(
 				( RandomAccessibleInterval ) temp,
 				new RealDoubleNormalizeConverter( 1.0 ),
-				new DoubleType() ) );
-		setImgOrigNorm( Converters.convert(
-				( RandomAccessibleInterval ) temp,
-				new RealDoubleNormalizeConverter( imgPlus.getStatistics().max ),
 				new DoubleType() ) );
 	}
 
@@ -70,15 +65,7 @@ public class Tr2dModel {
 	 * @return the imgOrigNorm
 	 */
 	public RandomAccessibleInterval< DoubleType > getImgOrigNorm() {
-		return imgOrigNorm;
-	}
-
-	/**
-	 * @param imgOrigNorm
-	 *            the imgOrigNorm to set
-	 */
-	public void setImgOrigNorm( final RandomAccessibleInterval< DoubleType > imgOrigNorm ) {
-		this.imgOrigNorm = imgOrigNorm;
+		return imgOrig;
 	}
 
 	/**

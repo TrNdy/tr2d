@@ -4,7 +4,6 @@
 package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,11 +21,13 @@ import com.indago.app.hernan.costs.HernanDisappearanceCostFactory;
 import com.indago.app.hernan.costs.HernanDivisionCostFactory;
 import com.indago.app.hernan.costs.HernanMappingCostFactory;
 import com.indago.app.hernan.costs.HernanSegmentCostFactory;
-import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 
+import bdv.util.Bdv;
+import bdv.util.BdvFunctions;
+import bdv.util.BdvHandlePanel;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.DoubleType;
 
@@ -44,7 +45,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	private JPanel tabSegmentation;
 	private JPanel tabTracking;
 
-	private IddeaComponent icData = null;
+	private BdvHandlePanel bdvData;
 
 	/**
 	 * @param imgPlus
@@ -58,6 +59,13 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		this.model = model;
 
 		buildGui();
+		frame.add( this );
+		frame.pack();
+		//final BdvSource show =
+		BdvFunctions.show(
+				model.getImgOrigNorm(),
+				"orig",
+				Bdv.options().addTo( bdvData ) );
 	}
 
 	private void buildGui() {
@@ -65,16 +73,9 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		// === TAB DATA ===========================================================================
 		tabs = new JTabbedPane();
 		tabData = new JPanel( new BorderLayout() );
-		icData = new IddeaComponent( model.getImgOrigNorm() );
-		icData.setSourceImage( model.getImgOrigNorm() );
-		icData.showMenu( false );
-		icData.setToolBarLocation( BorderLayout.WEST );
-		icData.setToolBarVisible( false );
-		icData.setPreferredSize(
-				new Dimension( model.getImgPlus().getWidth(), model.getImgPlus().getHeight() ) );
-//		icData.showStackSlider( true );
-//		icData.showTimeSlider( true );
-		tabData.add( icData, BorderLayout.CENTER );
+		bdvData = new BdvHandlePanel( frame, Bdv.options().is2D() );
+		tabData.add( bdvData.getViewerPanel(), BorderLayout.CENTER );
+		frame.pack();
 
 		// === TAB SEGMENTATION ===================================================================
 		final Tr2dSegmentationCollectionModel segModel = new Tr2dSegmentationCollectionModel( model );

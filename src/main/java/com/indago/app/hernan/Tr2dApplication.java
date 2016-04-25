@@ -69,15 +69,14 @@ public class Tr2dApplication {
 		guiFrame = new JFrame( "tr2d" );
 		setFrameSizeAndCloseOperation();
 		setImageAppIcon();
+		guiFrame.setVisible( true );
 
 		checkGurobiAvailability();
 
 		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
 		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
 		mainPanel = new Tr2dMainPanel( guiFrame, model );
-
-		guiFrame.getContentPane().add( mainPanel );
-		guiFrame.setVisible( true );
+		setFrameSizeAndCloseOperation();
 	}
 
 	private static void setFrameSizeAndCloseOperation() {
