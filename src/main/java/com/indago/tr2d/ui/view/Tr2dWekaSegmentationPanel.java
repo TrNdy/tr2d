@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -22,7 +23,7 @@ import com.indago.tr2d.ui.util.JDoubleListTextPane;
 import com.indago.tr2d.ui.util.OsDependentFileChooser;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.integer.IntType;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -50,9 +51,9 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		this.model = model;
 		buildGui();
 
-		final RandomAccessibleInterval< DoubleType > seghyps = model.getSegmentHypotheses();
+		final List< RandomAccessibleInterval< IntType > > seghyps = model.getSegmentHypotheses();
 		if ( seghyps != null ) {
-			icSegmentation.setSourceImage( seghyps );
+			icSegmentation.setSourceImage( seghyps.get( 0 ) );
 		}
 	}
 
@@ -166,7 +167,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		// in case all could be set fine:
 		model.segment();
 
-		final RandomAccessibleInterval< DoubleType > seghyps = model.getSegmentHypotheses();
+		final RandomAccessibleInterval< IntType > seghyps = model.getSegmentHypotheses().get( 0 );
 		if ( seghyps == null ) {
 			JOptionPane.showMessageDialog(
 					this,

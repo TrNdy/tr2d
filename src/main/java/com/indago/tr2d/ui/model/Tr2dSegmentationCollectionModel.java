@@ -3,8 +3,14 @@
  */
 package com.indago.tr2d.ui.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.indago.io.projectfolder.ProjectFolder;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
+
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.integer.IntType;
 
 /**
  * @author jug
@@ -55,6 +61,16 @@ public class Tr2dSegmentationCollectionModel {
 	 */
 	public Tr2dModel getModel() {
 		return model;
+	}
+
+	/**
+	 * @return
+	 */
+	public List< RandomAccessibleInterval< IntType > > getSumImages() {
+		final List< RandomAccessibleInterval< IntType > > ret = new ArrayList< RandomAccessibleInterval< IntType > >();
+		ret.addAll( wekaModel.getSegmentHypotheses() );
+		ret.addAll( importedSegmentationModel.getSegmentHypothesesImages() );
+		return ret;
 	}
 
 }

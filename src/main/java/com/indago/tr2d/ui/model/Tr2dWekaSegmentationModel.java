@@ -15,19 +15,22 @@ import javax.swing.JOptionPane;
 
 import com.indago.app.hernan.Tr2dApplication;
 import com.indago.data.segmentation.SegmentationMagic;
-import com.indago.data.segmentation.SilentWekaSegmenter;
 import com.indago.io.DataMover;
 import com.indago.io.DoubleTypeImgLoader;
+import com.indago.io.IntTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFolder;
-import com.indago.util.converter.RealDoubleThresholdConverter;
+import com.indago.util.converter.IntTypeThresholdConverter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
 import ij.IJ;
 import io.scif.img.ImgIOException;
+import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
+import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.DoubleType;
 
 /**
@@ -43,13 +46,13 @@ public class Tr2dWekaSegmentationModel {
 	private final Tr2dSegmentationCollectionModel model;
 	private ProjectFolder projectFolder;
 
-	private SilentWekaSegmenter< DoubleType > segClassifier;
+//	private List< SilentWekaSegmenter< DoubleType > > classifiers;
 
 	private List< Double > listThresholds = new ArrayList< Double >();
 	private List< String > listClassifierFilenames = new ArrayList< String >();
 
-	private RandomAccessibleInterval< DoubleType > imgClassification = null;
-	private RandomAccessibleInterval< DoubleType > imgSegmentHypotheses = null;
+	private final List< RandomAccessibleInterval< DoubleType > > imgsClassification = new ArrayList< >();
+	private final List< RandomAccessibleInterval< IntType > > imgsSegmentHypotheses = new ArrayList< >();
 
 	/**
 	 * @param parentFolder
@@ -105,9 +108,10 @@ public class Tr2dWekaSegmentationModel {
 		for ( final String string : listClassifierFilenames ) {
 			i++;
 			try {
-				imgClassification =
-						DoubleTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ) );
-				imgSegmentHypotheses = DoubleTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) );
+				imgsClassification.add(
+						DoubleTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ) ) );
+				imgsSegmentHypotheses.add(
+						IntTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) ) );
 			} catch ( final ImgIOException e ) {
 				JOptionPane.showMessageDialog(
 						Tr2dApplication.getGuiFrame(),
@@ -127,7 +131,7 @@ public class Tr2dWekaSegmentationModel {
 	private void loadClassifier( final File classifierFile ) {
 		SegmentationMagic
 				.setClassifier( classifierFile.getParent() + "/", classifierFile.getName() );
-		segClassifier = SegmentationMagic.getClassifier();
+//		classifiers.add( SegmentationMagic.getClassifier() );
 	}
 
 	/**
@@ -160,8 +164,8 @@ public class Tr2dWekaSegmentationModel {
 	 * Performs the segmentation procedure previously set up.
 	 */
 	public void segment() {
+		imgsClassification.clear();
 		int i = 0;
-		//TODO classified images have to be joined to one labeling!!!
 		for ( final String absolutePath : listClassifierFilenames ) {
 			i++;
 			System.out.println( String.format("Classifier %d of %d -- %s", i, listClassifierFilenames.size(), absolutePath) );
@@ -172,24 +176,27 @@ public class Tr2dWekaSegmentationModel {
 			loadClassifier( cf );
 
     		// classify frames
-			imgClassification = SegmentationMagic.returnClassification( getModel().getModel().getImgOrig() );
+			final RandomAccessibleInterval< DoubleType > classification =
+					SegmentationMagic.returnClassification( getModel().getModel().getImgOrig() );
+			imgsClassification.add( classification );
 			IJ.save(
-					ImageJFunctions.wrap( imgClassification, "classification image" ).duplicate(),
+					ImageJFunctions.wrap( classification, "classification image" ).duplicate(),
 					new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ).getAbsolutePath() );
 
-    		// collect thresholds in SumImage
-    		RandomAccessibleInterval< DoubleType > imgTemp;
-    		imgSegmentHypotheses =
-    				DataMover.createEmptyArrayImgLike( imgClassification, new DoubleType() );
+			// collect thresholds into SumImage
+			RandomAccessibleInterval< IntType > imgTemp;
+			final Img< IntType > sumimg = DataMover.createEmptyArrayImgLike( classification, new IntType() );
+			imgsSegmentHypotheses.add( sumimg );
+
     		for ( final Double d : listThresholds ) {
     			imgTemp = Converters.convert(
-    					imgClassification,
-    					new RealDoubleThresholdConverter( d ),
-    					new DoubleType() );
-    			DataMover.add( imgTemp, imgSegmentHypotheses );
+						classification,
+    					new IntTypeThresholdConverter( d ),
+						new IntType() );
+				DataMover.add( imgTemp, ( IterableInterval ) sumimg );
     		}
 			IJ.save(
-					ImageJFunctions.wrap( imgSegmentHypotheses, "sum image" ).duplicate(),
+					ImageJFunctions.wrap( sumimg, "sum image" ).duplicate(),
 					new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ).getAbsolutePath() );
 		}
 	}
@@ -198,16 +205,16 @@ public class Tr2dWekaSegmentationModel {
 	 * @return
 	 * @throws IllegalAccessException
 	 */
-	public RandomAccessibleInterval< DoubleType > getClassification() {
-		return imgClassification;
+	public List< RandomAccessibleInterval< DoubleType > > getClassifications() {
+		return imgsClassification;
 	}
 
 	/**
 	 * @return
 	 * @throws IllegalAccessException
 	 */
-	public RandomAccessibleInterval< DoubleType > getSegmentHypotheses() {
-		return imgSegmentHypotheses;
+	public List< RandomAccessibleInterval< IntType > > getSegmentHypotheses() {
+		return imgsSegmentHypotheses;
 	}
 
 	/**

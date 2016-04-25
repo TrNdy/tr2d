@@ -25,7 +25,7 @@ import com.indago.tr2d.ui.util.OsDependentFileChooser;
 
 import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.integer.IntType;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -129,7 +129,7 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 	 * @param idx
 	 */
 	private void updateViewer( final int idx ) {
-		final RandomAccessibleInterval< DoubleType > img = model.getSegmentHypothesesImages().get( idx );
+		final RandomAccessibleInterval< IntType > img = model.getSegmentHypothesesImages().get( idx );
 		icSegmentation.setSourceImage( img );
 	}
 

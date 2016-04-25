@@ -15,6 +15,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -195,6 +196,17 @@ public class DataMover {
 					sourceRandomAccess.setPosition( targetCursor );
 
 					( ( DoubleType ) targetCursor.get() ).set( ( ( FloatType ) sourceRandomAccess.get() ).getRealDouble() );
+				}
+			} else // FloatType --> IntType
+			if ( targetType instanceof IntType ) {
+				final Cursor< TT > targetCursor = target.localizingCursor();
+				final RandomAccess< ST > sourceRandomAccess = source.randomAccess();
+				final int v;
+				while ( targetCursor.hasNext() ) {
+					targetCursor.fwd();
+					sourceRandomAccess.setPosition( targetCursor );
+
+					( ( IntType ) targetCursor.get() ).set( Math.round( ( ( FloatType ) sourceRandomAccess.get() ).getRealFloat() ) );
 				}
 			} else // FloatType --> ARGBType
 			if ( targetType instanceof ARGBType ) {

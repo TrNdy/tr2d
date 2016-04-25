@@ -6,28 +6,23 @@ package com.indago.data.segmentation;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.indago.data.segmentation.ConflictGraph;
-import com.indago.data.segmentation.LabelingBuilder;
-import com.indago.data.segmentation.LabelingForest;
-import com.indago.data.segmentation.LabelingSegment;
-import com.indago.data.segmentation.MinimalOverlapConflictGraph;
 import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree;
 import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree.Filter;
 import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree.MaxGrowthPerStep;
-import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
+import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 
 import net.imglib2.Dimensions;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
  * @author jug
  */
-public class SumImageMovieSequence {
+public class LabelingTimeLapse {
 
-	private final Tr2dWekaSegmentationModel tr2dSegModel;
+	private final Tr2dSegmentationCollectionModel model;
 
 	// Parameters for FilteredComponentTree of SumImage(s)
 	private Dimensions dim;
@@ -40,22 +35,25 @@ public class SumImageMovieSequence {
 	private final List< List< LabelingSegment > > frameLabelingSegments;
 	private final List< ConflictGraph< LabelingSegment > > frameConflictGraphs;
 
+	final LabelingBuilder labelingBuilder;
+
 	/**
 	 * @param tr2dSegModel2
 	 */
-	public SumImageMovieSequence( final Tr2dWekaSegmentationModel tr2dSegModel ) {
-		this.tr2dSegModel = tr2dSegModel;
+	public LabelingTimeLapse( final Tr2dSegmentationCollectionModel model ) {
+		this.model = model;
 		this.frameLabelingForests = new ArrayList< >();
 		this.frameLabelingSegments = new ArrayList< >();
 		this.frameConflictGraphs = new ArrayList< >();
+
+		labelingBuilder = new LabelingBuilder( model.getSumImages().get( 0 ) );
 	}
 
 	/**
 	 *
 	 */
 	private void setDim() throws IllegalAccessException {
-			dim = getSegmentHypothesesImage();
-//			System.out.println( "Input image dimensions: " + dim.toString() );
+		dim = getSegmentHypothesesImages().get( 0 );
 	}
 
 	/**
@@ -66,12 +64,12 @@ public class SumImageMovieSequence {
 
 		for ( long frameId = 0; frameId < dim.dimension( 2 ); frameId++ ) {
 			// Hyperslize current frame out of complete dataset
-			IntervalView< DoubleType > hsFrame = null;
+			IntervalView< IntType > hsFrame = null;
 			try {
-				final long[] offset = new long[ getSegmentHypothesesImage().numDimensions() ];
+				final long[] offset = new long[ getSegmentHypothesesImages().get( 0 ).numDimensions() ];
 				offset[ offset.length - 1 ] = frameId;
 				hsFrame = Views.offset(
-						Views.hyperSlice( getSegmentHypothesesImage(), 2, frameId ),
+						Views.hyperSlice( getSegmentHypothesesImages().get( 0 ), 2, frameId ),
 						offset );
 			} catch ( final IllegalAccessException e ) {
 				System.err.println( "\tSegmentation Hypotheses could not be accessed!" );
@@ -79,10 +77,10 @@ public class SumImageMovieSequence {
 				return;
 			}
 
-			final FilteredComponentTree< DoubleType > tree =
+			final FilteredComponentTree< IntType > tree =
 					FilteredComponentTree.buildComponentTree(
 							hsFrame,
-							new DoubleType(),
+							new IntType(),
 							minComponentSize,
 							maxComponentSize,
 							maxGrowthPerStep,
@@ -101,9 +99,9 @@ public class SumImageMovieSequence {
 	 * @return
 	 * @throws IllegalAccessException
 	 */
-	public RandomAccessibleInterval< DoubleType > getSegmentHypothesesImage()
+	public List< RandomAccessibleInterval< IntType > > getSegmentHypothesesImages()
 			throws IllegalAccessException {
-		return tr2dSegModel.getSegmentHypotheses();
+		return model.getSumImages();
 	}
 
 	/**
