@@ -252,8 +252,18 @@ public class DataMover {
 
 					( ( DoubleType ) targetCursor.get() ).set( ( ( UnsignedShortType ) sourceRandomAccess.get() ).getRealDouble() );
 				}
-			} else
-			// RealType --> ARGBType
+			} else // UnsignedShortType --> IntType
+			if ( targetType instanceof IntType ) {
+				final Cursor< TT > targetCursor = target.localizingCursor();
+				final RandomAccess< ST > sourceRandomAccess = source.randomAccess();
+				final int v;
+				while ( targetCursor.hasNext() ) {
+					targetCursor.fwd();
+					sourceRandomAccess.setPosition( targetCursor );
+
+					( ( IntType ) targetCursor.get() ).set( ( ( UnsignedShortType ) sourceRandomAccess.get() ).get() );
+				}
+			} else 
 			if ( targetType instanceof ARGBType ) {
 				final Cursor< TT > targetCursor = target.localizingCursor();
 				final RandomAccess< ST > sourceRandomAccess = source.randomAccess();

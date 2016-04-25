@@ -111,7 +111,7 @@ public class Tr2dWekaSegmentationModel {
 				imgsClassification.add(
 						DoubleTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ) ) );
 				imgsSegmentHypotheses.add(
-						IntTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) ) );
+						IntTypeImgLoader.loadTiffEnsureType( new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) ) );
 			} catch ( final ImgIOException e ) {
 				JOptionPane.showMessageDialog(
 						Tr2dApplication.getGuiFrame(),
