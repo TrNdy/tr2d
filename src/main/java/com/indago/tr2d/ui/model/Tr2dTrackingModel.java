@@ -51,6 +51,11 @@ import net.imglib2.view.Views;
  */
 public class Tr2dTrackingModel {
 
+	private final ProjectFolder dataFolder;
+
+	private final String FOLDER_LABELING_FRAMES = "labeling_frames";
+	private ProjectFolder hypothesesFolder = null;
+
 	private final String FILENAME_PGRAPH = "tracking.pgraph";
 	private final String FILENAME_GUROBI_MODEL = "gurobiModel.jug";
 	private final String FILENAME_TRACKING = "tracking.tif";
@@ -65,14 +70,12 @@ public class Tr2dTrackingModel {
 	private final CostsFactory< LabelingSegment > disappearanceCosts;
 
 	private Tr2dTrackingProblem tr2dTraProblem;
-	private LabelingTimeLapse sumImgMovie;
+	private final LabelingTimeLapse labelingFrames;
 	private RandomAccessibleInterval< IntType > imgSolution = null;
 
 	private MappedFactorGraph mfg;
 	private Assignment< Variable > fgSolution;
 	private Assignment< IndicatorNode > pgSolution;
-
-	private final ProjectFolder dataFolder;
 
 	/**
 	 * @param model
@@ -107,15 +110,16 @@ public class Tr2dTrackingModel {
 				e.printStackTrace();
 			}
 		}
-//		final String labelingDataFilename = "/Users/jug/Desktop/labeling.xml";
-//		new XmlIoLabelingPlus().save( labelingBuilder, labelingDataFilename );
-//
-//		// = = = syncpoint = = =
-//
-//		final LabelingPlus labelingPlus = new XmlIoLabelingPlus().load( labelingDataFilename );
-//
-//		final LabelingBuilder labelingBuilderLoaded = new LabelingBuilder( labelingPlus );
 
+		// Loading hypotheses labeling frames if exist in project folder
+		this.labelingFrames = new LabelingTimeLapse( tr2dSegModel );
+		try {
+			hypothesesFolder = dataFolder.addFolder( FOLDER_LABELING_FRAMES );
+			hypothesesFolder.loadFiles();
+			labelingFrames.loadFromProjectFolder( hypothesesFolder );
+		} catch ( final IOException ioe ) {
+			ioe.printStackTrace();
+		}
 	}
 
 	/**
@@ -123,10 +127,8 @@ public class Tr2dTrackingModel {
 	 * project folder).
 	 */
 	private void prepare() {
-		if ( sumImgMovie == null ) {
-			processSegmentationInputs();
-			tr2dTraProblem = null;
-		}
+		processSegmentationInputs();
+		tr2dTraProblem = null;
 
 		if ( tr2dTraProblem == null ) {
 			buildTrackingProblem();
@@ -186,10 +188,11 @@ public class Tr2dTrackingModel {
 	 *
 	 */
 	public void processSegmentationInputs() {
-		this.sumImgMovie = new LabelingTimeLapse( tr2dSegModel );
-		if ( !sumImgMovie.processFrames() ) {
-			System.err.println(
-					"Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!" );
+		if ( labelingFrames.needProcessing() ) {
+			if ( !labelingFrames.processFrames() ) {
+				System.err.println(
+						"Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!" );
+			}
 		}
 	}
 
@@ -202,18 +205,18 @@ public class Tr2dTrackingModel {
 		this.tr2dTraProblem =
 				new Tr2dTrackingProblem( appearanceCosts, moveCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD, divisionCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD, disappearanceCosts );
 
-		for ( int frameId = 0; frameId < sumImgMovie.getNumFrames(); frameId++ ) {
+		for ( int frameId = 0; frameId < labelingFrames.getNumFrames(); frameId++ ) {
 			System.out.println(
-					String.format( "Working on frame %d of %d...", frameId + 1, sumImgMovie.getNumFrames() ) );
+					String.format( "Working on frame %d of %d...", frameId + 1, labelingFrames.getNumFrames() ) );
 
 			// =============================
 			// build Tr2dSegmentationProblem
 			// =============================
 			tictoc.tic( "Constructing Tr2dSegmentationProblem..." );
 			final List< LabelingSegment > segments =
-					sumImgMovie.getLabelingSegmentsForFrame( frameId );
+					labelingFrames.getLabelingSegmentsForFrame( frameId );
 			final ConflictGraph< LabelingSegment > conflictGraph =
-					sumImgMovie.getConflictGraph( frameId );
+					labelingFrames.getConflictGraph( frameId );
 			final Tr2dSegmentationProblem segmentationProblem =
 					new Tr2dSegmentationProblem( frameId, segments, segmentCosts, conflictGraph );
 			tictoc.toc( "done!" );
