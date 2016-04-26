@@ -17,6 +17,8 @@ import com.indago.io.projectfolder.ProjectFile;
 import com.indago.io.projectfolder.ProjectFolder;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 
+import net.imglib2.Dimensions;
+import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.view.IntervalView;
@@ -60,7 +62,8 @@ public class LabelingTimeLapse {
 
 			for ( int frameId = 0; frameId < firstSumImg.dimension( 2 ); frameId++ ) {
 
-				final LabelingBuilder labelingBuilder = new LabelingBuilder( firstSumImg );
+				final Dimensions d = new FinalDimensions( firstSumImg.dimension( 0 ), firstSumImg.dimension( 1 ) );
+				final LabelingBuilder labelingBuilder = new LabelingBuilder( d );
 				frameLabelingBuilders.add( labelingBuilder );
 
 				for ( final RandomAccessibleInterval< IntType > sumimg : getSegmentHypothesesImages() ) {
