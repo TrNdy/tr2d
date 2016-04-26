@@ -20,7 +20,9 @@ import weka.gui.ExtensionFileFilter;
 /**
  * @author jug
  */
-public class OsDependentFileChooser {
+public class UniversalFileChooser {
+
+	public static boolean showOptionPaneWithTitleOnMac = false;
 
 	public static File showLoadFolderChooser(
 			final Component parent,
@@ -40,7 +42,8 @@ public class OsDependentFileChooser {
 
 		if ( OSValidator.isMac() && frame != null ) {
 
-			JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a folder...", JOptionPane.INFORMATION_MESSAGE );
+			if ( showOptionPaneWithTitleOnMac )
+				JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a folder...", JOptionPane.INFORMATION_MESSAGE );
 
 			System.setProperty( "apple.awt.fileDialogForDirectories", "true" );
 			final FileDialog fd = new FileDialog( frame, title, FileDialog.LOAD );
@@ -100,7 +103,8 @@ public class OsDependentFileChooser {
 
 		if ( OSValidator.isMac() && frame != null ) {
 
-			JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a folder...", JOptionPane.INFORMATION_MESSAGE );
+			if ( showOptionPaneWithTitleOnMac )
+				JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a folder...", JOptionPane.INFORMATION_MESSAGE );
 
 			System.setProperty( "apple.awt.fileDialogForDirectories", "true" );
 			final FileDialog fd = new FileDialog( frame, title );
@@ -163,7 +167,8 @@ public class OsDependentFileChooser {
 
 		if ( OSValidator.isMac() && frame != null ) {
 
-			JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a file...", JOptionPane.INFORMATION_MESSAGE );
+			if ( showOptionPaneWithTitleOnMac )
+				JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a file...", JOptionPane.INFORMATION_MESSAGE );
 
 			final FileDialog fd = new FileDialog( frame, title, FileDialog.SAVE );
 			fd.setDirectory( path );
@@ -235,7 +240,9 @@ public class OsDependentFileChooser {
 
 		if ( OSValidator.isMac() && frame != null ) {
 
-			JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a file...", JOptionPane.INFORMATION_MESSAGE );
+			if ( showOptionPaneWithTitleOnMac )
+				JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a file...", JOptionPane.INFORMATION_MESSAGE );
+
 			final FileDialog fd = new FileDialog( frame, title, FileDialog.LOAD );
 			fd.setDirectory( path );
 			fd.setFilenameFilter( fileFilter );

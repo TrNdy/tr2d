@@ -20,7 +20,7 @@ import javax.swing.JTextPane;
 import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.tr2d.ui.util.JDoubleListTextPane;
-import com.indago.tr2d.ui.util.OsDependentFileChooser;
+import com.indago.tr2d.ui.util.UniversalFileChooser;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.integer.IntType;
@@ -126,7 +126,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 	private void actionSelectClassifierFile() {
 		final ExtensionFileFilter eff =
 				new ExtensionFileFilter( new String[] { "model", "MODEL" }, "weka-model-file" );
-		final File file = OsDependentFileChooser.showLoadFileChooser(
+		final File file = UniversalFileChooser.showLoadFileChooser(
 				this,
 				"",
 				"Classifier to be loaded...",

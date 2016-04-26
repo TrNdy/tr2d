@@ -26,7 +26,7 @@ import com.apple.eawt.Application;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.FrameProperties;
-import com.indago.tr2d.ui.util.OsDependentFileChooser;
+import com.indago.tr2d.ui.util.UniversalFileChooser;
 import com.indago.tr2d.ui.view.Tr2dMainPanel;
 import com.indago.util.OSValidator;
 
@@ -119,6 +119,8 @@ public class Tr2dApplication {
 	 * @return
 	 */
 	private static ImagePlus openStackOrProjectUserInteraction() {
+		UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
+
 		File projectFolderBasePath = null;
 		if ( projectFolder != null ) projectFolderBasePath = projectFolder.getFolder();
 
@@ -134,7 +136,7 @@ public class Tr2dApplication {
 					options,
 					options[ 0 ] );
 			if ( choice == 0 ) {
-				projectFolderBasePath = OsDependentFileChooser.showLoadFolderChooser(
+				projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
 						guiFrame,
 						"",
 						"Choose tr2d project folder..." );
@@ -157,7 +159,7 @@ public class Tr2dApplication {
 					System.exit( 1 );
 				}
 			} else if ( choice == 1 ) {
-				inputStack = OsDependentFileChooser.showLoadFileChooser(
+				inputStack = UniversalFileChooser.showLoadFileChooser(
 						guiFrame,
 						"",
 						"Load input tiff stack...",
@@ -171,7 +173,7 @@ public class Tr2dApplication {
 		if ( projectFolderBasePath == null ) {
 			boolean validSelection = false;
 			while ( !validSelection ) {
-				projectFolderBasePath = OsDependentFileChooser.showLoadFolderChooser(
+				projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
 						guiFrame,
 						"",
 						"Choose tr2d project folder..." );
@@ -206,6 +208,8 @@ public class Tr2dApplication {
 			IJ.error( "There must be an active, open window!" );
 			System.exit( 4 );
 		}
+
+		UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
 		return imgPlus;
 	}
 
@@ -350,15 +354,6 @@ public class Tr2dApplication {
 				System.out.println( "ERROR: " + msg );
 				System.exit( 3 );
 			}
-//			try {
-//				projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
-//			} catch ( final IOException e ) {
-//				final String msg = "Given project folder could not be initialized!";
-//				JOptionPane.showMessageDialog( guiFrame, msg, "Unknown Error", JOptionPane.ERROR_MESSAGE );
-//				System.out.println( "ERROR: " + msg );
-//				System.exit( 4 );
-//				e.printStackTrace();
-//			}
 		}
 
 		inputStack = null;

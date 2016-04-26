@@ -107,6 +107,15 @@ public class Tr2dTrackingModel {
 				e.printStackTrace();
 			}
 		}
+//		final String labelingDataFilename = "/Users/jug/Desktop/labeling.xml";
+//		new XmlIoLabelingPlus().save( labelingBuilder, labelingDataFilename );
+//
+//		// = = = syncpoint = = =
+//
+//		final LabelingPlus labelingPlus = new XmlIoLabelingPlus().load( labelingDataFilename );
+//
+//		final LabelingBuilder labelingBuilderLoaded = new LabelingBuilder( labelingPlus );
+
 	}
 
 	/**
@@ -178,13 +187,9 @@ public class Tr2dTrackingModel {
 	 */
 	public void processSegmentationInputs() {
 		this.sumImgMovie = new LabelingTimeLapse( tr2dSegModel );
-		try {
-			sumImgMovie.processFrames();
-		} catch ( final IllegalAccessException e ) {
+		if ( !sumImgMovie.processFrames() ) {
 			System.err.println(
 					"Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!" );
-			e.printStackTrace();
-			return;
 		}
 	}
 

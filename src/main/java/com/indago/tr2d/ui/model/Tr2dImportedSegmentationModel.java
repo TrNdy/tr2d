@@ -6,6 +6,7 @@ package com.indago.tr2d.ui.model;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -122,6 +123,16 @@ public class Tr2dImportedSegmentationModel {
 
 		if ( !pf.getFile().delete() ) {
 			System.err.println( String.format( "ERROR: imported segmentation file %s could not be deleted from project folder.", pf ) );
+		}
+	}
+
+	/**
+	 * @param indices
+	 */
+	public void removeSegmentations( final int[] indices ) {
+		Arrays.sort( indices );
+		for ( int i = indices.length - 1; i >= 0; i-- ) {
+			removeSegmentation( indices[ i ] );
 		}
 	}
 

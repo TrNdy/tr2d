@@ -21,7 +21,7 @@ import javax.swing.event.ListSelectionListener;
 import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.io.projectfolder.ProjectFile;
 import com.indago.tr2d.ui.model.Tr2dImportedSegmentationModel;
-import com.indago.tr2d.ui.util.OsDependentFileChooser;
+import com.indago.tr2d.ui.util.UniversalFileChooser;
 
 import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
@@ -86,7 +86,7 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
 		if ( e.getSource().equals( add ) ) {
-			final File file = OsDependentFileChooser.showLoadFileChooser(
+			final File file = UniversalFileChooser.showLoadFileChooser(
 					this,
 					null,
 					"Choose a sum image tiff file to import...",
@@ -98,11 +98,9 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 				e1.printStackTrace();
 			}
 		} else if ( e.getSource().equals( remove ) ) {
-			final int idx = listSegmentations.getSelectedIndex();
-			if ( idx > -1 ) {
-				model.removeSegmentation( idx );
-				updateViewer( idx );
-			}
+			model.removeSegmentations( listSegmentations.getSelectedIndices() );
+			listSegmentations.setSelectedIndex( 0 );
+			updateViewer( 0 );
 		}
 	}
 
