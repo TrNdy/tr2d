@@ -192,7 +192,9 @@ public class Tr2dTrackingModel {
 			if ( !labelingFrames.processFrames() ) {
 				System.err.println(
 						"Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!" );
+				return;
 			}
+			labelingFrames.saveTo( hypothesesFolder );
 		}
 	}
 

@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -98,6 +99,13 @@ public class ProjectFolder {
 			if ( extensionFileFilter.accept( pf.getFile() ) ) {
 				ret.add( pf );
 			}
+			ret.sort( new Comparator< ProjectFile >() {
+
+				@Override
+				public int compare( final ProjectFile o1, final ProjectFile o2 ) {
+					return o1.getAbsolutePath().compareToIgnoreCase( o2.getAbsolutePath() );
+				}
+			} );
 		}
 		return ret;
 	}

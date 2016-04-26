@@ -30,7 +30,7 @@ public class LabelingTimeLapse {
 
 	private final Tr2dSegmentationCollectionModel model;
 
-	// Parameters for FilteredComponentTree of SumImage(s)
+	// Parameters for FilteredComponentTrees
 	private final int minComponentSize = 10;
 	private final int maxComponentSize = 10000;
 	private final Filter maxGrowthPerStep = new MaxGrowthPerStep( 1 );
@@ -133,21 +133,19 @@ public class LabelingTimeLapse {
 	public void loadFromProjectFolder( final ProjectFolder folder ) {
 		frameLabelingBuilders.clear();
 		processedOrLoaded = false;
-		for ( final ProjectFile labelingFrameFile : folder.getFiles( new ExtensionFileFilter( "tif", "TIFF files" ) ) ) {
+		for ( final ProjectFile labelingFrameFile : folder.getFiles( new ExtensionFileFilter( "xml", "XML files" ) ) ) {
 			final File fLabeling = labelingFrameFile.getFile();
 			if ( fLabeling.canRead() ) {
 				try {
 					final LabelingPlus labelingPlus = new XmlIoLabelingPlus().load( fLabeling );
 					frameLabelingBuilders.add( new LabelingBuilder( labelingPlus ) );
 				} catch ( final IOException e ) {
-					System.err.println( "ERROR: Labeling could not be loaded!" );
+					System.err.println( String.format( "ERROR: Labeling could not be loaded! (%s)", fLabeling.toString() ) );
 //					e.printStackTrace();
 				}
 			}
 			processedOrLoaded = true;
 		}
-//		final String labelingDataFilename = "/Users/jug/Desktop/labeling.xml";
-//		new XmlIoLabelingPlus().save( labelingBuilder, labelingDataFilename );
 	}
 
 	/**
@@ -155,6 +153,25 @@ public class LabelingTimeLapse {
 	 */
 	public boolean needProcessing() {
 		return !processedOrLoaded;
+	}
+
+	/**
+	 * @param folder
+	 */
+	public void saveTo( final ProjectFolder folder ) {
+		final String fnPrefix = "labeling_frame";
+		int i = 0;
+		for ( final LabelingBuilder lb : frameLabelingBuilders ) {
+			final String fn = String.format( "%s%04d.xml", fnPrefix, i );
+			final String abspath = new File( folder.getFolder(), fn ).getAbsolutePath();
+			try {
+				new XmlIoLabelingPlus().save( lb, abspath );
+			} catch ( final IOException e ) {
+				System.err.println( String.format( "ERROR: could not store labeling_frame%04d.* to project folder!", i ) );
+//				e.printStackTrace();
+			}
+			i++;
+		}
 	}
 
 }
