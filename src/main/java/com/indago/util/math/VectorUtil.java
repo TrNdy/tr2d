@@ -3,8 +3,6 @@
  */
 package com.indago.util.math;
 
-import org.python.modules.math;
-
 /**
  * @author jug
  */
@@ -26,6 +24,6 @@ public class VectorUtil {
 	}
 
 	public static double getDistance( final double[] pos1, final double[] pos2 ) {
-		return math.sqrt( getSquaredDistance( pos1, pos2 ) );
+		return Math.sqrt( getSquaredDistance( pos1, pos2 ) );
 	}
 }

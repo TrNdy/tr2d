@@ -5,14 +5,13 @@ package com.indago.tr2d.ui.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
 import javax.swing.ListModel;
-
-import org.python.google.common.io.Files;
 
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFile;
@@ -104,7 +103,7 @@ public class Tr2dImportedSegmentationModel {
 	 */
 	public void importSegmentation( final File f ) throws IOException, ImgIOException {
 		final ProjectFile pf = projectFolder.addFile( f.getName() );
-		Files.copy( f, pf.getFile() );
+		Files.copy( f.toPath(), pf.getFile().toPath() );
 
 		files.add( pf );
 		linkedListModel.add( pf );
