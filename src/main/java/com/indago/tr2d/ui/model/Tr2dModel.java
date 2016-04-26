@@ -3,16 +3,16 @@
  */
 package com.indago.tr2d.ui.model;
 
+import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFolder;
-import com.indago.util.converter.RealDoubleNormalizeConverter;
+import com.indago.util.ImglibUtil;
 
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.converter.Converters;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
-import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.view.Views;
 
 /**
  * @author jug
@@ -20,7 +20,9 @@ import net.imglib2.type.numeric.real.DoubleType;
 public class Tr2dModel {
 
 	private final ImagePlus imgPlus;
-	private RandomAccessibleInterval< DoubleType > imgOrig;
+	private RandomAccessibleInterval< DoubleType > imgRaw;
+	private final DoubleType min = new DoubleType();
+	private final DoubleType max = new DoubleType();
 
 	private final ProjectFolder projectFolder;
 
@@ -32,11 +34,9 @@ public class Tr2dModel {
 	public Tr2dModel( final ProjectFolder projectFolder, final ImagePlus imgPlus ) {
 		this.imgPlus = imgPlus;
 		this.projectFolder = projectFolder;
-		final Img< ? extends RealType > temp = ImagePlusAdapter.wrapNumeric( imgPlus );
-		setImgOrig( Converters.convert(
-				( RandomAccessibleInterval ) temp,
-				new RealDoubleNormalizeConverter( 1.0 ),
-				new DoubleType() ) );
+		final Img< DoubleType > temp = ImagePlusAdapter.wrapNumeric( imgPlus );
+		imgRaw = DoubleTypeImgLoader.wrapEnsureType( imgPlus );
+		ImglibUtil.computeMinMax( Views.iterable( imgRaw ), min, max );
 	}
 
 	/**
@@ -47,25 +47,18 @@ public class Tr2dModel {
 	}
 
 	/**
-	 * @return the imgOrig
+	 * @return the imgRaw
 	 */
-	public RandomAccessibleInterval< DoubleType > getImgOrig() {
-		return imgOrig;
+	public RandomAccessibleInterval< DoubleType > getRawData() {
+		return imgRaw;
 	}
 
 	/**
 	 * @param imgOrig
 	 *            the imgOrig to set
 	 */
-	public void setImgOrig( final RandomAccessibleInterval< DoubleType > imgOrig ) {
-		this.imgOrig = imgOrig;
-	}
-
-	/**
-	 * @return the imgOrigNorm
-	 */
-	public RandomAccessibleInterval< DoubleType > getImgOrigNorm() {
-		return imgOrig;
+	public void setRawData( final RandomAccessibleInterval< DoubleType > imgOrig ) {
+		this.imgRaw = imgOrig;
 	}
 
 	/**
@@ -73,6 +66,20 @@ public class Tr2dModel {
 	 */
 	public ProjectFolder getProjectFolder() {
 		return projectFolder;
+	}
+
+	/**
+	 * @return
+	 */
+	public double getMaxRawValue() {
+		return max.getRealDouble();
+	}
+
+	/**
+	 * @return
+	 */
+	public double getMinRawValue() {
+		return min.getRealDouble();
 	}
 
 }

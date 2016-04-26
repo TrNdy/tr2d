@@ -93,8 +93,8 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 		icSegmentation = new IddeaComponent(
 				new Dimension(
-						(int) model.getModel().getModel().getImgOrig().dimension( 0 ),
-						(int) model.getModel().getModel().getImgOrig().dimension( 1 ) ) );
+						(int) model.getModel().getModel().getRawData().dimension( 0 ),
+						(int) model.getModel().getModel().getRawData().dimension( 1 ) ) );
 		icSegmentation.showMenu( false );
 		icSegmentation.setToolBarLocation( BorderLayout.WEST );
 		icSegmentation.setToolBarVisible( false );

@@ -177,7 +177,7 @@ public class Tr2dWekaSegmentationModel {
 
     		// classify frames
 			final RandomAccessibleInterval< DoubleType > classification =
-					SegmentationMagic.returnClassification( getModel().getModel().getImgOrig() );
+					SegmentationMagic.returnClassification( getModel().getModel().getRawData() );
 			imgsClassification.add( classification );
 			IJ.save(
 					ImageJFunctions.wrap( classification, "classification image" ).duplicate(),

@@ -28,6 +28,7 @@ import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
+import bdv.util.BdvSource;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.DoubleType;
 
@@ -59,13 +60,15 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		this.model = model;
 
 		buildGui();
-		frame.add( this );
-		frame.pack();
+
 		//final BdvSource show =
-		BdvFunctions.show(
-				model.getImgOrigNorm(),
-				"orig",
+		final BdvSource source = BdvFunctions.show(
+				model.getRawData(),
+				"RAW",
 				Bdv.options().addTo( bdvData ) );
+		source.setDisplayRangeBounds( 0, model.getMaxRawValue() );
+		source.setDisplayRange( model.getMinRawValue(), model.getMaxRawValue() );
+
 	}
 
 	private void buildGui() {
@@ -75,14 +78,13 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabData = new JPanel( new BorderLayout() );
 		bdvData = new BdvHandlePanel( frame, Bdv.options().is2D() );
 		tabData.add( bdvData.getViewerPanel(), BorderLayout.CENTER );
-		frame.pack();
 
 		// === TAB SEGMENTATION ===================================================================
 		final Tr2dSegmentationCollectionModel segModel = new Tr2dSegmentationCollectionModel( model );
 		tabSegmentation = new Tr2dSegmentationCollectionPanel( segModel );
 
 		// === TAB TRACKING========================================================================
-		final RandomAccessibleInterval< DoubleType > imgOrig = model.getImgOrig();
+		final RandomAccessibleInterval< DoubleType > imgOrig = model.getRawData();
 		//TODO this should at some point be a given model, not fixed the Hernan thing...
 		tabTracking =
 				new Tr2dTrackingPanel(

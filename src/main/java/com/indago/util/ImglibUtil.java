@@ -5,11 +5,10 @@ package com.indago.util;
 
 import java.util.Iterator;
 
+import net.imglib2.IterableInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.IntervalView;
-import net.imglib2.view.Views;
 
 /**
  * @author jug
@@ -24,18 +23,21 @@ public class ImglibUtil {
 	 * {@link RandomAccess}. So we simply use the
 	 * most simple interface in the hierarchy.
 	 *
-	 * @param viewImg
+	 * @param iterableInterval
 	 *            - the input that has to just be {@link Iterable}
 	 * @param min
 	 *            - the type that will have min
 	 * @param max
 	 *            - the type that will have max
 	 */
-	public static < T extends RealType< T > & NativeType< T > > void computeMinMax( final IntervalView< T > viewImg, final T min, final T max ) {
-		if ( viewImg == null ) { return; }
+	public static < T extends RealType< T > & NativeType< T > > void computeMinMax(
+			final IterableInterval< T > iterableInterval,
+			final T min,
+			final T max ) {
+		if ( iterableInterval == null ) { return; }
 
 		// create a cursor for the image (the order does not matter)
-		final Iterator< T > iterator = Views.iterable( viewImg ).iterator();
+		final Iterator< T > iterator = iterableInterval.iterator();
 
 		// initialize min and max with the first image value
 		T type = iterator.next();

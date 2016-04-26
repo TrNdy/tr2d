@@ -48,7 +48,6 @@ public class Tr2dApplication {
 	private static JFrame guiFrame;
 	private static Tr2dMainPanel mainPanel;
 
-//	private static File projectFolderBasePath;
 	private static File inputStack;
 	private static Tr2dProjectFolder projectFolder;
 
@@ -64,19 +63,19 @@ public class Tr2dApplication {
 			new ImageJ();
 		}
 
-		parseCommandLineArgs( args );
-
-		guiFrame = new JFrame( "tr2d" );
-		setFrameSizeAndCloseOperation();
-		setImageAppIcon();
-		guiFrame.setVisible( true );
-
 		checkGurobiAvailability();
+		parseCommandLineArgs( args );
 
 		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
 		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
 		mainPanel = new Tr2dMainPanel( guiFrame, model );
+
+		guiFrame = new JFrame( "tr2d" );
+		guiFrame.getContentPane().add( mainPanel );
+		setImageAppIcon();
 		setFrameSizeAndCloseOperation();
+
+		guiFrame.setVisible( true );
 	}
 
 	private static void setFrameSizeAndCloseOperation() {

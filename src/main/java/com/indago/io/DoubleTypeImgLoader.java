@@ -6,6 +6,7 @@ package com.indago.io;
 import java.io.File;
 
 import ij.IJ;
+import ij.ImagePlus;
 import io.scif.img.ImgIOException;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
@@ -39,6 +40,23 @@ public class DoubleTypeImgLoader {
 	public static RandomAccessibleInterval< DoubleType > loadTiffEnsureType( final File file )
 			throws ImgIOException {
 		final Img< DoubleType > img = loadTiff( file );
+
+		final long dims[] = new long[ img.numDimensions() ];
+		img.dimensions( dims );
+		final RandomAccessibleInterval< DoubleType > ret =
+				new ArrayImgFactory< DoubleType >().create( dims, new DoubleType() );
+		final IterableInterval< DoubleType > iterRet = Views.iterable( ret );
+		try {
+			DataMover.convertAndCopy( Views.extendZero( img ), iterRet );
+		} catch ( final Exception e ) {
+			e.printStackTrace();
+		}
+		return ret;
+	}
+
+	public static RandomAccessibleInterval< DoubleType > wrapEnsureType( final ImagePlus imagePlus ) {
+		final Img< DoubleType > img =
+				ImagePlusAdapter.wrapReal( imagePlus );
 
 		final long dims[] = new long[ img.numDimensions() ];
 		img.dimensions( dims );
