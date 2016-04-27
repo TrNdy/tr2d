@@ -19,16 +19,9 @@ import javax.swing.JTextPane;
 
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.util.MessageConsole;
-import com.indago.util.ImglibUtil;
 
 import bdv.util.Bdv;
-import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
-import bdv.util.BdvSource;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.Views;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -42,15 +35,13 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	private MessageConsole log;
 	private JButton bRun;
 
-	private BdvHandlePanel bdv;
-
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
 		this.model = trackingModel;
 		buildGui();
 
 		if ( model.getImgSolution() != null ) {
-			updateBdvView( model.getImgSolution() );
+			model.bdvAdd( model.getImgSolution() );
 		}
 	}
 
@@ -95,10 +86,10 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		bRun = new JButton( "run..." );
 		bRun.addActionListener( this );
 
-		bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
+		model.bdvSetHandlePanel( new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() ) );
 
 		controls.add( bRun );
-		viewer.add( bdv.getViewerPanel(), BorderLayout.CENTER );
+		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
 		panel.add( splitPane, BorderLayout.CENTER );
@@ -117,26 +108,12 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 				@Override
 				public void run() {
 					model.run();
-					updateBdvView( model.getImgSolution() );
+					model.bdvRemoveAll();
+					model.bdvAdd( model.getImgSolution() );
 				}
 
 			};
 			new Thread( runnable ).start();
 		}
-	}
-
-	/**
-	 * @param img
-	 */
-	private < T extends RealType< T > & NativeType< T > > void updateBdvView( final RandomAccessibleInterval< T > img ) {
-		final BdvSource source = BdvFunctions.show(
-				img,
-				"tracking",
-				Bdv.options().addTo( bdv ) );
-		final T min = img.randomAccess().get().copy();
-		final T max = min.copy();
-		ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
-		source.setDisplayRangeBounds( 0, max.getRealDouble() );
-		source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
 	}
 }

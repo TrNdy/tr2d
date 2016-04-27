@@ -5,6 +5,7 @@ package com.indago.tr2d.ui.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +32,11 @@ import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
+import com.indago.tr2d.ui.view.BdvOwner;
 import com.indago.util.TicToc;
 
+import bdv.util.BdvHandlePanel;
+import bdv.util.BdvSource;
 import gurobi.GRBException;
 import ij.IJ;
 import io.scif.img.ImgIOException;
@@ -40,6 +44,8 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.roi.IterableRegion;
 import net.imglib2.roi.Regions;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Pair;
 import net.imglib2.view.IntervalView;
@@ -49,7 +55,7 @@ import net.imglib2.view.Views;
 /**
  * @author jug
  */
-public class Tr2dTrackingModel {
+public class Tr2dTrackingModel implements BdvOwner {
 
 	private final ProjectFolder dataFolder;
 
@@ -76,6 +82,11 @@ public class Tr2dTrackingModel {
 	private MappedFactorGraph mfg;
 	private Assignment< Variable > fgSolution;
 	private Assignment< IndicatorNode > pgSolution;
+
+	private BdvHandlePanel bdvHandlePanel;
+	private final List< BdvSource > bdvSources = new ArrayList< >();
+
+	private final List< RandomAccessibleInterval< IntType > > imgs;
 
 	/**
 	 * @param model
@@ -110,6 +121,8 @@ public class Tr2dTrackingModel {
 				e.printStackTrace();
 			}
 		}
+		imgs = new ArrayList< >();
+		imgs.add( imgSolution );
 
 		// Loading hypotheses labeling frames if exist in project folder
 		this.labelingFrames = new LabelingTimeLapse( tr2dSegModel );
@@ -355,5 +368,39 @@ public class Tr2dTrackingModel {
 	 */
 	public RandomAccessibleInterval< IntType > getImgSolution() {
 		return imgSolution;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvOwner#setBdvHandlePanel()
+	 */
+	@Override
+	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
+		this.bdvHandlePanel = bdvHandlePanel;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetHandlePanel()
+	 */
+	@Override
+	public BdvHandlePanel bdvGetHandlePanel() {
+		return bdvHandlePanel;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSources()
+	 */
+	@Override
+	public List< BdvSource > bdvGetSources() {
+		return bdvSources;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 */
+	@Override
+	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
+		final int idx = imgs.indexOf( img );
+		if ( idx == -1 ) return null;
+		return bdvGetSources().get( idx );
 	}
 }

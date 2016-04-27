@@ -22,8 +22,6 @@ import com.indago.tr2d.ui.util.UniversalFileChooser;
 
 import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;
-import bdv.viewer.DisplayMode;
-import bdv.viewer.VisibilityAndGrouping;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.integer.IntType;
 import weka.gui.ExtensionFileFilter;
@@ -52,7 +50,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		buildGui();
 
 		for ( final RandomAccessibleInterval< IntType > seghyp : model.getSegmentHypotheses() ) {
-			model.addToBdv( seghyp );
+			model.bdvAdd( seghyp );
 		}
 	}
 
@@ -91,12 +89,10 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		helper.add( bStartSegmentation );
 
 		final BdvHandlePanel bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
-		final VisibilityAndGrouping vg = bdv.getViewerPanel().getVisibilityAndGrouping();
-		vg.setDisplayMode( DisplayMode.SINGLE );
-		model.setBdvHandlePanel( bdv );
+		model.bdvSetHandlePanel( bdv );
 
 		this.add( helper, BorderLayout.NORTH );
-		this.add( model.getBdvHandlePanel().getViewerPanel(), BorderLayout.CENTER );
+		this.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 	}
 
 	/**
@@ -167,7 +163,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 					"Segmentation error...",
 					JOptionPane.ERROR_MESSAGE );
 		} else {
-			model.addToBdv( seghyps );
+			model.bdvAdd( seghyps );
 		}
 	}
 }

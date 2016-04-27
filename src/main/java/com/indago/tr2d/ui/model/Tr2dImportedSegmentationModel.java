@@ -16,17 +16,22 @@ import javax.swing.ListModel;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFile;
 import com.indago.io.projectfolder.ProjectFolder;
+import com.indago.tr2d.ui.view.BdvOwner;
 import com.jgoodies.common.collect.LinkedListModel;
 
+import bdv.util.BdvHandlePanel;
+import bdv.util.BdvSource;
 import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import weka.gui.ExtensionFileFilter;
 
 /**
  * @author jug
  */
-public class Tr2dImportedSegmentationModel {
+public class Tr2dImportedSegmentationModel implements BdvOwner {
 
 	private final Tr2dSegmentationCollectionModel model;
 
@@ -36,6 +41,9 @@ public class Tr2dImportedSegmentationModel {
 	private final List< RandomAccessibleInterval< IntType > > imgs;
 
 	private LinkedListModel< ProjectFile > linkedListModel = null;
+
+	private BdvHandlePanel bdvHandlePanel;
+	private final List< BdvSource > bdvSources = new ArrayList< >();
 
 	/**
 	 * @param parentFolder
@@ -116,9 +124,10 @@ public class Tr2dImportedSegmentationModel {
 	 * @param idx
 	 */
 	public void removeSegmentation( final int idx ) {
+		bdvRemove( imgs.get( idx ) );
+		imgs.remove( idx );
 		final ProjectFile pf = files.remove( idx );
 		linkedListModel.remove( pf );
-		imgs.remove( idx );
 
 		if ( !pf.getFile().delete() ) {
 			System.err.println( String.format( "ERROR: imported segmentation file %s could not be deleted from project folder.", pf ) );
@@ -140,5 +149,39 @@ public class Tr2dImportedSegmentationModel {
 	 */
 	public ListModel< ProjectFile > getListModel() {
 		return linkedListModel;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvOwner#setBdvHandlePanel()
+	 */
+	@Override
+	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
+		this.bdvHandlePanel = bdvHandlePanel;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetHandlePanel()
+	 */
+	@Override
+	public BdvHandlePanel bdvGetHandlePanel() {
+		return bdvHandlePanel;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSources()
+	 */
+	@Override
+	public List< BdvSource > bdvGetSources() {
+		return bdvSources;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 */
+	@Override
+	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
+		final int idx = imgs.indexOf( img );
+		if ( idx == -1 ) return null;
+		return bdvGetSources().get( idx );
 	}
 }

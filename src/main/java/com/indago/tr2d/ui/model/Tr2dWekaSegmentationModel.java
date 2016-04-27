@@ -20,14 +20,11 @@ import com.indago.io.DataMover;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFolder;
-import com.indago.util.ImglibUtil;
+import com.indago.tr2d.ui.view.BdvOwner;
 import com.indago.util.converter.IntTypeThresholdConverter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
-import bdv.util.Bdv;
-import bdv.util.BdvFunctions;
-import bdv.util.BdvHandle;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvSource;
 import ij.IJ;
@@ -41,12 +38,11 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.view.Views;
 
 /**
  * @author jug
  */
-public class Tr2dWekaSegmentationModel {
+public class Tr2dWekaSegmentationModel implements BdvOwner {
 
 	private final String FILENAME_THRESHOLD_VALUES = "thresholdValues.csv";
 	private final String FILENAME_CLASSIFIERS = "classifierFilenames.csv";
@@ -62,7 +58,7 @@ public class Tr2dWekaSegmentationModel {
 	private final List< RandomAccessibleInterval< DoubleType > > imgsClassification = new ArrayList< >();
 	private final List< RandomAccessibleInterval< IntType > > imgsSegmentHypotheses = new ArrayList< >();
 
-	private BdvHandlePanel bdv;
+	private BdvHandlePanel bdvHandlePanel;
 	private final List< BdvSource > bdvSources = new ArrayList< >();
 
 	/**
@@ -98,8 +94,6 @@ public class Tr2dWekaSegmentationModel {
 			}
 		} catch ( final FileNotFoundException e ) {
 			listThresholds.add( 0.5 );
-			listThresholds.add( 0.7 );
-			listThresholds.add( 0.95 );
 		}
 
 		final File classifierFilenames = projectFolder.addFile( FILENAME_CLASSIFIERS, FILENAME_CLASSIFIERS ).getFile();
@@ -179,14 +173,7 @@ public class Tr2dWekaSegmentationModel {
 		imgsClassification.clear();
 		imgsSegmentHypotheses.clear();
 		for ( final BdvSource bdvSource : bdvSources ) {
-			new Thread( new Runnable() {
-
-				@Override
-				public void run() {
-					bdvSource.removeFromBdv();
-				}
-
-			} ).start();
+			bdvSource.removeFromBdv();
 		}
 		bdvSources.clear();
 		int i = 0;
@@ -275,41 +262,36 @@ public class Tr2dWekaSegmentationModel {
 	}
 
 	/**
-	 * @param bdvHandlePanel
+	 * @see com.indago.tr2d.ui.view.BdvOwner#setBdvHandlePanel()
 	 */
-	public void setBdvHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
-		this.bdv = bdvHandlePanel;
+	@Override
+	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
+		this.bdvHandlePanel = bdvHandlePanel;
 	}
 
 	/**
-	 * @return
+	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetHandlePanel()
 	 */
-	public BdvHandle getBdvHandlePanel() {
-		return bdv;
+	@Override
+	public BdvHandlePanel bdvGetHandlePanel() {
+		return bdvHandlePanel;
 	}
 
 	/**
-	 * @param img
+	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSources()
 	 */
-	public < T extends RealType< T > & NativeType< T > > void addToBdv( final RandomAccessibleInterval< T > img ) {
-		final Runnable task = new Runnable() {
+	@Override
+	public List< BdvSource > bdvGetSources() {
+		return bdvSources;
+	}
 
-			@Override
-			public void run() {
-//				source.removeFromBdv();
-				final BdvSource source = BdvFunctions.show(
-						img,
-						"segmentation",
-						Bdv.options().addTo( bdv ) );
-				bdvSources.add( source );
-
-				final T min = img.randomAccess().get().copy();
-				final T max = min.copy();
-				ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
-				source.setDisplayRangeBounds( 0, max.getRealDouble() );
-				source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
-			}
-		};
-		new Thread( task ).start();
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 */
+	@Override
+	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
+		final int idx = imgsSegmentHypotheses.indexOf( img );
+		if ( idx == -1 ) return null;
+		return bdvGetSources().get( idx );
 	}
 }

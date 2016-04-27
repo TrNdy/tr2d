@@ -21,17 +21,10 @@ import javax.swing.event.ListSelectionListener;
 import com.indago.io.projectfolder.ProjectFile;
 import com.indago.tr2d.ui.model.Tr2dImportedSegmentationModel;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
-import com.indago.util.ImglibUtil;
 
 import bdv.util.Bdv;
-import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
-import bdv.util.BdvSource;
 import io.scif.img.ImgIOException;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.Views;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -47,8 +40,6 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 	private final JButton add = new JButton( "+" );
 	private final JButton remove = new JButton( "-" );
 
-	private BdvHandlePanel bdv;
-
 	public Tr2dImportedSegmentationPanel( final Tr2dImportedSegmentationModel model ) {
 		super( new BorderLayout() );
 		this.model = model;
@@ -56,14 +47,14 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 		buildGui();
 
 		if ( model.getSegmentHypothesesImages().size() > 0 ) {
-			updateBdvView( model.getSegmentHypothesesImages().get( 0 ) );
+			listSegmentations.setSelectedIndex( 0 );
 		}
 	}
 
 	private void buildGui() {
 		final JPanel viewer = new JPanel( new BorderLayout() );
-		bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
-		viewer.add( bdv.getViewerPanel(), BorderLayout.CENTER );
+		model.bdvSetHandlePanel( new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() ) );
+		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		final JPanel list = new JPanel( new BorderLayout() );
 		listSegmentations.addListSelectionListener( this );
@@ -100,8 +91,7 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 			}
 		} else if ( e.getSource().equals( remove ) ) {
 			model.removeSegmentations( listSegmentations.getSelectedIndices() );
-			listSegmentations.setSelectedIndex( 0 );
-			updateBdvView( model.getSegmentHypothesesImages().get( 0 ) );
+			listSegmentations.clearSelection();
 		}
 	}
 
@@ -112,36 +102,14 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 	public void valueChanged( final ListSelectionEvent e ) {
 		if ( e.getValueIsAdjusting() == false ) {
 
-			final int idx = listSegmentations.getSelectedIndex();
-			if ( idx > -1 ) {
-				updateBdvView( model.getSegmentHypothesesImages().get( idx ) );
+			model.bdvRemoveAll();
+			if ( listSegmentations.getSelectedIndices().length > 0 ) {
+				for ( final int idx : listSegmentations.getSelectedIndices() ) {
+					model.bdvAdd( model.getSegmentHypothesesImages().get( idx ) );
+				}
 			} else {
-				listSegmentations.setSelectedIndex( 0 );
+				model.bdvRemoveAll();
 			}
 		}
 	}
-
-	/**
-	 * @param img
-	 */
-	private < T extends RealType< T > & NativeType< T > > void updateBdvView( final RandomAccessibleInterval< T > img ) {
-		final Runnable task = new Runnable() {
-
-			@Override
-			public void run() {
-				final BdvSource source = BdvFunctions.show(
-						img,
-						"segmentation",
-						Bdv.options().addTo( bdv ) );
-//				source.removeFromBdv();
-				final T min = img.randomAccess().get().copy();
-				final T max = min.copy();
-				ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
-				source.setDisplayRangeBounds( 0, max.getRealDouble() );
-				source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
-			}
-		};
-		new Thread( task ).start();
-	}
-
 }
