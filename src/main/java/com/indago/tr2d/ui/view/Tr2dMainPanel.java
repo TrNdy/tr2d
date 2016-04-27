@@ -60,15 +60,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		this.model = model;
 
 		buildGui();
-
-		//final BdvSource show =
-		final BdvSource source = BdvFunctions.show(
-				model.getRawData(),
-				"RAW",
-				Bdv.options().addTo( bdvData ) );
-		source.setDisplayRangeBounds( 0, model.getMaxRawValue() );
-		source.setDisplayRange( model.getMinRawValue(), model.getMaxRawValue() );
-
 	}
 
 	private void buildGui() {
@@ -78,6 +69,12 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabData = new JPanel( new BorderLayout() );
 		bdvData = new BdvHandlePanel( frame, Bdv.options().is2D() );
 		tabData.add( bdvData.getViewerPanel(), BorderLayout.CENTER );
+		final BdvSource source = BdvFunctions.show(
+				model.getRawData(),
+				"RAW",
+				Bdv.options().addTo( bdvData ) );
+		source.setDisplayRangeBounds( 0, model.getMaxRawValue() );
+		source.setDisplayRange( model.getMinRawValue(), model.getMaxRawValue() );
 
 		// === TAB SEGMENTATION ===================================================================
 		final Tr2dSegmentationCollectionModel segModel = new Tr2dSegmentationCollectionModel( model );

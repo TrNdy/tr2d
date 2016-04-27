@@ -4,7 +4,7 @@
 package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -17,13 +17,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
-import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.tr2d.ui.model.Tr2dWekaSegmentationModel;
 import com.indago.tr2d.ui.util.JDoubleListTextPane;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
+import com.indago.util.ImglibUtil;
 
+import bdv.util.Bdv;
+import bdv.util.BdvFunctions;
+import bdv.util.BdvHandlePanel;
+import bdv.util.BdvSource;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.view.Views;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -44,7 +51,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 	private JButton bStartSegmentation;
 
-	private IddeaComponent icSegmentation = null;
+	private BdvHandlePanel bdv;
 
 	public Tr2dWekaSegmentationPanel( final Tr2dWekaSegmentationModel model ) {
 		super( new BorderLayout() );
@@ -53,7 +60,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 		final List< RandomAccessibleInterval< IntType > > seghyps = model.getSegmentHypotheses();
 		if ( seghyps != null ) {
-			icSegmentation.setSourceImage( seghyps.get( 0 ) );
+			updateBdvView( seghyps.get( 0 ) );
 		}
 	}
 
@@ -91,20 +98,10 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 		helper.add( bStartSegmentation );
 
-		icSegmentation = new IddeaComponent(
-				new Dimension(
-						(int) model.getModel().getModel().getRawData().dimension( 0 ),
-						(int) model.getModel().getModel().getRawData().dimension( 1 ) ) );
-		icSegmentation.showMenu( false );
-		icSegmentation.setToolBarLocation( BorderLayout.WEST );
-		icSegmentation.setToolBarVisible( false );
-//		icSegmentation.installDefaultToolBar();
-//		icSegmentation.setPreferredSize( new Dimension( imgPlus.getWidth(), imgPlus.getHeight() ) );
-//		icSegmentation.showStackSlider( true );
-//		icSegmentation.showTimeSlider( true );
+		bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
 
 		this.add( helper, BorderLayout.NORTH );
-		this.add( icSegmentation, BorderLayout.CENTER );
+		this.add( bdv.getViewerPanel(), BorderLayout.CENTER );
 	}
 
 	/**
@@ -175,8 +172,23 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 					"Segmentation error...",
 					JOptionPane.ERROR_MESSAGE );
 		} else {
-			icSegmentation.setSourceImage( seghyps );
+			updateBdvView( seghyps );
 		}
+	}
+
+	/**
+	 * @param img
+	 */
+	private < T extends RealType< T > & NativeType< T > > void updateBdvView( final RandomAccessibleInterval< T > img ) {
+		final BdvSource source = BdvFunctions.show(
+				img,
+				"segmentation",
+				Bdv.options().addTo( bdv ) );
+		final T min = img.randomAccess().get().copy();
+		final T max = min.copy();
+		ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
+		source.setDisplayRangeBounds( 0, max.getRealDouble() );
+		source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
 	}
 
 }

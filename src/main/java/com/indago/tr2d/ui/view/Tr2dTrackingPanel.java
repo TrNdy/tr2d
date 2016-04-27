@@ -6,6 +6,7 @@ package com.indago.tr2d.ui.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -16,10 +17,18 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 
-import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.util.MessageConsole;
+import com.indago.util.ImglibUtil;
 
+import bdv.util.Bdv;
+import bdv.util.BdvFunctions;
+import bdv.util.BdvHandlePanel;
+import bdv.util.BdvSource;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -33,15 +42,15 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	private MessageConsole log;
 	private JButton bRun;
 
-	private IddeaComponent icSolution = null;
-
+	private BdvHandlePanel bdv;
 
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
 		this.model = trackingModel;
 		buildGui();
+
 		if ( model.getImgSolution() != null ) {
-			icSolution.setSourceImage( model.getImgSolution() );
+			updateBdvView( model.getImgSolution() );
 		}
 	}
 
@@ -86,16 +95,10 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		bRun = new JButton( "run..." );
 		bRun.addActionListener( this );
 
-		icSolution = new IddeaComponent();
-		icSolution.showMenu( false );
-		icSolution.setToolBarLocation( BorderLayout.WEST );
-		icSolution.setToolBarVisible( false );
-//		icSegmentation.setPreferredSize( new Dimension( imgPlus.getWidth(), imgPlus.getHeight() ) );
-//		icSegmentation.showStackSlider( true );
-//		icSegmentation.showTimeSlider( true );
+		bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
 
 		controls.add( bRun );
-		viewer.add( icSolution, BorderLayout.CENTER );
+		viewer.add( bdv.getViewerPanel(), BorderLayout.CENTER );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
 		panel.add( splitPane, BorderLayout.CENTER );
@@ -114,11 +117,26 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 				@Override
 				public void run() {
 					model.run();
-					icSolution.setSourceImage( model.getImgSolution() );
+					updateBdvView( model.getImgSolution() );
 				}
 
 			};
 			new Thread( runnable ).start();
 		}
+	}
+
+	/**
+	 * @param img
+	 */
+	private < T extends RealType< T > & NativeType< T > > void updateBdvView( final RandomAccessibleInterval< T > img ) {
+		final BdvSource source = BdvFunctions.show(
+				img,
+				"tracking",
+				Bdv.options().addTo( bdv ) );
+		final T min = img.randomAccess().get().copy();
+		final T max = min.copy();
+		ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
+		source.setDisplayRangeBounds( 0, max.getRealDouble() );
+		source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
 	}
 }

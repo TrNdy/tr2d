@@ -4,8 +4,8 @@
 package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -18,14 +18,20 @@ import javax.swing.JSplitPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.indago.iddea.view.component.IddeaComponent;
 import com.indago.io.projectfolder.ProjectFile;
 import com.indago.tr2d.ui.model.Tr2dImportedSegmentationModel;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
+import com.indago.util.ImglibUtil;
 
+import bdv.util.Bdv;
+import bdv.util.BdvFunctions;
+import bdv.util.BdvHandlePanel;
+import bdv.util.BdvSource;
 import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -40,7 +46,8 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 	private final JList< ProjectFile > listSegmentations;
 	private final JButton add = new JButton( "+" );
 	private final JButton remove = new JButton( "-" );
-	private IddeaComponent icSegmentation = null;
+
+	private BdvHandlePanel bdv;
 
 	public Tr2dImportedSegmentationPanel( final Tr2dImportedSegmentationModel model ) {
 		super( new BorderLayout() );
@@ -51,18 +58,8 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 
 	private void buildGui() {
 		final JPanel viewer = new JPanel( new BorderLayout() );
-		icSegmentation = new IddeaComponent(
-				new Dimension(
-						(int) model.getModel().getModel().getRawData().dimension( 0 ),
-						(int) model.getModel().getModel().getRawData().dimension( 1 ) ) );
-		icSegmentation.showMenu( false );
-		icSegmentation.setToolBarLocation( BorderLayout.WEST );
-		icSegmentation.setToolBarVisible( false );
-//		icSegmentation.installDefaultToolBar();
-//		icSegmentation.setPreferredSize( new Dimension( imgPlus.getWidth(), imgPlus.getHeight() ) );
-//		icSegmentation.showStackSlider( true );
-//		icSegmentation.showTimeSlider( true );
-		viewer.add( icSegmentation, BorderLayout.CENTER );
+		bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
+		viewer.add( bdv.getViewerPanel(), BorderLayout.CENTER );
 
 		final JPanel list = new JPanel( new BorderLayout() );
 		listSegmentations.addListSelectionListener( this );
@@ -100,7 +97,7 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 		} else if ( e.getSource().equals( remove ) ) {
 			model.removeSegmentations( listSegmentations.getSelectedIndices() );
 			listSegmentations.setSelectedIndex( 0 );
-			updateViewer( 0 );
+			updateBdvView( model.getSegmentHypothesesImages().get( 0 ) );
 		}
 	}
 
@@ -113,7 +110,7 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 
 			final int idx = listSegmentations.getSelectedIndex();
 			if ( idx > -1 ) {
-				updateViewer( idx );
+				updateBdvView( model.getSegmentHypothesesImages().get( idx ) );
 			} else {
 				listSegmentations.setSelectedIndex( 0 );
 			}
@@ -121,14 +118,17 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 	}
 
 	/**
-	 * Updates viewer to show the image associated with the loaded segmentation
-	 * at list index <code>idx</code>.
-	 *
-	 * @param idx
+	 * @param img
 	 */
-	private void updateViewer( final int idx ) {
-		final RandomAccessibleInterval< IntType > img = model.getSegmentHypothesesImages().get( idx );
-		icSegmentation.setSourceImage( img );
+	private < T extends RealType< T > & NativeType< T > > void updateBdvView( final RandomAccessibleInterval< T > img ) {
+		final BdvSource source = BdvFunctions.show(
+				img,
+				"segmentation",
+				Bdv.options().addTo( bdv ) );
+		final T min = img.randomAccess().get().copy();
+		final T max = min.copy();
+		ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
+		source.setDisplayRangeBounds( 0, max.getRealDouble() );
+		source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
 	}
-
 }
