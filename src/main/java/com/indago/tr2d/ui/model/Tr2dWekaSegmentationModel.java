@@ -1,3 +1,4 @@
+
 /**
  *
  */
@@ -19,10 +20,16 @@ import com.indago.io.DataMover;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFolder;
+import com.indago.util.ImglibUtil;
 import com.indago.util.converter.IntTypeThresholdConverter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
+import bdv.util.Bdv;
+import bdv.util.BdvFunctions;
+import bdv.util.BdvHandle;
+import bdv.util.BdvHandlePanel;
+import bdv.util.BdvSource;
 import ij.IJ;
 import io.scif.img.ImgIOException;
 import net.imglib2.IterableInterval;
@@ -30,8 +37,11 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.view.Views;
 
 /**
  * @author jug
@@ -46,13 +56,14 @@ public class Tr2dWekaSegmentationModel {
 	private final Tr2dSegmentationCollectionModel model;
 	private ProjectFolder projectFolder;
 
-//	private List< SilentWekaSegmenter< DoubleType > > classifiers;
-
 	private List< Double > listThresholds = new ArrayList< Double >();
 	private List< String > listClassifierFilenames = new ArrayList< String >();
 
 	private final List< RandomAccessibleInterval< DoubleType > > imgsClassification = new ArrayList< >();
 	private final List< RandomAccessibleInterval< IntType > > imgsSegmentHypotheses = new ArrayList< >();
+
+	private BdvHandlePanel bdv;
+	private final List< BdvSource > bdvSources = new ArrayList< >();
 
 	/**
 	 * @param parentFolder
@@ -110,8 +121,9 @@ public class Tr2dWekaSegmentationModel {
 			try {
 				imgsClassification.add(
 						DoubleTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ) ) );
-				imgsSegmentHypotheses.add(
-						IntTypeImgLoader.loadTiffEnsureType( new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) ) );
+				final RandomAccessibleInterval< IntType > sumimg =
+						IntTypeImgLoader.loadTiffEnsureType( new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) );
+				imgsSegmentHypotheses.add( sumimg );
 			} catch ( final ImgIOException e ) {
 				JOptionPane.showMessageDialog(
 						Tr2dApplication.getGuiFrame(),
@@ -165,6 +177,18 @@ public class Tr2dWekaSegmentationModel {
 	 */
 	public void segment() {
 		imgsClassification.clear();
+		imgsSegmentHypotheses.clear();
+		for ( final BdvSource bdvSource : bdvSources ) {
+			new Thread( new Runnable() {
+
+				@Override
+				public void run() {
+					bdvSource.removeFromBdv();
+				}
+
+			} ).start();
+		}
+		bdvSources.clear();
 		int i = 0;
 		for ( final String absolutePath : listClassifierFilenames ) {
 			i++;
@@ -248,5 +272,44 @@ public class Tr2dWekaSegmentationModel {
 	 */
 	public Tr2dSegmentationCollectionModel getModel() {
 		return model;
+	}
+
+	/**
+	 * @param bdvHandlePanel
+	 */
+	public void setBdvHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
+		this.bdv = bdvHandlePanel;
+	}
+
+	/**
+	 * @return
+	 */
+	public BdvHandle getBdvHandlePanel() {
+		return bdv;
+	}
+
+	/**
+	 * @param img
+	 */
+	public < T extends RealType< T > & NativeType< T > > void addToBdv( final RandomAccessibleInterval< T > img ) {
+		final Runnable task = new Runnable() {
+
+			@Override
+			public void run() {
+//				source.removeFromBdv();
+				final BdvSource source = BdvFunctions.show(
+						img,
+						"segmentation",
+						Bdv.options().addTo( bdv ) );
+				bdvSources.add( source );
+
+				final T min = img.randomAccess().get().copy();
+				final T max = min.copy();
+				ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
+				source.setDisplayRangeBounds( 0, max.getRealDouble() );
+				source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
+			}
+		};
+		new Thread( task ).start();
 	}
 }

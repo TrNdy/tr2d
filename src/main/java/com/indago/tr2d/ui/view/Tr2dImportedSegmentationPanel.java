@@ -54,6 +54,10 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 		this.model = model;
 		listSegmentations = new JList< ProjectFile >( model.getListModel() );
 		buildGui();
+
+		if ( model.getSegmentHypothesesImages().size() > 0 ) {
+			updateBdvView( model.getSegmentHypothesesImages().get( 0 ) );
+		}
 	}
 
 	private void buildGui() {
@@ -121,14 +125,23 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 	 * @param img
 	 */
 	private < T extends RealType< T > & NativeType< T > > void updateBdvView( final RandomAccessibleInterval< T > img ) {
-		final BdvSource source = BdvFunctions.show(
-				img,
-				"segmentation",
-				Bdv.options().addTo( bdv ) );
-		final T min = img.randomAccess().get().copy();
-		final T max = min.copy();
-		ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
-		source.setDisplayRangeBounds( 0, max.getRealDouble() );
-		source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
+		final Runnable task = new Runnable() {
+
+			@Override
+			public void run() {
+				final BdvSource source = BdvFunctions.show(
+						img,
+						"segmentation",
+						Bdv.options().addTo( bdv ) );
+//				source.removeFromBdv();
+				final T min = img.randomAccess().get().copy();
+				final T max = min.copy();
+				ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
+				source.setDisplayRangeBounds( 0, max.getRealDouble() );
+				source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
+			}
+		};
+		new Thread( task ).start();
 	}
+
 }
