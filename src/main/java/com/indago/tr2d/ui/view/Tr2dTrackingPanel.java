@@ -41,11 +41,11 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		this.model = trackingModel;
 		buildGui();
 
-		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay" );
 		model.bdvAdd( model.getTr2dModel().getRawData(), "RAW" );
 		if ( model.getImgSolution() != null ) {
 			model.bdvAdd( model.getImgSolution(), "solution" );
 		}
+		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay" );
 	}
 
 	/**
