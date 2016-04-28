@@ -58,6 +58,8 @@ public class Tr2dApplication {
 
 	public static void main( final String[] args ) {
 
+		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
+
 		final ImageJ temp = IJ.getInstance();
 		if ( temp == null ) {
 			new ImageJ();
