@@ -35,7 +35,6 @@ public interface BdvOwner {
 	 * @param img
 	 */
 	public default < T extends RealType< T > & NativeType< T > > void bdvAdd( final RandomAccessibleInterval< T > img ) {
-//				source.removeFromBdv();
 		final BdvSource source = BdvFunctions.show(
 				img,
 				"segmentation",

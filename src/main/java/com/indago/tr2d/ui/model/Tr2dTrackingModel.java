@@ -32,10 +32,11 @@ import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
-import com.indago.tr2d.ui.view.BdvOwner;
+import com.indago.tr2d.ui.view.BdvWithOverlaysOwner;
 import com.indago.util.TicToc;
 
 import bdv.util.BdvHandlePanel;
+import bdv.util.BdvOverlay;
 import bdv.util.BdvSource;
 import gurobi.GRBException;
 import ij.IJ;
@@ -55,7 +56,7 @@ import net.imglib2.view.Views;
 /**
  * @author jug
  */
-public class Tr2dTrackingModel implements BdvOwner {
+public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private final ProjectFolder dataFolder;
 
@@ -84,9 +85,10 @@ public class Tr2dTrackingModel implements BdvOwner {
 	private Assignment< IndicatorNode > pgSolution;
 
 	private BdvHandlePanel bdvHandlePanel;
-	private final List< BdvSource > bdvSources = new ArrayList< >();
-
 	private final List< RandomAccessibleInterval< IntType > > imgs;
+	private final List< BdvSource > bdvSources = new ArrayList< >();
+	private final List< BdvOverlay > overlays = new ArrayList< >();
+	private final List< BdvSource > bdvOverlaySources = new ArrayList< >();
 
 	/**
 	 * @param model
@@ -402,5 +404,21 @@ public class Tr2dTrackingModel implements BdvOwner {
 		final int idx = imgs.indexOf( img );
 		if ( idx == -1 ) return null;
 		return bdvGetSources().get( idx );
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvWithOverlaysOwner#bdvGetOverlays()
+	 */
+	@Override
+	public List< BdvOverlay > bdvGetOverlays() {
+		return overlays;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.BdvWithOverlaysOwner#bdvGetOverlaySources()
+	 */
+	@Override
+	public List< BdvSource > bdvGetOverlaySources() {
+		return bdvOverlaySources;
 	}
 }
