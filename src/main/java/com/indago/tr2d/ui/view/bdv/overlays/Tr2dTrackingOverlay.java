@@ -3,6 +3,7 @@
  */
 package com.indago.tr2d.ui.view.bdv.overlays;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
@@ -42,22 +43,39 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		if ( pgSolution != null ) {
 			final AffineTransform2D t = new AffineTransform2D();
 			getCurrentTransform2D( t );
-
-			g.setColor( Color.RED );
-
 			final Tr2dSegmentationProblem tp = tr2dPG.getTimepoints().get( info.getTimePointIndex() );
-			for ( final SegmentNode segment : tp.getSegments() ) {
-				final SegmentNode segvar = tp.getSegmentVar( tp.getLabelingSegment( segment ) );
-				if ( pgSolution.getAssignment( segvar ) == 1 ) {
-					final RealLocalizable com = segvar.getSegment().getCenterOfMass();
-					final double[] lpos = new double[ 2 ];
-					final double[] gpos = new double[ 2 ];
-					com.localize( lpos );
-					t.apply( lpos, gpos );
-					final int len = 3;
-					g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] + len );
-					g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] + len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] - len );
-				}
+
+			drawCOMs( g, tp, pgSolution, t );
+		}
+	}
+
+	/**
+	 * @param g
+	 * @param tp
+	 * @param pgSolution
+	 * @param t
+	 */
+	private void drawCOMs(
+			final Graphics2D g,
+			final Tr2dSegmentationProblem tp,
+			final Assignment< IndicatorNode > pgSolution,
+			final AffineTransform2D t ) {
+		g.setColor( Color.RED );
+
+		final Graphics2D g2 = g;
+		g2.setStroke( new BasicStroke( 2 ) );
+
+		for ( final SegmentNode segment : tp.getSegments() ) {
+			final SegmentNode segvar = tp.getSegmentVar( tp.getLabelingSegment( segment ) );
+			if ( pgSolution.getAssignment( segvar ) == 1 ) {
+				final RealLocalizable com = segvar.getSegment().getCenterOfMass();
+				final double[] lpos = new double[ 2 ];
+				final double[] gpos = new double[ 2 ];
+				com.localize( lpos );
+				t.apply( lpos, gpos );
+				final int len = 3;
+				g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] + len );
+				g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] + len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] - len );
 			}
 		}
 	}

@@ -105,7 +105,9 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 			model.bdvRemoveAll();
 			if ( listSegmentations.getSelectedIndices().length > 0 ) {
 				for ( final int idx : listSegmentations.getSelectedIndices() ) {
-					model.bdvAdd( model.getSegmentHypothesesImages().get( idx ) );
+					model.bdvAdd(
+							model.getSegmentHypothesesImages().get( idx ),
+							listSegmentations.getModel().getElementAt( idx ).getFile().getName() );
 				}
 			} else {
 				model.bdvRemoveAll();

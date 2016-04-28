@@ -435,4 +435,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public Assignment< IndicatorNode > getSolution() {
 		return this.pgSolution;
 	}
+
+	/**
+	 * @return the tr2dModel
+	 */
+	public Tr2dModel getTr2dModel() {
+		return tr2dModel;
+	}
 }

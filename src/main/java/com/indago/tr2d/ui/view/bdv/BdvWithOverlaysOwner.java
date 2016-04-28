@@ -32,10 +32,10 @@ public interface BdvWithOverlaysOwner extends BdvOwner {
 	/**
 	 * @param img
 	 */
-	public default void bdvAdd( final BdvOverlay overlay ) {
+	public default void bdvAdd( final BdvOverlay overlay, final String title ) {
 		final BdvSource source = BdvFunctions.showOverlay(
 				overlay,
-				"overlay",
+				title,
 				Bdv.options().addTo( bdvGetHandlePanel() ) );
 		bdvGetOverlaySources().add( source );
 		bdvGetOverlays().add( overlay );

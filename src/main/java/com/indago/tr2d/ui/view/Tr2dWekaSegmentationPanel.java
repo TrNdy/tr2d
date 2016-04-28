@@ -50,7 +50,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 		buildGui();
 
 		for ( final RandomAccessibleInterval< IntType > seghyp : model.getSegmentHypotheses() ) {
-			model.bdvAdd( seghyp );
+			model.bdvAdd( seghyp, "result" );
 		}
 	}
 
@@ -163,7 +163,7 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 					"Segmentation error...",
 					JOptionPane.ERROR_MESSAGE );
 		} else {
-			model.bdvAdd( seghyps );
+			model.bdvAdd( seghyps, "result" );
 		}
 	}
 }

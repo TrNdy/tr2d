@@ -34,10 +34,10 @@ public interface BdvOwner {
 	/**
 	 * @param img
 	 */
-	public default < T extends RealType< T > & NativeType< T > > void bdvAdd( final RandomAccessibleInterval< T > img ) {
+	public default < T extends RealType< T > & NativeType< T > > void bdvAdd( final RandomAccessibleInterval< T > img, final String title ) {
 		final BdvSource source = BdvFunctions.show(
 				img,
-				"segmentation",
+				title,
 				Bdv.options().addTo( bdvGetHandlePanel() ) );
 		bdvGetSources().add( source );
 
