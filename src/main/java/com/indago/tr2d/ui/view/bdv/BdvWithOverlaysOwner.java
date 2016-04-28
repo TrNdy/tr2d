@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.indago.tr2d.ui.view;
+package com.indago.tr2d.ui.view.bdv;
 
 import java.util.List;
 

@@ -19,6 +19,7 @@ import javax.swing.JTextPane;
 
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.util.MessageConsole;
+import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 
 import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;
@@ -43,6 +44,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		if ( model.getImgSolution() != null ) {
 			model.bdvAdd( model.getImgSolution() );
 		}
+		model.bdvAdd( new Tr2dTrackingOverlay( model ) );
 	}
 
 	/**

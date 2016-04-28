@@ -32,7 +32,7 @@ import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
-import com.indago.tr2d.ui.view.BdvWithOverlaysOwner;
+import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 import com.indago.util.TicToc;
 
 import bdv.util.BdvHandlePanel;
@@ -373,7 +373,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvOwner#setBdvHandlePanel()
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#setBdvHandlePanel()
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
@@ -381,7 +381,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetHandlePanel()
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetHandlePanel()
 	 */
 	@Override
 	public BdvHandlePanel bdvGetHandlePanel() {
@@ -389,7 +389,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSources()
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetSources() {
@@ -397,7 +397,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
 	 */
 	@Override
 	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
@@ -407,7 +407,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvWithOverlaysOwner#bdvGetOverlays()
+	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
 	 */
 	@Override
 	public List< BdvOverlay > bdvGetOverlays() {
@@ -415,10 +415,24 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvWithOverlaysOwner#bdvGetOverlaySources()
+	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetOverlaySources() {
 		return bdvOverlaySources;
+	}
+
+	/**
+	 * @return
+	 */
+	public Tr2dTrackingProblem getTrackingProblem() {
+		return this.tr2dTraProblem;
+	}
+
+	/**
+	 * @return
+	 */
+	public Assignment< IndicatorNode > getSolution() {
+		return this.pgSolution;
 	}
 }

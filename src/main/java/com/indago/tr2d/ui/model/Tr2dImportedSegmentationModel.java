@@ -16,7 +16,7 @@ import javax.swing.ListModel;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFile;
 import com.indago.io.projectfolder.ProjectFolder;
-import com.indago.tr2d.ui.view.BdvOwner;
+import com.indago.tr2d.ui.view.bdv.BdvOwner;
 import com.jgoodies.common.collect.LinkedListModel;
 
 import bdv.util.BdvHandlePanel;
@@ -152,7 +152,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvOwner#setBdvHandlePanel()
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#setBdvHandlePanel()
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
@@ -160,7 +160,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetHandlePanel()
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetHandlePanel()
 	 */
 	@Override
 	public BdvHandlePanel bdvGetHandlePanel() {
@@ -168,7 +168,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSources()
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetSources() {
@@ -176,7 +176,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
 	 */
 	@Override
 	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
