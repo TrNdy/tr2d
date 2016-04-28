@@ -68,15 +68,15 @@ public class Tr2dApplication {
 		checkGurobiAvailability();
 		parseCommandLineArgs( args );
 
+		guiFrame = new JFrame( "tr2d" );
+		setImageAppIcon();
+
 		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
 		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );
 		mainPanel = new Tr2dMainPanel( guiFrame, model );
 
-		guiFrame = new JFrame( "tr2d" );
 		guiFrame.getContentPane().add( mainPanel );
-		setImageAppIcon();
 		setFrameSizeAndCloseOperation();
-
 		guiFrame.setVisible( true );
 	}
 
@@ -137,10 +137,12 @@ public class Tr2dApplication {
 					options,
 					options[ 0 ] );
 			if ( choice == 0 ) {
+				UniversalFileChooser.showOptionPaneWithTitleOnMac = false;
 				projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
 						guiFrame,
 						"",
 						"Choose tr2d project folder..." );
+				UniversalFileChooser.showOptionPaneWithTitleOnMac = true;
 				if ( projectFolderBasePath == null ) {
 					System.exit( 1 );
 				}
