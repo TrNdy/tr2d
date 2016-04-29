@@ -79,11 +79,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.indago</groupId>
-			<artifactId>iddea</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.indago</groupId>
 			<artifactId>Indago</artifactId>
 			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
