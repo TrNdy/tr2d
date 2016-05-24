@@ -270,6 +270,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 		fgSolution = null;
 		try {
+			SolveGurobi.GRB_PRESOLVE = 0;
 			fgSolution = SolveGurobi.staticSolve( fg );
 			pgSolution = assMapper.map( fgSolution );
 		} catch ( final GRBException e ) {
