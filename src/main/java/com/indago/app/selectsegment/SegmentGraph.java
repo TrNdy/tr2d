@@ -5,7 +5,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -16,7 +20,14 @@ import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
 import com.indago.data.segmentation.LabelData;
+import com.indago.data.segmentation.LabelingFragment;
+import com.indago.data.segmentation.LabelingPlus;
+import com.indago.data.segmentation.XmlIoLabelingPlus;
 
+import net.trackmate.collection.RefList;
+import net.trackmate.graph.algorithm.ShortestPath;
+import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
+import net.trackmate.graph.algorithm.traversal.InverseBreadthFirstIterator;
 import bdv.BehaviourTransformEventHandler;
 import bdv.viewer.InputActionBindings;
 import bdv.viewer.TriggerBehaviourBindings;
@@ -239,30 +250,106 @@ public class SegmentGraph
 	public static void main( final String[] args ) throws IOException {
 
 //		final String folder = "/Users/pietzsch/Desktop/data/tr2d/tr2d_project_folder/DebugStack03-crop/tracking/labeling_frames/";
-//		final String fLabeling = folder + "labeling_frame0000.xml";
-//
-//		final LabelingPlus labelingPlus = new XmlIoLabelingPlus().load( fLabeling );
-//
-//		final LabelingSegment labelingSegment = labelingPlus.getSegments().get( 0 );
-//		labelingPlus.getFragments();
-//
-//		final LabelData ld = labelingPlus.getLabeling().getMapping().getLabels().iterator().next();
-//		ld.getSegment();
-//
-//		final LabelingFragment fragment = labelingPlus.getFragments().iterator().next();
-//		fragment.getSegments();
+		final String folder = "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/DebugStack03-crop/tracking/labeling_frames/";
+
+		final String fLabeling = folder + "labeling_frame0000.xml";
+
+		final LabelingPlus labelingPlus = new XmlIoLabelingPlus().load( fLabeling );
 
 		final SegmentGraphX graph = new SegmentGraphX();
-		final SegmentVertex vertex = graph.addVertex().init( null );
-		final SegmentVertex vertex2 = graph.addVertex().init( null );
-		final SegmentVertex vertex3 = graph.addVertex().init( null );
-		graph.addEdge( vertex, vertex2 );
-		graph.addEdge( vertex, vertex3 );
+		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( graph, true );
 
-		vertex.timepoint = 0;
-		vertex2.timepoint = 1;
-		vertex3.timepoint = 1;
+		final Map< LabelData, SegmentVertex > mapVertices = new HashMap<>();
 
-		wrap( graph );
+		// Build partial order graph
+		final Iterator< LabelingFragment > fragmentIterator = labelingPlus.getFragments().iterator();
+		while ( fragmentIterator.hasNext() ) {
+			final LabelingFragment fragment = fragmentIterator.next();
+			final ArrayList< LabelData > conflictingSegments = fragment.getSegments();
+
+			for ( final LabelData segment : conflictingSegments ) {
+
+				// add new vertices to graph
+				if ( !mapVertices.containsKey( segment ) ) {
+					final SegmentVertex newVertex = graph.addVertex().init( segment );
+					mapVertices.put( segment, newVertex );
+
+					// connect regarding subset relation (while removing transitive edges)
+					for ( final LabelData conflictingSegment : conflictingSegments ) {
+						if ( segment.equals( conflictingSegment ) ) continue;
+						if ( !mapVertices.containsKey( conflictingSegment ) ) continue;
+
+						final SegmentVertex subsetVertex = mapVertices.get( conflictingSegment );
+
+						// segment < conflictingSegment  (other direction happens in a later iteration)
+						if ( isSubset( segment, conflictingSegment ) ) {
+							final RefList< SegmentVertex > inversePath = sp.findPath( newVertex, subsetVertex );
+							if ( inversePath == null ) {
+								// no path exists --> add edge
+								graph.addEdge( newVertex, subsetVertex );
+							} else {
+								// path exists --> add edge, but remove all edges from ancestors to descendants
+
+								final BreadthFirstIterator< SegmentVertex, SubsetEdge > bfi =
+										new BreadthFirstIterator<>( subsetVertex, graph );
+								final Set< SegmentVertex > descendants = new HashSet<>();
+								while ( bfi.hasNext() ) {
+									descendants.add( bfi.next() );
+								}
+
+								final InverseBreadthFirstIterator< SegmentVertex, SubsetEdge > ibfi =
+										new InverseBreadthFirstIterator<>( newVertex, graph );
+								final Set< SegmentVertex > ancestors = new HashSet<>();
+								while ( ibfi.hasNext() ) {
+									ancestors.add( ibfi.next() );
+								}
+
+								// for all edges leaving any vertex in ancestors: delete if target is within descendants
+								for ( final SegmentVertex a : ancestors ) {
+									for ( final SubsetEdge edge : a.outgoingEdges() ) {
+										if ( descendants.contains( edge.getTarget() ) ) {
+											graph.remove( edge );
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Find all roots
+		final Set< SegmentVertex > roots = new HashSet<>();
+		for ( final SegmentVertex v : graph.vertices() ) {
+			if ( v.incomingEdges().isEmpty() ) {
+				roots.add( v );
+			}
+		}
+		// For each root perform BFS and push level number (timepoint) through graph.
+		for ( final SegmentVertex root : roots ) {
+			root.timepoint = 0;
+			final BreadthFirstIterator< SegmentVertex, SubsetEdge > bfi =
+					new BreadthFirstIterator<>( root, graph );
+			while ( bfi.hasNext() ) {
+				final SegmentVertex v = bfi.next();
+				v.timepoint = getMaxParentTimepoint( v ) + 1;
+			}
+		}
+	}
+
+	/**
+	 * Iterates over all parents of <code>v</code> and returns the maximum
+	 * timepoint found.
+	 * 
+	 * @param v
+	 * @return
+	 */
+	private static int getMaxParentTimepoint( final SegmentVertex v ) {
+		int ret = 0;
+		for ( final SubsetEdge incomingEdge : v.incomingEdges() ) {
+			ret = Math.max( ret, incomingEdge.getSource().timepoint );
+		}
+		return ret;
 	}
 }
