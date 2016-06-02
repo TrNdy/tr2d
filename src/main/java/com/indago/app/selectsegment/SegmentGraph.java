@@ -24,19 +24,19 @@ import com.indago.data.segmentation.LabelingFragment;
 import com.indago.data.segmentation.LabelingPlus;
 import com.indago.data.segmentation.XmlIoLabelingPlus;
 
-import net.trackmate.collection.RefList;
-import net.trackmate.graph.algorithm.ShortestPath;
-import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
-import net.trackmate.graph.algorithm.traversal.InverseBreadthFirstIterator;
 import bdv.BehaviourTransformEventHandler;
 import bdv.viewer.InputActionBindings;
 import bdv.viewer.TriggerBehaviourBindings;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.ui.util.GuiUtil;
+import net.trackmate.collection.RefList;
 import net.trackmate.graph.GraphChangeListener;
 import net.trackmate.graph.GraphIdBimap;
 import net.trackmate.graph.GraphListener;
 import net.trackmate.graph.ListenableReadOnlyGraph;
+import net.trackmate.graph.algorithm.ShortestPath;
+import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
+import net.trackmate.graph.algorithm.traversal.InverseBreadthFirstIterator;
 import net.trackmate.graph.object.AbstractObjectEdge;
 import net.trackmate.graph.object.AbstractObjectGraph;
 import net.trackmate.graph.object.AbstractObjectVertex;
@@ -99,11 +99,16 @@ public class SegmentGraph
 
 		@Override
 		public String getLabel() {
-			return "dummy";
+			return toString();
 		}
 
 		@Override
 		public void setLabel( final String label ) {}
+
+		@Override
+		public String toString() {
+			return "v" + labelData.getId() + " t" + timepoint;
+		}
 	}
 
 	static class SegmentGraphX
@@ -236,7 +241,10 @@ public class SegmentGraph
 		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf );
 		trackschemePanel.getSelectionBehaviours().installBehaviourBindings( triggerbindings, inputConf );
 
-		trackschemePanel.setTimepointRange( 0, 1 );
+		int maxTimepoint = 0;
+		for ( final SegmentVertex v : modelGraph.vertices() )
+			maxTimepoint = Math.max( v.getTimepoint(), maxTimepoint );
+		trackschemePanel.setTimepointRange( 0, maxTimepoint );
 		trackschemePanel.graphChanged();
 		frame.setVisible( true );
 	}
@@ -249,8 +257,8 @@ public class SegmentGraph
 
 	public static void main( final String[] args ) throws IOException {
 
-//		final String folder = "/Users/pietzsch/Desktop/data/tr2d/tr2d_project_folder/DebugStack03-crop/tracking/labeling_frames/";
-		final String folder = "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/DebugStack03-crop/tracking/labeling_frames/";
+		final String folder = "/Users/pietzsch/Desktop/data/tr2d/tr2d_project_folder/DebugStack03-crop/tracking/labeling_frames/";
+//		final String folder = "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/DebugStack03-crop/tracking/labeling_frames/";
 
 		final String fLabeling = folder + "labeling_frame0000.xml";
 
@@ -336,12 +344,17 @@ public class SegmentGraph
 				v.timepoint = getMaxParentTimepoint( v ) + 1;
 			}
 		}
+
+		for ( final SubsetEdge e : graph.edges() )
+			System.out.println( e );
+
+		wrap( graph );
 	}
 
 	/**
 	 * Iterates over all parents of <code>v</code> and returns the maximum
 	 * timepoint found.
-	 * 
+	 *
 	 * @param v
 	 * @return
 	 */
