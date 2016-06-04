@@ -4,6 +4,8 @@
 package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,7 +15,10 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -29,6 +34,7 @@ import com.indago.app.hernan.costs.HernanSegmentCostFactory;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
+import com.indago.tr2d.ui.util.MessageConsole;
 
 import bdv.util.AbstractActions;
 import bdv.util.Bdv;
@@ -54,6 +60,8 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	private JPanel tabTracking;
 
 	private BdvHandlePanel bdvData;
+
+	private MessageConsole log;
 
 	/**
 	 * @param imgPlus
@@ -105,7 +113,20 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabs.add( "Hypotheses collection", tabSegmentation );
 		tabs.add( "Tracking", tabTracking );
 
-		this.add( tabs, BorderLayout.CENTER );
+		final JPanel logPanel = new JPanel( new BorderLayout() );
+		final JTextPane logText = new JTextPane();
+		final JScrollPane scroll = new JScrollPane( logText );
+		scroll.setPreferredSize( new Dimension( 400, 3000 ) );
+		logPanel.add( scroll, BorderLayout.CENTER );
+		log = new MessageConsole( logText, true );
+		log.redirectOut();
+		log.redirectErr( Color.RED, null );
+		log.setMessageLines( 10000 );
+
+		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, tabs, logPanel );
+		splitPane.setResizeWeight( 1.0 ); // 1.0 == extra space given to left (top) component alone!
+
+		this.add( splitPane, BorderLayout.CENTER );
 
 
 		try

@@ -4,7 +4,6 @@
 package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -12,13 +11,10 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextPane;
 
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
-import com.indago.tr2d.ui.util.MessageConsole;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 
 import bdv.util.Bdv;
@@ -33,7 +29,6 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	private final Tr2dTrackingModel model;
 
 	private JTabbedPane tabs;
-	private MessageConsole log;
 	private JButton bRun;
 
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
@@ -57,17 +52,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		tabs.add( "Tracking model", buildTrackingPanel() );
 		tabs.add( "Solver", buildSolverPanel() );
 
-		final JPanel logPanel = new JPanel( new BorderLayout() );
-		final JTextPane logText = new JTextPane();
-		logPanel.add( new JScrollPane( logText ), BorderLayout.CENTER );
-		log = new MessageConsole( logText, true );
-		log.redirectOut();
-		log.redirectErr( Color.RED, null );
-		log.setMessageLines( 10000 );
-
-		final JSplitPane splitPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, tabs, logPanel );
-		splitPane.setResizeWeight( .8 ); // 1.0 == extra space given to top component alone!
-		this.add( splitPane, BorderLayout.CENTER );
+		this.add( tabs, BorderLayout.CENTER );
 	}
 
 	private Component buildFramePanel() {
