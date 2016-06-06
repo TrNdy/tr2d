@@ -6,16 +6,21 @@ package com.indago.tr2d.ui.view;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
@@ -29,19 +34,23 @@ import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingFragment;
 import com.indago.data.segmentation.LabelingPlus;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
+import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 
 import bdv.BehaviourTransformEventHandler;
 import bdv.util.Bdv;
-import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
+import bdv.util.BdvOverlay;
 import bdv.util.BdvSource;
 import bdv.viewer.InputActionBindings;
 import bdv.viewer.TriggerBehaviourBindings;
 import gnu.trove.impl.Constants;
 import gnu.trove.set.hash.TLongHashSet;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.ui.TransformEventHandler;
@@ -74,14 +83,47 @@ import net.trackmate.revised.ui.selection.SelectionListener;
 /**
  * @author jug
  */
-public class Tr2dFrameInteractionPanel extends JPanel {
+public class Tr2dFrameInteractionPanel extends JPanel implements ActionListener, BdvWithOverlaysOwner {
+
+	private static final long serialVersionUID = -9051482691122695949L;
 
 	private final Tr2dTrackingModel model;
 
-	private final int currentFrame;
+	private int currentFrame;
 
-	private JPanel panelTrackscheme;
-	private BdvHandlePanel bdv;
+	// === UI Stuff ====================================================================
+	private JPanel helperPanel;
+	private JButton buttonPrev;
+	private JButton buttonNext;
+	private JTextField txtCurFrame;
+
+	// === BDV related stuff ===========================================================
+	private BdvHandlePanel bdvHandlePanel;
+	private final List< RandomAccessibleInterval< RealType > > imgs;
+	private final List< BdvSource > bdvSources = new ArrayList<>();
+	private final List< BdvOverlay > overlays = new ArrayList<>();
+	private final List< BdvSource > bdvOverlaySources = new ArrayList<>();
+
+	// === Hypotheses browser related stuff ============================================
+	private final GroupManager manager;
+	private final GroupHandle trackSchemeGroupHandle;
+	private final TrackSchemeOptions optional;
+	private final InputTriggerConfig inputConf;
+
+	private final InputActionBindings keybindings;
+	private final TriggerBehaviourBindings triggerbindings;
+	private final MouseAndKeyHandler mouseAndKeyHandler;
+
+	private SegmentGraph segmentGraph = new SegmentGraph();
+
+	private Selection< SegmentVertex, SubsetEdge > selectionModel;
+	private HighlightModel< SegmentVertex, SubsetEdge > highlightModel;
+	private FocusModel< SegmentVertex, SubsetEdge > focusModel;
+	private NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler;
+
+	private TrackSchemePanel trackschemePanel;
+
+	// === INNER CLASSES ETC. ==========================================================
 
 	static class CheckedPairs {
 
@@ -121,6 +163,16 @@ public class Tr2dFrameInteractionPanel extends JPanel {
 		super( new BorderLayout() );
 		this.model = model;
 
+		manager = new GroupManager();
+		trackSchemeGroupHandle = manager.createGroupHandle();
+		optional = TrackSchemeOptions.options();
+		inputConf = getKeyConfig( optional );
+
+		imgs = new ArrayList<>();
+		keybindings = new InputActionBindings();
+		triggerbindings = new TriggerBehaviourBindings();
+		mouseAndKeyHandler = new MouseAndKeyHandler();
+
 		buildGui();
 
 		this.currentFrame = 0;
@@ -128,28 +180,47 @@ public class Tr2dFrameInteractionPanel extends JPanel {
 	}
 
 	private void buildGui() {
-		panelTrackscheme = new JPanel( new BorderLayout() );
-		panelTrackscheme.setPreferredSize( new Dimension( 3000, 400 ) );
+		buttonPrev = new JButton( "<" );
+		buttonNext = new JButton( ">" );
+		buttonPrev.addActionListener( this );
+		buttonNext.addActionListener( this );
 
-		bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
-		final JSplitPane split = new JSplitPane( JSplitPane.VERTICAL_SPLIT, bdv.getViewerPanel(), panelTrackscheme );
+		txtCurFrame = new JTextField( 4 );
+		txtCurFrame.setHorizontalAlignment( JTextField.CENTER );
+		txtCurFrame.setText( "" + this.currentFrame );
+		txtCurFrame.addActionListener( this );
+
+		final JPanel panelFrameSwitcher = new JPanel();
+		panelFrameSwitcher.add( buttonPrev );
+		panelFrameSwitcher.add( txtCurFrame );
+		panelFrameSwitcher.add( buttonNext );
+
+		helperPanel = new JPanel( new BorderLayout() );
+		helperPanel.setPreferredSize( new Dimension( 1000, 400 ) );
+		SwingUtilities.replaceUIActionMap( helperPanel, keybindings.getConcatenatedActionMap() );
+		SwingUtilities.replaceUIInputMap( helperPanel, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keybindings.getConcatenatedInputMap() );
+
+		bdvHandlePanel = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
+		final JSplitPane split = new JSplitPane( JSplitPane.VERTICAL_SPLIT, bdvHandlePanel.getViewerPanel(), helperPanel );
 		split.setResizeWeight( 1 );
 		split.setOneTouchExpandable( true );
-		this.add( split );
+
+		this.add( panelFrameSwitcher, BorderLayout.NORTH );
+		this.add( split, BorderLayout.CENTER );
 	}
 
 	private void displayFrameData() {
 		final LabelingPlus labelingPlus = model.getLabelingFrames().getLabelingPlusForFrame( this.currentFrame );
 
-		final SegmentGraph graph = new SegmentGraph();
-		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( graph, true );
+		segmentGraph = new SegmentGraph();
+		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( segmentGraph, true );
 
 		// create vertices for all segments
 		final Map< LabelData, SegmentVertex > mapVertices = new HashMap<>();
 		for ( final LabelData segment : labelingPlus.getLabeling().getMapping().getLabels() )
-			mapVertices.put( segment, graph.addVertex().init( segment ) );
+			mapVertices.put( segment, segmentGraph.addVertex().init( segment ) );
 
-		final CheckedPairs pairs = new CheckedPairs( graph.getGraphIdBimap() );
+		final CheckedPairs pairs = new CheckedPairs( segmentGraph.getGraphIdBimap() );
 		// Build partial order graph
 		for ( final LabelingFragment fragment : labelingPlus.getFragments() ) {
 			final ArrayList< LabelData > conflictingSegments = fragment.getSegments();
@@ -184,24 +255,24 @@ public class Tr2dFrameInteractionPanel extends JPanel {
 					// delete if target is within descendants
 					final Set< SegmentVertex > descendants = new HashSet<>();
 					final Set< SegmentVertex > ancestors = new HashSet<>();
-					new BreadthFirstIterator<>( subv, graph ).forEachRemaining( v -> descendants.add( v ) );
-					new InverseBreadthFirstIterator<>( superv, graph ).forEachRemaining( v -> ancestors.add( v ) );
+					new BreadthFirstIterator<>( subv, segmentGraph ).forEachRemaining( v -> descendants.add( v ) );
+					new InverseBreadthFirstIterator<>( superv, segmentGraph ).forEachRemaining( v -> ancestors.add( v ) );
 					final ArrayList< SubsetEdge > remove = new ArrayList<>();
 					for ( final SegmentVertex a : ancestors )
 						for ( final SubsetEdge edge : a.outgoingEdges() )
 							if ( descendants.contains( edge.getTarget() ) )
 								remove.add( edge );
-					remove.forEach( edge -> graph.remove( edge ) );
+					remove.forEach( edge -> segmentGraph.remove( edge ) );
 
 					// Add the edge, finally.
-					graph.addEdge( superv, subv );
+					segmentGraph.addEdge( superv, subv );
 				}
 			}
 		}
 
 		// Find all roots
 		final Set< SegmentVertex > roots = new HashSet<>();
-		for ( final SegmentVertex v : graph.vertices() ) {
+		for ( final SegmentVertex v : segmentGraph.vertices() ) {
 			if ( v.incomingEdges().isEmpty() ) {
 				roots.add( v );
 			}
@@ -210,14 +281,100 @@ public class Tr2dFrameInteractionPanel extends JPanel {
 		for ( final SegmentVertex root : roots ) {
 			root.setTimepoint( 0 );
 			final BreadthFirstIterator< SegmentVertex, SubsetEdge > bfi =
-					new BreadthFirstIterator<>( root, graph );
+					new BreadthFirstIterator<>( root, segmentGraph );
 			while ( bfi.hasNext() ) {
 				final SegmentVertex v = bfi.next();
 				v.setTimepoint( getMaxParentTimepoint( v ) + 1 );
 			}
 		}
 
-		display( graph, labelingPlus );
+		display( segmentGraph, labelingPlus );
+	}
+
+	/**
+	 * Updates displays with new labeling and graph...
+	 *
+	 * @param modelGraph
+	 * @param labelingPlus
+	 */
+	private void display( final SegmentGraph modelGraph, final LabelingPlus labelingPlus ) {
+		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
+
+		selectionModel = new Selection<>( modelGraph, idmap );
+		highlightModel = new HighlightModel<>( idmap );
+		focusModel = new FocusModel<>( idmap );
+		if ( navigationHandler != null )
+			trackSchemeGroupHandle.remove( navigationHandler );
+		navigationHandler = new NavigationHandler<>( trackSchemeGroupHandle );
+
+		// === TrackScheme ===
+
+		if ( trackschemePanel != null ) {
+			helperPanel.remove( trackschemePanel );
+//			trackschemePanel.getDisplay().removeHandler( mouseAndKeyHandler );
+		}
+
+		final ModelGraphProperties modelGraphProperties = new DefaultModelGraphProperties<>( modelGraph, idmap, selectionModel );
+		final TrackSchemeGraph< SegmentVertex, SubsetEdge > trackSchemeGraph = new TrackSchemeGraph<>( modelGraph, idmap, modelGraphProperties );
+		trackschemePanel =
+				new TrackSchemePanel(
+						trackSchemeGraph,
+						new TrackSchemeHighlight(
+								new DefaultModelHighlightProperties<>( modelGraph, idmap, highlightModel ),
+								trackSchemeGraph ),
+						new TrackSchemeFocus(
+								new DefaultModelFocusProperties<>( modelGraph, idmap, focusModel ),
+								trackSchemeGraph ),
+						new TrackSchemeSelection(
+								new DefaultModelSelectionProperties<>( modelGraph, idmap, selectionModel ) ),
+						new TrackSchemeNavigation(
+								new DefaultModelNavigationProperties<>( modelGraph, idmap, navigationHandler ),
+								trackSchemeGraph ),
+						optional );
+		helperPanel.add( trackschemePanel, BorderLayout.CENTER );
+
+		mouseAndKeyHandler.setInputMap( triggerbindings.getConcatenatedInputTriggerMap() );
+		mouseAndKeyHandler.setBehaviourMap( triggerbindings.getConcatenatedBehaviourMap() );
+		trackschemePanel.getDisplay().addHandler( mouseAndKeyHandler );
+
+		final TransformEventHandler< ? > tfHandler = trackschemePanel.getDisplay().getTransformEventHandler();
+		if ( tfHandler instanceof BehaviourTransformEventHandler )
+			( ( BehaviourTransformEventHandler< ? > ) tfHandler ).install( triggerbindings );
+
+		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf );
+		trackschemePanel.getSelectionBehaviours().installBehaviourBindings( triggerbindings, inputConf );
+
+		int maxTimepoint = 0;
+		for ( final SegmentVertex v : modelGraph.vertices() )
+			maxTimepoint = Math.max( v.getTimepoint(), maxTimepoint );
+		trackschemePanel.setTimepointRange( 0, maxTimepoint );
+		trackschemePanel.graphChanged();
+
+		// === BDV ===
+
+		this.bdvRemoveAll();
+		this.bdvRemoveAllOverlays();
+		RandomAccessibleInterval< UnsignedShortType > overlay = Converters.convert(
+				labelingPlus.getLabeling().getIndexImg(),
+				new SelectedSegmentsConverter( labelingPlus, selectionModel ),
+				new UnsignedShortType() );
+		this.bdvAdd( overlay, "selected segments", 0, 2, new ARGBType( 0x00FF00 ) );
+
+		overlay = Converters.convert(
+				labelingPlus.getLabeling().getIndexImg(),
+				new HighlightedSegmentsConverter( labelingPlus, highlightModel ),
+				new UnsignedShortType() );
+		this.bdvAdd( overlay, "highlighted segment", 0, 1, new ARGBType( 0xFF00FF ) );
+
+		overlay = Converters.convert(
+				labelingPlus.getLabeling().getIndexImg(),
+				new FocusedSegmentsConverter( labelingPlus, focusModel ),
+				new UnsignedShortType() );
+		this.bdvAdd( overlay, "focused segment", 0, 1, new ARGBType( 0x0000FF ) );
+
+		highlightModel.addHighlightListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
+		selectionModel.addSelectionListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
+		focusModel.addFocusListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
 	}
 
 	/**
@@ -257,104 +414,6 @@ public class Tr2dFrameInteractionPanel extends JPanel {
 			ret = Math.max( ret, incomingEdge.getSource().getTimepoint() );
 		}
 		return ret;
-	}
-
-	/**
-	 * Updates displays with new labeling and graph...
-	 *
-	 * @param modelGraph
-	 * @param labelingPlus
-	 */
-	private void display( final SegmentGraph modelGraph, final LabelingPlus labelingPlus ) {
-		final GroupManager manager = new GroupManager();
-		final GroupHandle trackSchemeGroupHandle = manager.createGroupHandle();
-		final TrackSchemeOptions optional = TrackSchemeOptions.options();
-
-		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
-
-		final Selection< SegmentVertex, SubsetEdge > selectionModel = new Selection<>( modelGraph, idmap );
-		final HighlightModel< SegmentVertex, SubsetEdge > highlightModel = new HighlightModel<>( idmap );
-		final FocusModel< SegmentVertex, SubsetEdge > focusModel = new FocusModel<>( idmap );
-		final NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler = new NavigationHandler<>( trackSchemeGroupHandle );
-
-		final InputTriggerConfig inputConf = getKeyConfig( optional );
-
-		// === TrackScheme ===
-
-		final ModelGraphProperties modelGraphProperties = new DefaultModelGraphProperties<>( modelGraph, idmap, selectionModel );
-		final TrackSchemeGraph< SegmentVertex, SubsetEdge > trackSchemeGraph = new TrackSchemeGraph<>( modelGraph, idmap, modelGraphProperties );
-		final TrackSchemePanel trackschemePanel =
-				new TrackSchemePanel( trackSchemeGraph, new TrackSchemeHighlight( new DefaultModelHighlightProperties<>( modelGraph, idmap, highlightModel ), trackSchemeGraph ), new TrackSchemeFocus( new DefaultModelFocusProperties<>( modelGraph, idmap, focusModel ), trackSchemeGraph ), new TrackSchemeSelection( new DefaultModelSelectionProperties<>( modelGraph, idmap, selectionModel ) ), new TrackSchemeNavigation( new DefaultModelNavigationProperties<>( modelGraph, idmap, navigationHandler ), trackSchemeGraph ), optional );
-		panelTrackscheme.add( trackschemePanel, BorderLayout.CENTER );
-
-		final InputActionBindings keybindings = new InputActionBindings();
-		SwingUtilities.replaceUIActionMap( panelTrackscheme, keybindings.getConcatenatedActionMap() );
-		SwingUtilities.replaceUIInputMap( panelTrackscheme, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keybindings.getConcatenatedInputMap() );
-
-		final TriggerBehaviourBindings triggerbindings = new TriggerBehaviourBindings();
-		final MouseAndKeyHandler mouseAndKeyHandler = new MouseAndKeyHandler();
-		mouseAndKeyHandler.setInputMap( triggerbindings.getConcatenatedInputTriggerMap() );
-		mouseAndKeyHandler.setBehaviourMap( triggerbindings.getConcatenatedBehaviourMap() );
-		trackschemePanel.getDisplay().addHandler( mouseAndKeyHandler );
-
-		final TransformEventHandler< ? > tfHandler = trackschemePanel.getDisplay().getTransformEventHandler();
-		if ( tfHandler instanceof BehaviourTransformEventHandler )
-			( ( BehaviourTransformEventHandler< ? > ) tfHandler ).install( triggerbindings );
-
-		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf );
-		trackschemePanel.getSelectionBehaviours().installBehaviourBindings( triggerbindings, inputConf );
-
-		int maxTimepoint = 0;
-		for ( final SegmentVertex v : modelGraph.vertices() )
-			maxTimepoint = Math.max( v.getTimepoint(), maxTimepoint );
-		trackschemePanel.setTimepointRange( 0, maxTimepoint );
-		trackschemePanel.graphChanged();
-
-		// === BDV ===
-
-		final BdvSource selectionSource = BdvFunctions.show(
-				Converters.convert(
-						labelingPlus.getLabeling().getIndexImg(),
-						new SelectedSegmentsConverter( labelingPlus, selectionModel ),
-						new UnsignedShortType() ),
-				"selected segments",
-				Bdv.options().addTo( bdv ) );
-
-		final BdvSource highlightSource = BdvFunctions.show(
-				Converters.convert(
-						labelingPlus.getLabeling().getIndexImg(),
-						new HighlightedSegmentsConverter( labelingPlus, highlightModel ),
-						new UnsignedShortType() ),
-				"highlighted segment",
-				Bdv.options().addTo( bdv ) );
-
-		final BdvSource focusSource = BdvFunctions.show(
-				Converters.convert(
-						labelingPlus.getLabeling().getIndexImg(),
-						new FocusedSegmentsConverter( labelingPlus, focusModel ),
-						new UnsignedShortType() ),
-				"focused segment",
-				Bdv.options().addTo( bdv ) );
-
-		selectionSource.setDisplayRange( 0, 2 );
-		selectionSource.setColor( new ARGBType( 0x00FF00 ) );
-
-		highlightSource.setDisplayRange( 0, 1 );
-		highlightSource.setColor( new ARGBType( 0xFF00FF ) );
-
-		focusSource.setDisplayRange( 0, 1 );
-		focusSource.setColor( new ARGBType( 0x0000FF ) );
-
-		highlightModel.addHighlightListener( () -> bdv.getBdvHandle().getViewerPanel().requestRepaint() );
-		selectionModel.addSelectionListener( () -> bdv.getBdvHandle().getViewerPanel().requestRepaint() );
-		focusModel.addFocusListener( () -> bdv.getBdvHandle().getViewerPanel().requestRepaint() );
-
-		// show also slice of raw image...
-//		final BdvSource raw = BdvFunctions.show(
-//				( RandomAccessibleInterval ) ImageJFunctions.wrap( new ImagePlus( fn ) ),
-//				"raw",
-//				BdvOptions.options().addTo( bdv ) );
-//		raw.setDisplayRange( 0, 1000 );
 	}
 
 	private static InputTriggerConfig getKeyConfig( final TrackSchemeOptions optional ) {
@@ -473,5 +532,75 @@ public class Tr2dFrameInteractionPanel extends JPanel {
 					++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
 			}
 		}
+	}
+
+	/**
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
+	@Override
+	public void actionPerformed( final ActionEvent e ) {
+		if ( e.getSource().equals( buttonPrev ) ) {
+			this.currentFrame = Math.max( 0, currentFrame - 1 );
+		} else if ( e.getSource().equals( buttonNext ) ) {
+			this.currentFrame = Math.min( model.getLabelingFrames().getNumFrames() - 1, currentFrame + 1 );
+		} else if ( e.getSource().equals( txtCurFrame ) ) {
+			this.currentFrame = Math.max(
+					0,
+					Math.min(
+							model.getLabelingFrames().getNumFrames() - 1,
+							Integer.parseInt( txtCurFrame.getText() ) ) );
+		}
+		txtCurFrame.setText( "" + this.currentFrame );
+		displayFrameData();
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetHandlePanel()
+	 */
+	@Override
+	public BdvHandlePanel bdvGetHandlePanel() {
+		return bdvHandlePanel;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvSetHandlePanel(bdv.util.BdvHandlePanel)
+	 */
+	@Override
+	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
+		this.bdvHandlePanel = bdvHandlePanel;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSources()
+	 */
+	@Override
+	public List< BdvSource > bdvGetSources() {
+		return bdvSources;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 */
+	@Override
+	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
+		final int idx = imgs.indexOf( img );
+		if ( idx == -1 ) return null;
+		return bdvGetSources().get( idx );
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
+	 */
+	@Override
+	public List< BdvSource > bdvGetOverlaySources() {
+		return this.bdvOverlaySources;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
+	 */
+	@Override
+	public List< BdvOverlay > bdvGetOverlays() {
+		return this.overlays;
 	}
 }

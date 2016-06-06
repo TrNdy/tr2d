@@ -15,6 +15,7 @@ import bdv.viewer.DisplayMode;
 import bdv.viewer.VisibilityAndGrouping;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
@@ -33,6 +34,7 @@ public interface BdvOwner {
 
 	/**
 	 * @param img
+	 * @param title
 	 */
 	public default < T extends RealType< T > & NativeType< T > > void bdvAdd( final RandomAccessibleInterval< T > img, final String title ) {
 		final BdvSource source = BdvFunctions.show(
@@ -46,6 +48,30 @@ public interface BdvOwner {
 		ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
 		source.setDisplayRangeBounds( 0, max.getRealDouble() );
 		source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
+	}
+
+	/**
+	 * @param img
+	 * @param title
+	 * @param minVal
+	 * @param maxVal
+	 * @param color
+	 */
+	public default < T extends RealType< T > & NativeType< T > > void bdvAdd(
+			final RandomAccessibleInterval< T > img,
+			final String title,
+			final double minVal,
+			final double maxVal,
+			final ARGBType color ) {
+		final BdvSource source = BdvFunctions.show(
+				img,
+				title,
+				Bdv.options().addTo( bdvGetHandlePanel() ) );
+		bdvGetSources().add( source );
+
+		source.setDisplayRangeBounds( 0, maxVal );
+		source.setDisplayRange( minVal, maxVal );
+		source.setColor( color );
 	}
 
 	/**
