@@ -119,6 +119,16 @@ public class LabelingTimeLapse {
 	}
 
 	/**
+	 * Returns the <code>LabelingPlus</code> for the requested frame.
+	 * 
+	 * @param frameId
+	 * @return
+	 */
+	public LabelingPlus getLabelingPlusForFrame( final int frameId ) {
+		return frameLabelingBuilders.get( frameId );
+	}
+
+	/**
 	 * @param frameId
 	 * @return
 	 */

@@ -125,7 +125,8 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		log.setMessageLines( 10000 );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, tabs, logPanel );
-		splitPane.setResizeWeight( 1.0 ); // 1.0 == extra space given to left (top) component alone!
+		splitPane.setOneTouchExpandable( true );
+		splitPane.setResizeWeight( .7 ); // 1.0 == extra space given to left (top) component alone!
 
 		this.add( splitPane, BorderLayout.CENTER );
 

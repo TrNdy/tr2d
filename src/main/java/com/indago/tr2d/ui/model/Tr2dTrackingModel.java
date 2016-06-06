@@ -443,4 +443,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public Tr2dModel getTr2dModel() {
 		return tr2dModel;
 	}
+
+	/**
+	 * @return the labelingFrames
+	 */
+	public LabelingTimeLapse getLabelingFrames() {
+		return labelingFrames;
+	}
 }

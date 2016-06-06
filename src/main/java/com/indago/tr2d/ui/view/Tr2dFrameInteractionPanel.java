@@ -1,9 +1,11 @@
-package com.indago.app.selectsegment;
+/**
+ *
+ */
+package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.IOException;
+import java.awt.Dimension;
+import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,37 +14,37 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
 
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
+import com.indago.app.selectsegment.InverseBreadthFirstIterator;
+import com.indago.app.selectsegment.SegmentGraph;
+import com.indago.app.selectsegment.SegmentVertex;
+import com.indago.app.selectsegment.SubsetEdge;
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingFragment;
 import com.indago.data.segmentation.LabelingPlus;
-import com.indago.data.segmentation.XmlIoLabelingPlus;
+import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 
 import bdv.BehaviourTransformEventHandler;
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
-import bdv.util.BdvOptions;
+import bdv.util.BdvHandlePanel;
 import bdv.util.BdvSource;
 import bdv.viewer.InputActionBindings;
 import bdv.viewer.TriggerBehaviourBindings;
 import gnu.trove.impl.Constants;
 import gnu.trove.set.hash.TLongHashSet;
-import ij.ImagePlus;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.ui.TransformEventHandler;
-import net.imglib2.ui.util.GuiUtil;
 import net.trackmate.graph.GraphIdBimap;
 import net.trackmate.graph.algorithm.ShortestPath;
 import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
@@ -69,273 +71,20 @@ import net.trackmate.revised.ui.selection.NavigationHandler;
 import net.trackmate.revised.ui.selection.Selection;
 import net.trackmate.revised.ui.selection.SelectionListener;
 
-public class BuildSegmentGraph
-{
+/**
+ * @author jug
+ */
+public class Tr2dFrameInteractionPanel extends JPanel {
 
-	static void display(
-			final SegmentGraph modelGraph,
-			final LabelingPlus labelingPlus ) {
-		final GroupManager manager = new GroupManager();
-		final GroupHandle trackSchemeGroupHandle = manager.createGroupHandle();
-		final TrackSchemeOptions optional = TrackSchemeOptions.options();
+	private final Tr2dTrackingModel model;
 
-		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
+	private final int currentFrame;
 
-		final Selection< SegmentVertex, SubsetEdge > selectionModel = new Selection<>( modelGraph, idmap );
-		final HighlightModel< SegmentVertex, SubsetEdge > highlightModel = new HighlightModel<>( idmap );
-		final FocusModel< SegmentVertex, SubsetEdge > focusModel = new FocusModel<>( idmap );
-		final NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler = new NavigationHandler<>( trackSchemeGroupHandle );
-
-		final InputTriggerConfig inputConf = getKeyConfig( optional );
-
-		// === TrackScheme ===
-
-		final ModelGraphProperties modelGraphProperties = new DefaultModelGraphProperties<>( modelGraph, idmap, selectionModel );
-		final TrackSchemeGraph< SegmentVertex, SubsetEdge > trackSchemeGraph = new TrackSchemeGraph<>( modelGraph, idmap, modelGraphProperties );
-		final TrackSchemePanel trackschemePanel = new TrackSchemePanel(
-				trackSchemeGraph,
-				new TrackSchemeHighlight( new DefaultModelHighlightProperties<>( modelGraph, idmap, highlightModel ), trackSchemeGraph ),
-				new TrackSchemeFocus( new DefaultModelFocusProperties<>( modelGraph, idmap, focusModel ), trackSchemeGraph ),
-				new TrackSchemeSelection( new DefaultModelSelectionProperties<>( modelGraph, idmap, selectionModel ) ),
-				new TrackSchemeNavigation( new DefaultModelNavigationProperties<>( modelGraph, idmap, navigationHandler ), trackSchemeGraph ),
-				optional );
-
-		final JFrame frame = new JFrame( "graph", GuiUtil.getSuitableGraphicsConfiguration( GuiUtil.RGB_COLOR_MODEL ) );
-		frame.getRootPane().setDoubleBuffered( true );
-		frame.add( trackschemePanel, BorderLayout.CENTER );
-
-		frame.pack();
-		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
-		frame.addWindowListener( new WindowAdapter() {
-			@Override
-			public void windowClosing( final WindowEvent e ) {
-				trackschemePanel.stop();
-			}
-		} );
-
-		final InputActionBindings keybindings = new InputActionBindings();
-		SwingUtilities.replaceUIActionMap( frame.getRootPane(), keybindings.getConcatenatedActionMap() );
-		SwingUtilities.replaceUIInputMap( frame.getRootPane(), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keybindings.getConcatenatedInputMap() );
-
-		final TriggerBehaviourBindings triggerbindings = new TriggerBehaviourBindings();
-		final MouseAndKeyHandler mouseAndKeyHandler = new MouseAndKeyHandler();
-		mouseAndKeyHandler.setInputMap( triggerbindings.getConcatenatedInputTriggerMap() );
-		mouseAndKeyHandler.setBehaviourMap( triggerbindings.getConcatenatedBehaviourMap() );
-		trackschemePanel.getDisplay().addHandler( mouseAndKeyHandler );
-
-		final TransformEventHandler< ? > tfHandler = trackschemePanel.getDisplay().getTransformEventHandler();
-		if ( tfHandler instanceof BehaviourTransformEventHandler )
-			( ( BehaviourTransformEventHandler< ? > ) tfHandler ).install( triggerbindings );
-
-		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf );
-		trackschemePanel.getSelectionBehaviours().installBehaviourBindings( triggerbindings, inputConf );
-
-		int maxTimepoint = 0;
-		for ( final SegmentVertex v : modelGraph.vertices() )
-			maxTimepoint = Math.max( v.getTimepoint(), maxTimepoint );
-		trackschemePanel.setTimepointRange( 0, maxTimepoint );
-		trackschemePanel.graphChanged();
-		frame.setVisible( true );
-
-		// === BDV ===
-
-		final BdvSource selectionSource = BdvFunctions.show(
-				Converters.convert(
-						labelingPlus.getLabeling().getIndexImg(),
-						new SelectedSegmentsConverter( labelingPlus, selectionModel ),
-						new UnsignedShortType() ),
-				"selected segments",
-				Bdv.options().inputTriggerConfig( inputConf ).is2D() );
-		final Bdv bdv = selectionSource;
-
-		final BdvSource highlightSource = BdvFunctions.show(
-				Converters.convert(
-						labelingPlus.getLabeling().getIndexImg(),
-						new HighlightedSegmentsConverter( labelingPlus, highlightModel ),
-						new UnsignedShortType() ),
-				"highlighted segment",
-				Bdv.options().addTo( bdv ) );
-
-		final BdvSource focusSource = BdvFunctions.show(
-				Converters.convert(
-						labelingPlus.getLabeling().getIndexImg(),
-						new FocusedSegmentsConverter( labelingPlus, focusModel ),
-						new UnsignedShortType() ),
-				"focused segment",
-				Bdv.options().addTo( bdv ) );
-
-		selectionSource.setDisplayRange( 0, 2 );
-		selectionSource.setColor( new ARGBType( 0x00FF00 ) );
-
-		highlightSource.setDisplayRange( 0, 1 );
-		highlightSource.setColor( new ARGBType( 0xFF00FF ) );
-
-		focusSource.setDisplayRange( 0, 1 );
-		focusSource.setColor( new ARGBType( 0x0000FF ) );
-
-		highlightModel.addHighlightListener( () -> bdv.getBdvHandle().getViewerPanel().requestRepaint() );
-		selectionModel.addSelectionListener( () -> bdv.getBdvHandle().getViewerPanel().requestRepaint() );
-		focusModel.addFocusListener( () -> bdv.getBdvHandle().getViewerPanel().requestRepaint() );
-
-
-
-		// debug... show slice of raw image...
-//		String fn = "/Users/pietzsch/Desktop/tr2d_test/raw_slice0000.tif";
-		final String fn = "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/DebugStack03-crop/raw.tif";
-		final BdvSource raw = BdvFunctions.show(
-				( RandomAccessibleInterval ) ImageJFunctions.wrap( new ImagePlus( fn ) ),
-				"raw",
-				BdvOptions.options().addTo( bdv ) );
-		raw.setDisplayRange( 0, 1000 );
-	}
-
-	static class SelectedSegmentsConverter implements Converter< IntType, UnsignedShortType >, SelectionListener {
-
-		private final LabelingPlus labelingPlus;
-
-		private final Selection< SegmentVertex, SubsetEdge > selectionModel;
-
-		private int[] intensities;
-
-		public SelectedSegmentsConverter(
-				final LabelingPlus labelingPlus,
-				final Selection< SegmentVertex, SubsetEdge > selectionModel ) {
-			this.labelingPlus = labelingPlus;
-			this.selectionModel = selectionModel;
-			selectionModel.addSelectionListener( this );
-			selectionChanged();
-		}
-
-		@Override
-		public void convert( final IntType input, final UnsignedShortType output ) {
-			output.set( intensities[ input.get() ] );
-		}
-
-		@Override
-		public void selectionChanged() {
-			final int numSets = labelingPlus.getLabeling().getMapping().numSets();
-			if ( intensities == null || intensities.length < numSets )
-				intensities = new int[ numSets ];
-			Arrays.fill( intensities, 0 );
-
-			final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
-
-			for ( final SegmentVertex v : selectionModel.getSelectedVertices() )
-				for ( final int i : v.getLabelData().getFragmentIndices() )
-					++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
-		}
-	}
-
-	static class HighlightedSegmentsConverter implements Converter< IntType, UnsignedShortType >, HighlightListener {
-
-		private final LabelingPlus labelingPlus;
-
-		private final HighlightModel< SegmentVertex, SubsetEdge > highlightModel ;
-
-		private int[] intensities;
-
-		public HighlightedSegmentsConverter(
-				final LabelingPlus labelingPlus,
-				final HighlightModel< SegmentVertex, SubsetEdge > highlightModel ) {
-			this.labelingPlus = labelingPlus;
-			this.highlightModel = highlightModel;
-			highlightModel.addHighlightListener( this );
-			highlightChanged();
-		}
-
-		@Override
-		public void convert( final IntType input, final UnsignedShortType output ) {
-			output.set( intensities[ input.get() ] );
-		}
-
-		@Override
-		public void highlightChanged() {
-			final int numSets = labelingPlus.getLabeling().getMapping().numSets();
-			if ( intensities == null || intensities.length < numSets )
-				intensities = new int[ numSets ];
-			Arrays.fill( intensities, 0 );
-
-			final SegmentVertex v = highlightModel.getHighlightedVertex( null );
-			if( v != null )
-			{
-				final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
-				for ( final int i : v.getLabelData().getFragmentIndices() )
-					++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
-			}
-		}
-	}
-
-	static class FocusedSegmentsConverter implements Converter< IntType, UnsignedShortType >, FocusListener {
-
-		private final LabelingPlus labelingPlus;
-
-		private final FocusModel< SegmentVertex, SubsetEdge > focusModel;
-
-		private int[] intensities;
-
-		public FocusedSegmentsConverter(
-				final LabelingPlus labelingPlus,
-				final FocusModel< SegmentVertex, SubsetEdge > focusModel ) {
-			this.labelingPlus = labelingPlus;
-			this.focusModel = focusModel;
-			focusModel.addFocusListener( this );
-			focusChanged();
-		}
-
-		@Override
-		public void convert( final IntType input, final UnsignedShortType output ) {
-			output.set( intensities[ input.get() ] );
-		}
-
-		@Override
-		public void focusChanged()
-		{
-			final int numSets = labelingPlus.getLabeling().getMapping().numSets();
-			if ( intensities == null || intensities.length < numSets )
-				intensities = new int[ numSets ];
-			Arrays.fill( intensities, 0 );
-
-			final SegmentVertex v = focusModel.getFocusedVertex( null );
-			if( v != null )
-			{
-				final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
-				for ( final int i : v.getLabelData().getFragmentIndices() )
-					++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
-			}
-		}
-	}
-
-	private static InputTriggerConfig getKeyConfig( final TrackSchemeOptions optional )
-	{
-		final InputTriggerConfig conf = optional.values.getInputTriggerConfig();
-		return conf != null ? conf : new InputTriggerConfig();
-	}
-
-	/**
-	 * Returns {@code true} iff {@code a} is a subset of {@code b}.
-	 *
-	 * @return {@code true} iff {@code a} is a subset of {@code b}.
-	 */
-	public static boolean isSubset( final LabelData a, final LabelData b ) {
-		final ArrayList< Integer > afs = a.getFragmentIndices();
-		final ArrayList< Integer > bfs = b.getFragmentIndices();
-
-		int bi = 0;
-		A: for ( final int af : afs ) {
-			for ( ; bi < bfs.size(); ++bi ) {
-				final int bf = bfs.get( bi );
-				if ( bf > af ) {
-					return false;
-				} else if ( bf == af ) {
-					continue A;
-				}
-			}
-			return false;
-		}
-		return true;
-	}
+	private JPanel panelTrackscheme;
+	private BdvHandlePanel bdv;
 
 	static class CheckedPairs {
+
 		private static final long NO_ENTRY_VALUE = -1L;
 
 		private final GraphIdBimap< SegmentVertex, ? > idmap;
@@ -368,16 +117,29 @@ public class BuildSegmentGraph
 		}
 	}
 
-	public static void main( final String[] args ) throws IOException {
+	public Tr2dFrameInteractionPanel( final Tr2dTrackingModel model ) {
+		super( new BorderLayout() );
+		this.model = model;
 
-		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
+		buildGui();
 
-//		final String folder = "/Users/pietzsch/Desktop/data/tr2d/tr2d_project_folder/DebugStack03-crop/tracking/labeling_frames/";
-		final String folder = "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/DebugStack03-crop/tracking/labeling_frames/";
+		this.currentFrame = 0;
+		displayFrameData();
+	}
 
-		final String fLabeling = folder + "labeling_frame0000.xml";
+	private void buildGui() {
+		panelTrackscheme = new JPanel( new BorderLayout() );
+		panelTrackscheme.setPreferredSize( new Dimension( 3000, 400 ) );
 
-		final LabelingPlus labelingPlus = new XmlIoLabelingPlus().load( fLabeling );
+		bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
+		final JSplitPane split = new JSplitPane( JSplitPane.VERTICAL_SPLIT, bdv.getViewerPanel(), panelTrackscheme );
+		split.setResizeWeight( 1 );
+		split.setOneTouchExpandable( true );
+		this.add( split );
+	}
+
+	private void displayFrameData() {
+		final LabelingPlus labelingPlus = model.getLabelingFrames().getLabelingPlusForFrame( this.currentFrame );
 
 		final SegmentGraph graph = new SegmentGraph();
 		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( graph, true );
@@ -459,6 +221,30 @@ public class BuildSegmentGraph
 	}
 
 	/**
+	 * Returns {@code true} iff {@code a} is a subset of {@code b}.
+	 *
+	 * @return {@code true} iff {@code a} is a subset of {@code b}.
+	 */
+	public static boolean isSubset( final LabelData a, final LabelData b ) {
+		final ArrayList< Integer > afs = a.getFragmentIndices();
+		final ArrayList< Integer > bfs = b.getFragmentIndices();
+
+		int bi = 0;
+		A: for ( final int af : afs ) {
+			for ( ; bi < bfs.size(); ++bi ) {
+				final int bf = bfs.get( bi );
+				if ( bf > af ) {
+					return false;
+				} else if ( bf == af ) {
+					continue A;
+				}
+			}
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Iterates over all parents of <code>v</code> and returns the maximum
 	 * timepoint found.
 	 *
@@ -471,5 +257,221 @@ public class BuildSegmentGraph
 			ret = Math.max( ret, incomingEdge.getSource().getTimepoint() );
 		}
 		return ret;
+	}
+
+	/**
+	 * Updates displays with new labeling and graph...
+	 *
+	 * @param modelGraph
+	 * @param labelingPlus
+	 */
+	private void display( final SegmentGraph modelGraph, final LabelingPlus labelingPlus ) {
+		final GroupManager manager = new GroupManager();
+		final GroupHandle trackSchemeGroupHandle = manager.createGroupHandle();
+		final TrackSchemeOptions optional = TrackSchemeOptions.options();
+
+		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
+
+		final Selection< SegmentVertex, SubsetEdge > selectionModel = new Selection<>( modelGraph, idmap );
+		final HighlightModel< SegmentVertex, SubsetEdge > highlightModel = new HighlightModel<>( idmap );
+		final FocusModel< SegmentVertex, SubsetEdge > focusModel = new FocusModel<>( idmap );
+		final NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler = new NavigationHandler<>( trackSchemeGroupHandle );
+
+		final InputTriggerConfig inputConf = getKeyConfig( optional );
+
+		// === TrackScheme ===
+
+		final ModelGraphProperties modelGraphProperties = new DefaultModelGraphProperties<>( modelGraph, idmap, selectionModel );
+		final TrackSchemeGraph< SegmentVertex, SubsetEdge > trackSchemeGraph = new TrackSchemeGraph<>( modelGraph, idmap, modelGraphProperties );
+		final TrackSchemePanel trackschemePanel =
+				new TrackSchemePanel( trackSchemeGraph, new TrackSchemeHighlight( new DefaultModelHighlightProperties<>( modelGraph, idmap, highlightModel ), trackSchemeGraph ), new TrackSchemeFocus( new DefaultModelFocusProperties<>( modelGraph, idmap, focusModel ), trackSchemeGraph ), new TrackSchemeSelection( new DefaultModelSelectionProperties<>( modelGraph, idmap, selectionModel ) ), new TrackSchemeNavigation( new DefaultModelNavigationProperties<>( modelGraph, idmap, navigationHandler ), trackSchemeGraph ), optional );
+		panelTrackscheme.add( trackschemePanel, BorderLayout.CENTER );
+
+		final InputActionBindings keybindings = new InputActionBindings();
+		SwingUtilities.replaceUIActionMap( panelTrackscheme, keybindings.getConcatenatedActionMap() );
+		SwingUtilities.replaceUIInputMap( panelTrackscheme, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keybindings.getConcatenatedInputMap() );
+
+		final TriggerBehaviourBindings triggerbindings = new TriggerBehaviourBindings();
+		final MouseAndKeyHandler mouseAndKeyHandler = new MouseAndKeyHandler();
+		mouseAndKeyHandler.setInputMap( triggerbindings.getConcatenatedInputTriggerMap() );
+		mouseAndKeyHandler.setBehaviourMap( triggerbindings.getConcatenatedBehaviourMap() );
+		trackschemePanel.getDisplay().addHandler( mouseAndKeyHandler );
+
+		final TransformEventHandler< ? > tfHandler = trackschemePanel.getDisplay().getTransformEventHandler();
+		if ( tfHandler instanceof BehaviourTransformEventHandler )
+			( ( BehaviourTransformEventHandler< ? > ) tfHandler ).install( triggerbindings );
+
+		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf );
+		trackschemePanel.getSelectionBehaviours().installBehaviourBindings( triggerbindings, inputConf );
+
+		int maxTimepoint = 0;
+		for ( final SegmentVertex v : modelGraph.vertices() )
+			maxTimepoint = Math.max( v.getTimepoint(), maxTimepoint );
+		trackschemePanel.setTimepointRange( 0, maxTimepoint );
+		trackschemePanel.graphChanged();
+
+		// === BDV ===
+
+		final BdvSource selectionSource = BdvFunctions.show(
+				Converters.convert(
+						labelingPlus.getLabeling().getIndexImg(),
+						new SelectedSegmentsConverter( labelingPlus, selectionModel ),
+						new UnsignedShortType() ),
+				"selected segments",
+				Bdv.options().addTo( bdv ) );
+
+		final BdvSource highlightSource = BdvFunctions.show(
+				Converters.convert(
+						labelingPlus.getLabeling().getIndexImg(),
+						new HighlightedSegmentsConverter( labelingPlus, highlightModel ),
+						new UnsignedShortType() ),
+				"highlighted segment",
+				Bdv.options().addTo( bdv ) );
+
+		final BdvSource focusSource = BdvFunctions.show(
+				Converters.convert(
+						labelingPlus.getLabeling().getIndexImg(),
+						new FocusedSegmentsConverter( labelingPlus, focusModel ),
+						new UnsignedShortType() ),
+				"focused segment",
+				Bdv.options().addTo( bdv ) );
+
+		selectionSource.setDisplayRange( 0, 2 );
+		selectionSource.setColor( new ARGBType( 0x00FF00 ) );
+
+		highlightSource.setDisplayRange( 0, 1 );
+		highlightSource.setColor( new ARGBType( 0xFF00FF ) );
+
+		focusSource.setDisplayRange( 0, 1 );
+		focusSource.setColor( new ARGBType( 0x0000FF ) );
+
+		highlightModel.addHighlightListener( () -> bdv.getBdvHandle().getViewerPanel().requestRepaint() );
+		selectionModel.addSelectionListener( () -> bdv.getBdvHandle().getViewerPanel().requestRepaint() );
+		focusModel.addFocusListener( () -> bdv.getBdvHandle().getViewerPanel().requestRepaint() );
+
+		// show also slice of raw image...
+//		final BdvSource raw = BdvFunctions.show(
+//				( RandomAccessibleInterval ) ImageJFunctions.wrap( new ImagePlus( fn ) ),
+//				"raw",
+//				BdvOptions.options().addTo( bdv ) );
+//		raw.setDisplayRange( 0, 1000 );
+	}
+
+	private static InputTriggerConfig getKeyConfig( final TrackSchemeOptions optional ) {
+		final InputTriggerConfig conf = optional.values.getInputTriggerConfig();
+		return conf != null ? conf : new InputTriggerConfig();
+	}
+
+	static class SelectedSegmentsConverter implements Converter< IntType, UnsignedShortType >, SelectionListener {
+
+		private final LabelingPlus labelingPlus;
+
+		private final Selection< SegmentVertex, SubsetEdge > selectionModel;
+
+		private int[] intensities;
+
+		public SelectedSegmentsConverter(
+				final LabelingPlus labelingPlus,
+				final Selection< SegmentVertex, SubsetEdge > selectionModel ) {
+			this.labelingPlus = labelingPlus;
+			this.selectionModel = selectionModel;
+			selectionModel.addSelectionListener( this );
+			selectionChanged();
+		}
+
+		@Override
+		public void convert( final IntType input, final UnsignedShortType output ) {
+			output.set( intensities[ input.get() ] );
+		}
+
+		@Override
+		public void selectionChanged() {
+			final int numSets = labelingPlus.getLabeling().getMapping().numSets();
+			if ( intensities == null || intensities.length < numSets )
+				intensities = new int[ numSets ];
+			Arrays.fill( intensities, 0 );
+
+			final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
+
+			for ( final SegmentVertex v : selectionModel.getSelectedVertices() )
+				for ( final int i : v.getLabelData().getFragmentIndices() )
+					++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
+		}
+	}
+
+	static class HighlightedSegmentsConverter implements Converter< IntType, UnsignedShortType >, HighlightListener {
+
+		private final LabelingPlus labelingPlus;
+
+		private final HighlightModel< SegmentVertex, SubsetEdge > highlightModel;
+
+		private int[] intensities;
+
+		public HighlightedSegmentsConverter(
+				final LabelingPlus labelingPlus,
+				final HighlightModel< SegmentVertex, SubsetEdge > highlightModel ) {
+			this.labelingPlus = labelingPlus;
+			this.highlightModel = highlightModel;
+			highlightModel.addHighlightListener( this );
+			highlightChanged();
+		}
+
+		@Override
+		public void convert( final IntType input, final UnsignedShortType output ) {
+			output.set( intensities[ input.get() ] );
+		}
+
+		@Override
+		public void highlightChanged() {
+			final int numSets = labelingPlus.getLabeling().getMapping().numSets();
+			if ( intensities == null || intensities.length < numSets )
+				intensities = new int[ numSets ];
+			Arrays.fill( intensities, 0 );
+
+			final SegmentVertex v = highlightModel.getHighlightedVertex( null );
+			if ( v != null ) {
+				final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
+				for ( final int i : v.getLabelData().getFragmentIndices() )
+					++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
+			}
+		}
+	}
+
+	static class FocusedSegmentsConverter implements Converter< IntType, UnsignedShortType >, FocusListener {
+
+		private final LabelingPlus labelingPlus;
+
+		private final FocusModel< SegmentVertex, SubsetEdge > focusModel;
+
+		private int[] intensities;
+
+		public FocusedSegmentsConverter(
+				final LabelingPlus labelingPlus,
+				final FocusModel< SegmentVertex, SubsetEdge > focusModel ) {
+			this.labelingPlus = labelingPlus;
+			this.focusModel = focusModel;
+			focusModel.addFocusListener( this );
+			focusChanged();
+		}
+
+		@Override
+		public void convert( final IntType input, final UnsignedShortType output ) {
+			output.set( intensities[ input.get() ] );
+		}
+
+		@Override
+		public void focusChanged() {
+			final int numSets = labelingPlus.getLabeling().getMapping().numSets();
+			if ( intensities == null || intensities.length < numSets )
+				intensities = new int[ numSets ];
+			Arrays.fill( intensities, 0 );
+
+			final SegmentVertex v = focusModel.getFocusedVertex( null );
+			if ( v != null ) {
+				final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
+				for ( final int i : v.getLabelData().getFragmentIndices() )
+					++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
+			}
+		}
 	}
 }

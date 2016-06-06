@@ -56,7 +56,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	}
 
 	private Component buildFramePanel() {
-		final JPanel panel = new JPanel( new BorderLayout() );
+		final JPanel panel = new Tr2dFrameInteractionPanel( model );
 		return panel;
 	}
 

@@ -10,7 +10,7 @@ public class SegmentVertex extends AbstractObjectVertex< SegmentVertex, SubsetEd
 
 	private LabelData labelData;
 
-	int timepoint;
+	private int timepoint;
 
 	public SegmentVertex init( final LabelData labelData ) {
 		this.labelData = labelData;
@@ -25,6 +25,10 @@ public class SegmentVertex extends AbstractObjectVertex< SegmentVertex, SubsetEd
 	@Override
 	public int getTimepoint() {
 		return timepoint;
+	}
+
+	public void setTimepoint( final int timepoint ) {
+		this.timepoint = timepoint;
 	}
 
 	@Override
