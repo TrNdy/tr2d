@@ -83,7 +83,7 @@ import net.trackmate.revised.ui.selection.SelectionListener;
 /**
  * @author jug
  */
-public class Tr2dFrameInteractionPanel extends JPanel implements ActionListener, BdvWithOverlaysOwner {
+public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWithOverlaysOwner {
 
 	private static final long serialVersionUID = -9051482691122695949L;
 
@@ -159,7 +159,7 @@ public class Tr2dFrameInteractionPanel extends JPanel implements ActionListener,
 		}
 	}
 
-	public Tr2dFrameInteractionPanel( final Tr2dTrackingModel model ) {
+	public Tr2dFrameEditPanel( final Tr2dTrackingModel model ) {
 		super( new BorderLayout() );
 		this.model = model;
 
@@ -185,9 +185,9 @@ public class Tr2dFrameInteractionPanel extends JPanel implements ActionListener,
 		buttonPrev.addActionListener( this );
 		buttonNext.addActionListener( this );
 
-		txtCurFrame = new JTextField( 4 );
+		txtCurFrame = new JTextField( 3 );
 		txtCurFrame.setHorizontalAlignment( JTextField.CENTER );
-		txtCurFrame.setText( "" + this.currentFrame );
+		txtCurFrame.setText( "" + ( this.currentFrame + 1 ) );
 		txtCurFrame.addActionListener( this );
 
 		final JPanel panelFrameSwitcher = new JPanel();
@@ -354,6 +354,10 @@ public class Tr2dFrameInteractionPanel extends JPanel implements ActionListener,
 
 		this.bdvRemoveAll();
 		this.bdvRemoveAllOverlays();
+
+//		raw = model.
+//		this.bdvAdd( raw, "raw" );
+
 		RandomAccessibleInterval< UnsignedShortType > overlay = Converters.convert(
 				labelingPlus.getLabeling().getIndexImg(),
 				new SelectedSegmentsConverter( labelingPlus, selectionModel ),
@@ -548,9 +552,9 @@ public class Tr2dFrameInteractionPanel extends JPanel implements ActionListener,
 					0,
 					Math.min(
 							model.getLabelingFrames().getNumFrames() - 1,
-							Integer.parseInt( txtCurFrame.getText() ) ) );
+							Integer.parseInt( txtCurFrame.getText() ) - 1 ) );
 		}
-		txtCurFrame.setText( "" + this.currentFrame );
+		txtCurFrame.setText( "" + ( this.currentFrame + 1 ) );
 		displayFrameData();
 	}
 
