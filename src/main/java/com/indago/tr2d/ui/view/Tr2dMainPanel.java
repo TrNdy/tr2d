@@ -26,6 +26,7 @@ import javax.swing.event.ChangeListener;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.app.hernan.costs.HernanAppearanceCostFactory;
 import com.indago.app.hernan.costs.HernanDisappearanceCostFactory;
 import com.indago.app.hernan.costs.HernanDivisionCostFactory;
@@ -131,8 +132,24 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 		try
 		{
-			final InputTriggerConfig conf = new InputTriggerConfig( YamlConfigIO.read( "/Users/pietzsch/Desktop/tr2d.yaml" ) );
+			String path = "";
+			try {
+				path = Tr2dApplication.class.getClassLoader().getResource( "tr2d.yaml" ).getPath();
+			} catch ( final Exception e ) {
+// >>>>>> find this and code worked on various OSes... great, please delete the commented parts...
+//				try {
+//					System.out.println( "attempt 2..." );
+//					path = Tr2dApplication.class.getClassLoader().getResource( "resources/tr2d.yaml" ).getPath();
+//				} catch ( final Exception e2 ) {
+					System.out.println( ">>> Error: tr2d.yaml not found in project/JAR resources..." );
+//				}
+			}
 
+			final InputTriggerConfig conf = new InputTriggerConfig( YamlConfigIO.read( path ) );
+
+//		Code to create an minimal tr2d.yaml...
+//		--------------------------------------
+//			final InputTriggerConfig conf = new InputTriggerConfig();
 //			final KeyStrokeAdder adder = conf.keyStrokeAdder(
 //					this.getInputMap( WHEN_IN_FOCUSED_WINDOW ),
 //					"tr2d" );
@@ -143,10 +160,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 //			builder.addMap(
 //					this.getInputMap( WHEN_IN_FOCUSED_WINDOW ),
 //					"tr2d" );
-//			YamlConfigIO.write( builder.getDescriptions(), "/Users/pietzsch/Desktop/tr2d.yaml" );
-
-
-
+//			YamlConfigIO.write( builder.getDescriptions(), "/Users/jug/Desktop/tr2d.yaml" );
 
 			final InputActionBindings bindings = new InputActionBindings();
 			SwingUtilities.replaceUIActionMap( this, bindings.getConcatenatedActionMap() );
