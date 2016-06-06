@@ -53,7 +53,9 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.ui.TransformEventHandler;
+import net.imglib2.view.Views;
 import net.trackmate.graph.GraphIdBimap;
 import net.trackmate.graph.algorithm.ShortestPath;
 import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
@@ -355,8 +357,9 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		this.bdvRemoveAll();
 		this.bdvRemoveAllOverlays();
 
-//		raw = model.
-//		this.bdvAdd( raw, "raw" );
+		final RandomAccessibleInterval< DoubleType > rawData = model.getTr2dModel().getRawData();
+		final int t = Integer.parseInt( this.txtCurFrame.getText() ) - 1;
+		this.bdvAdd( Views.hyperSlice( rawData, 2, t ), "RAW" );
 
 		RandomAccessibleInterval< UnsignedShortType > overlay = Converters.convert(
 				labelingPlus.getLabeling().getIndexImg(),
