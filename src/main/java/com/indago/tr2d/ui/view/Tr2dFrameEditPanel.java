@@ -18,6 +18,7 @@ import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
@@ -95,8 +96,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	// === UI Stuff ====================================================================
 	private JPanel helperPanel;
+	private JButton buttonFirst;
 	private JButton buttonPrev;
 	private JButton buttonNext;
+	private JButton buttonLast;
 	private JTextField txtCurFrame;
 
 	// === BDV related stuff ===========================================================
@@ -182,20 +185,29 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	}
 
 	private void buildGui() {
+		buttonFirst = new JButton( "<<" );
 		buttonPrev = new JButton( "<" );
 		buttonNext = new JButton( ">" );
+		buttonLast = new JButton( ">>" );
+		buttonFirst.addActionListener( this );
 		buttonPrev.addActionListener( this );
 		buttonNext.addActionListener( this );
+		buttonLast.addActionListener( this );
 
 		txtCurFrame = new JTextField( 3 );
 		txtCurFrame.setHorizontalAlignment( JTextField.CENTER );
 		txtCurFrame.setText( "" + ( this.currentFrame + 1 ) );
 		txtCurFrame.addActionListener( this );
 
+		final JLabel lblNumFrames = new JLabel( "of " + model.getLabelingFrames().getNumFrames() );
+
 		final JPanel panelFrameSwitcher = new JPanel();
+		panelFrameSwitcher.add( buttonFirst );
 		panelFrameSwitcher.add( buttonPrev );
 		panelFrameSwitcher.add( txtCurFrame );
+		panelFrameSwitcher.add( lblNumFrames );
 		panelFrameSwitcher.add( buttonNext );
+		panelFrameSwitcher.add( buttonLast );
 
 		helperPanel = new JPanel( new BorderLayout() );
 		helperPanel.setPreferredSize( new Dimension( 1000, 400 ) );
@@ -546,10 +558,14 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 */
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
-		if ( e.getSource().equals( buttonPrev ) ) {
+		if ( e.getSource().equals( buttonFirst ) ) {
+			this.currentFrame = 0;
+		} else if ( e.getSource().equals( buttonPrev ) ) {
 			this.currentFrame = Math.max( 0, currentFrame - 1 );
 		} else if ( e.getSource().equals( buttonNext ) ) {
 			this.currentFrame = Math.min( model.getLabelingFrames().getNumFrames() - 1, currentFrame + 1 );
+		} else if ( e.getSource().equals( buttonLast ) ) {
+			this.currentFrame = model.getLabelingFrames().getNumFrames() - 1;
 		} else if ( e.getSource().equals( txtCurFrame ) ) {
 			this.currentFrame = Math.max(
 					0,
