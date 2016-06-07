@@ -64,6 +64,8 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 	private MessageConsole log;
 
+	private JSplitPane splitPane;
+
 	/**
 	 * @param imgPlus
 	 */
@@ -124,9 +126,9 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		log.redirectErr( Color.RED, null );
 		log.setMessageLines( 10000 );
 
-		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, tabs, logPanel );
-		splitPane.setOneTouchExpandable( true );
+		splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, tabs, logPanel );
 		splitPane.setResizeWeight( .8 ); // 1.0 == extra space given to left (top) component alone!
+		splitPane.setOneTouchExpandable( true );
 
 		this.add( splitPane, BorderLayout.CENTER );
 
@@ -221,5 +223,9 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	@Override
 	public void stateChanged( final ChangeEvent e ) {
 		// TODO Auto-generated method stub
+	}
+
+	public void collapseLog() {
+		splitPane.setDividerLocation( 1.0 );
 	}
 }

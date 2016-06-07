@@ -78,6 +78,7 @@ public class Tr2dApplication {
 		guiFrame.getContentPane().add( mainPanel );
 		setFrameSizeAndCloseOperation();
 		guiFrame.setVisible( true );
+		mainPanel.collapseLog();
 	}
 
 	private static void setFrameSizeAndCloseOperation() {
