@@ -110,9 +110,9 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 		// --- ASSEMBLE PANEL ---------------------------------------------------------------------
 
-		tabs.add( "Dataset", tabData );
-		tabs.add( "Hypotheses collection", tabSegmentation );
-		tabs.add( "Tracking", tabTracking );
+		tabs.add( "data", tabData );
+		tabs.add( "segment hypotheses", tabSegmentation );
+		tabs.add( "tracking", tabTracking );
 
 		final JPanel logPanel = new JPanel( new BorderLayout() );
 		final JTextPane logText = new JTextPane();

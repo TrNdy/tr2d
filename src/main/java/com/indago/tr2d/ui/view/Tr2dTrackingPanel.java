@@ -48,7 +48,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	 */
 	private void buildGui() {
 		tabs = new JTabbedPane( JTabbedPane.TOP );
-		tabs.add( "tracking", buildSolverPanel() );
+		tabs.add( "tracker", buildSolverPanel() );
 		tabs.add( "frame editor", buildFrameEditPanel() );
 		tabs.add( "track editor", buildTrackEditPanel() );
 
