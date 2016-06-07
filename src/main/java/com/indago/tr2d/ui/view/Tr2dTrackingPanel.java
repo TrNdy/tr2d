@@ -9,6 +9,7 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -29,7 +30,10 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	private final Tr2dTrackingModel model;
 
 	private JTabbedPane tabs;
+	private JButton bEditFrame;
 	private JButton bRun;
+
+	private Tr2dFrameEditPanel frameEditPanel;
 
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
@@ -56,8 +60,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	}
 
 	private Component buildFrameEditPanel() {
-		final JPanel panel = new Tr2dFrameEditPanel( model );
-		return panel;
+		frameEditPanel = new Tr2dFrameEditPanel( model );
+		return frameEditPanel;
 	}
 
 	private Component buildTrackEditPanel() {
@@ -71,12 +75,20 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		final JPanel controls = new JPanel( new MigLayout() );
 		final JPanel viewer = new JPanel( new BorderLayout() );
 
-		bRun = new JButton( "run..." );
+		final MigLayout layout = new MigLayout();
+		final JPanel panelEdit = new JPanel( layout );
+		panelEdit.setBorder( BorderFactory.createTitledBorder( "editing" ) );
+		bEditFrame = new JButton( "frame" );
+		bEditFrame.addActionListener( this );
+		panelEdit.add( bEditFrame );
+
+		bRun = new JButton( "track" );
 		bRun.addActionListener( this );
 
 		model.bdvSetHandlePanel( new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() ) );
 
-		controls.add( bRun );
+		controls.add( panelEdit, "wrap" );
+		controls.add( bRun, "growx, wrap" );
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
@@ -103,6 +115,9 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 
 			};
 			new Thread( runnable ).start();
+		} else if ( e.getSource().equals( bEditFrame ) ) {
+			frameEditPanel.setFrameToShow( model.bdvGetHandlePanel().getBdvHandle().getViewerPanel().getState().getCurrentTimepoint() );
+			tabs.setSelectedComponent( frameEditPanel );
 		}
 	}
 }

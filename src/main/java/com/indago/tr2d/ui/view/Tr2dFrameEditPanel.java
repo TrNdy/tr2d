@@ -573,7 +573,21 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 							model.getLabelingFrames().getNumFrames() - 1,
 							Integer.parseInt( txtCurFrame.getText() ) - 1 ) );
 		}
-		txtCurFrame.setText( "" + ( this.currentFrame + 1 ) );
+		setFrameToShow( this.currentFrame );
+	}
+
+	/**
+	 * Switches to the given frame.
+	 * Switches to frame 0 if a number <0 is given and to the last frame if the
+	 * given number exceeds the number of frames.
+	 */
+	public void setFrameToShow( final int frameNumToShow ) {
+		this.currentFrame = Math.max(
+				0,
+				Math.min(
+						model.getLabelingFrames().getNumFrames() - 1,
+						frameNumToShow ) );
+		txtCurFrame.setText( "" + ( frameNumToShow + 1 ) );
 		displayFrameData();
 	}
 
