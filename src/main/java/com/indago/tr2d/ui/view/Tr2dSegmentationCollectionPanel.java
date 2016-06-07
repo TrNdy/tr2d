@@ -35,8 +35,8 @@ public class Tr2dSegmentationCollectionPanel extends JPanel {
 		tabs = new JTabbedPane();
 		final JPanel tabFile = new Tr2dImportedSegmentationPanel( model.getImportedSegmentationModel() );
 		final JPanel tabWeka = new Tr2dWekaSegmentationPanel( model.getWekaModel() );
-		tabs.add( "Imported Hypotheses", tabFile );
-		tabs.add( "Weka Hypotheses", tabWeka );
+		tabs.add( "imported segments", tabFile );
+		tabs.add( "weka segmentation", tabWeka );
 		add( tabs, BorderLayout.CENTER );
 	}
 
