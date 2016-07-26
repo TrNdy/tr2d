@@ -180,6 +180,7 @@ public class DataMover {
 		// if source and target are of same type -> use copy since convert is not needed...
 		if ( sourceType.getClass().isInstance( targetType ) ) {
 			DataMover.copy( source, ( IterableInterval< ST > ) target );
+			return;
 		}
 
 		// implemented conversion cases follow here...
@@ -263,7 +264,7 @@ public class DataMover {
 
 					( ( IntType ) targetCursor.get() ).set( ( ( UnsignedShortType ) sourceRandomAccess.get() ).get() );
 				}
-			} else 
+			} else
 			if ( targetType instanceof ARGBType ) {
 				final Cursor< TT > targetCursor = target.localizingCursor();
 				final RandomAccess< ST > sourceRandomAccess = source.randomAccess();

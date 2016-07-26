@@ -34,6 +34,11 @@ import com.indago.app.selectsegment.SubsetEdge;
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingFragment;
 import com.indago.data.segmentation.LabelingPlus;
+import com.indago.data.segmentation.LabelingSegment;
+import com.indago.fg.Assignment;
+import com.indago.pg.IndicatorNode;
+import com.indago.pg.segments.SegmentNode;
+import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 
@@ -120,6 +125,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private final MouseAndKeyHandler mouseAndKeyHandler;
 
 	private SegmentGraph segmentGraph = new SegmentGraph();
+	private Map< LabelData, SegmentVertex > labelData2SegmentVertex;
+	private Map< LabelingSegment, SegmentVertex > labelingSegment2SegmentVertex;
 
 	private Selection< SegmentVertex, SubsetEdge > selectionModel;
 	private HighlightModel< SegmentVertex, SubsetEdge > highlightModel;
@@ -230,9 +237,12 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( segmentGraph, true );
 
 		// create vertices for all segments
-		final Map< LabelData, SegmentVertex > mapVertices = new HashMap<>();
-		for ( final LabelData segment : labelingPlus.getLabeling().getMapping().getLabels() )
-			mapVertices.put( segment, segmentGraph.addVertex().init( segment ) );
+		labelData2SegmentVertex = new HashMap<>();
+		labelingSegment2SegmentVertex = new HashMap<>();
+		for ( final LabelData labelData : labelingPlus.getLabeling().getMapping().getLabels() ) {
+			labelData2SegmentVertex.put( labelData, segmentGraph.addVertex().init( labelData ) );
+			labelingSegment2SegmentVertex.put( labelData.getSegment(), segmentGraph.addVertex().init( labelData ) );
+		}
 
 		final CheckedPairs pairs = new CheckedPairs( segmentGraph.getGraphIdBimap() );
 		// Build partial order graph
@@ -241,11 +251,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 			// connect regarding subset relation (while removing transitive edges)
 			for ( final LabelData subset : conflictingSegments ) {
-				final SegmentVertex subv = mapVertices.get( subset );
+				final SegmentVertex subv = labelData2SegmentVertex.get( subset );
 				for ( final LabelData superset : conflictingSegments ) {
 					if ( subset.equals( superset ) )
 						continue;
-					final SegmentVertex superv = mapVertices.get( superset );
+					final SegmentVertex superv = labelData2SegmentVertex.get( superset );
 
 					// Was this (ordered) pair of vertices already checked?
 					// If yes, abort.
@@ -639,5 +649,27 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	@Override
 	public List< BdvOverlay > bdvGetOverlays() {
 		return this.overlays;
+	}
+
+	/**
+	 * If a tracking solution exists, the selection of segments will be set to
+	 * coincide with all active segments in this current tracking solution.
+	 */
+	public void selectionFromCurrentSolution() {
+		final LabelingPlus labelingPlus = model.getLabelingFrames().getLabelingPlusForFrame( this.currentFrame );
+		final Tr2dSegmentationProblem frameSegmentationModel = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		final Assignment< IndicatorNode > pgSolution = model.getSolution();
+		for ( final SegmentNode segNode : segProblem.getSegments() ) {
+			final LabelingSegment labelingSegment = frameSegmentationModel.getLabelingSegment( segNode );
+			if ( pgSolution.getAssignment( segNode ) == 1 ) {
+//				System.out.println( "ON" );
+				selectionModel.setSelected( labelingSegment2SegmentVertex.get( labelingSegment ), true );
+			} else {
+//				System.out.println( "OFF" );
+				selectionModel.setSelected( labelingSegment2SegmentVertex.get( labelingSegment ), false );
+			}
+		}
 	}
 }

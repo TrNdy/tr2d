@@ -117,6 +117,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 			new Thread( runnable ).start();
 		} else if ( e.getSource().equals( bEditFrame ) ) {
 			frameEditPanel.setFrameToShow( model.bdvGetHandlePanel().getBdvHandle().getViewerPanel().getState().getCurrentTimepoint() );
+			frameEditPanel.selectionFromCurrentSolution();
 			tabs.setSelectedComponent( frameEditPanel );
 		}
 	}
