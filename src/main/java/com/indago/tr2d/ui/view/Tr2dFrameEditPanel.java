@@ -128,8 +128,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private final MouseAndKeyHandler mouseAndKeyHandler;
 
 	private SegmentGraph segmentGraph = new SegmentGraph();
-	private Map< LabelData, SegmentVertex > labelData2SegmentVertex;
-	private Map< LabelingSegment, SegmentVertex > labelingSegment2SegmentVertex;
+	private Map< LabelData, SegmentVertex > mapLabelData2SegmentVertex;
+	private Map< LabelingSegment, SegmentVertex > mapLabelingSegment2SegmentVertex;
 
 	private Selection< SegmentVertex, SubsetEdge > selectionModel;
 	private HighlightModel< SegmentVertex, SubsetEdge > highlightModel;
@@ -285,11 +285,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( segmentGraph, true );
 
 		// create vertices for all segments
-		labelData2SegmentVertex = new HashMap<>();
-		labelingSegment2SegmentVertex = new HashMap<>();
+		mapLabelData2SegmentVertex = new HashMap<>();
+		mapLabelingSegment2SegmentVertex = new HashMap<>();
 		for ( final LabelData labelData : labelingPlus.getLabeling().getMapping().getLabels() ) {
-			labelData2SegmentVertex.put( labelData, segmentGraph.addVertex().init( labelData ) );
-			labelingSegment2SegmentVertex.put( labelData.getSegment(), segmentGraph.addVertex().init( labelData ) );
+			mapLabelData2SegmentVertex.put( labelData, segmentGraph.addVertex().init( labelData ) );
+			mapLabelingSegment2SegmentVertex.put( labelData.getSegment(), segmentGraph.addVertex().init( labelData ) );
 		}
 
 		final CheckedPairs pairs = new CheckedPairs( segmentGraph.getGraphIdBimap() );
@@ -299,11 +299,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 			// connect regarding subset relation (while removing transitive edges)
 			for ( final LabelData subset : conflictingSegments ) {
-				final SegmentVertex subv = labelData2SegmentVertex.get( subset );
+				final SegmentVertex subv = mapLabelData2SegmentVertex.get( subset );
 				for ( final LabelData superset : conflictingSegments ) {
 					if ( subset.equals( superset ) )
 						continue;
-					final SegmentVertex superv = labelData2SegmentVertex.get( superset );
+					final SegmentVertex superv = mapLabelData2SegmentVertex.get( superset );
 
 					// Was this (ordered) pair of vertices already checked?
 					// If yes, abort.
@@ -644,7 +644,13 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		// LEVERAGED EDITING BUTTONS
 		} else if ( e.getSource().equals( bForceSelected ) ) {
-			throw new NotImplementedException( "Leveraged Editing: force selected" );
+//			throw new NotImplementedException( "Leveraged Editing: force selected" );
+			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+			for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+				final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+				final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+				// TODO here we miss the possibility to add constraints to the SegmentationProblem and to propagate this info down (and up) the PG-FG-Solver hierarchie...
+			}
 		} else if ( e.getSource().equals( bAvoidSelected ) ) {
 			throw new NotImplementedException( "Leveraged Editing: avoid selected" );
 		} else if ( e.getSource().equals( bForceSelectionExactly ) ) {
@@ -735,10 +741,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
     			final LabelingSegment labelingSegment = frameSegmentationModel.getLabelingSegment( segNode );
     			if ( pgSolution.getAssignment( segNode ) == 1 ) {
     //				System.out.println( "ON" );
-    				selectionModel.setSelected( labelingSegment2SegmentVertex.get( labelingSegment ), true );
+					selectionModel.setSelected( mapLabelingSegment2SegmentVertex.get( labelingSegment ), true );
     			} else {
     //				System.out.println( "OFF" );
-    				selectionModel.setSelected( labelingSegment2SegmentVertex.get( labelingSegment ), false );
+					selectionModel.setSelected( mapLabelingSegment2SegmentVertex.get( labelingSegment ), false );
     			}
     		}
 		}
