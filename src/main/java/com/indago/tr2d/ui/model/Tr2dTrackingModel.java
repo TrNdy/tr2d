@@ -138,35 +138,73 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * Prepares a tracking (builds pg and fg and stores intermediate data in
-	 * project folder).
+	 * Marks this tracking model as 'reset'.
 	 */
-	private void prepare() {
-		processSegmentationInputs();
+	public void reset() {
 		tr2dTraProblem = null;
-
-		if ( tr2dTraProblem == null ) {
-			buildTrackingProblem();
-			saveTrackingProblem();
-			mfg = null;
-		}
-
-		if ( mfg == null ) {
-			buildFactorGraph();
-			saveFactorGraph();
-		}
 	}
 
 	/**
-	 * Runs the optimization for the prepared tracking.
+	 * Prepares the tracking model (Step1: builds pg and stores intermediate
+	 * data in
+	 * project folder).
+	 */
+	private void preparePG() {
+		processSegmentationInputs();
+		buildTrackingProblem();
+		saveTrackingProblem();
+		mfg = null;
+	}
+
+	/**
+	 * Prepares the tracking model (Step2: builds fg from pg and stores
+	 * intermediate data in
+	 * project folder).
+	 */
+	public void prepareFG() {
+		buildFactorGraph();
+		saveFactorGraph();
+	}
+
+	/**
+	 * Runs the optimization for the prepared tracking (in <code>prepare</code>
+	 * was never called, this function will call it).
+	 * Does not take care of the BDV.
+	 * For a threaded version us <code>runInThread</code>, which also takes care
+	 * of BDV.
 	 */
 	public void run() {
-		prepare();
+		if ( tr2dTraProblem == null ) {
+			preparePG();
+			prepareFG();
+		} else if ( mfg == null ) {
+			prepareFG();
+		}
 
 		solveFactorGraph();
 
 		drawSolution();
 		saveSolution();
+	}
+
+	/**
+	 * (Re)runs the trackins problem in a thread of it's own.
+	 * Additionally also takes care of the BDV.
+	 */
+	public void runInThread() {
+		final Tr2dTrackingModel self = this;
+		final Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				self.run();
+				bdvRemoveAll();
+				bdvAdd( getTr2dModel().getRawData(), "RAW" );
+				bdvAdd( getImgSolution(), "solution" );
+			}
+
+		};
+		new Thread( runnable ).start();
 	}
 
 	/**

@@ -644,15 +644,25 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		// LEVERAGED EDITING BUTTONS
 		} else if ( e.getSource().equals( bForceSelected ) ) {
-//			throw new NotImplementedException( "Leveraged Editing: force selected" );
 			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 			for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 				final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 				final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-				// TODO here we miss the possibility to add constraints to the SegmentationProblem and to propagate this info down (and up) the PG-FG-Solver hierarchie...
+				System.out.println( "Forcing: " + segVar.toString() );
+				segProblem.force( segVar );
 			}
+			model.prepareFG();
+			model.runInThread();
 		} else if ( e.getSource().equals( bAvoidSelected ) ) {
-			throw new NotImplementedException( "Leveraged Editing: avoid selected" );
+			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+			for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+				final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+				final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+				System.out.println( "Avoiding: " + segVar.toString() );
+				segProblem.avoid( segVar );
+			}
+			model.prepareFG();
+			model.runInThread();
 		} else if ( e.getSource().equals( bForceSelectionExactly ) ) {
 			throw new NotImplementedException( "Leveraged Editing: force selection exactly" );
 

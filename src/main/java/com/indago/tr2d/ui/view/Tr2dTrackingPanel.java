@@ -32,6 +32,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	private JTabbedPane tabs;
 	private JButton bEditFrame;
 	private JButton bRun;
+	private JButton bRestart;
 
 	private Tr2dFrameEditPanel frameEditPanel;
 
@@ -84,11 +85,14 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 
 		bRun = new JButton( "track" );
 		bRun.addActionListener( this );
+		bRestart = new JButton( "restart" );
+		bRestart.addActionListener( this );
 
 		model.bdvSetHandlePanel( new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() ) );
 
 		controls.add( panelEdit, "wrap" );
 		controls.add( bRun, "growx, wrap" );
+		controls.add( bRestart, "growx, wrap" );
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
@@ -103,18 +107,10 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
 		if ( e.getSource().equals( bRun ) ) {
-			final Runnable runnable = new Runnable(){
-
-				@Override
-				public void run() {
-					model.run();
-					model.bdvRemoveAll();
-					model.bdvAdd( model.getTr2dModel().getRawData(), "RAW" );
-					model.bdvAdd( model.getImgSolution(), "solution" );
-				}
-
-			};
-			new Thread( runnable ).start();
+			model.runInThread();
+		} else if ( e.getSource().equals( bRestart ) ) {
+			model.reset();
+			model.runInThread();
 		} else if ( e.getSource().equals( bEditFrame ) ) {
 			frameEditPanel.setFrameToShow( model.bdvGetHandlePanel().getBdvHandle().getViewerPanel().getState().getCurrentTimepoint() );
 			frameEditPanel.selectionFromCurrentSolution();

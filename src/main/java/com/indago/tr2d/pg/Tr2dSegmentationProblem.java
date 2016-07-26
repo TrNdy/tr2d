@@ -2,7 +2,9 @@ package com.indago.tr2d.pg;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
@@ -22,6 +24,9 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	private final ConflictGraph< LabelingSegment > conflictGraph;
 	private final AssignmentNodes inAssignments;
 	private final AssignmentNodes outAssignments;
+
+	private final Set< SegmentNode > forcedSegmentNodes = new HashSet<>();
+	private final Set< SegmentNode > avoidedSegmentNodes = new HashSet<>();
 
 	private final Bimap< SegmentNode, LabelingSegment > segmentBimap;
 
@@ -93,5 +98,73 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 
 	public LabelingSegment getLabelingSegment( final SegmentNode segment ) {
 		return segmentBimap.getB( segment );
+	}
+
+	/**
+	 * Forces the given SegmentNode to be part of any found solution.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @see com.indago.pg.SegmentationProblem#force(com.indago.pg.segments.SegmentNode)
+	 */
+	@Override
+	public void force( final SegmentNode segVar ) {
+		// ensure not also being avoided
+		avoidedSegmentNodes.remove( segVar );
+
+		// unforce all conflicting segment nodes
+		final Collection< ? extends Collection< LabelingSegment > > cliques = conflictGraph.getConflictGraphCliques();
+		for ( final Collection< LabelingSegment > clique : cliques ) {
+			if ( clique.contains( segVar ) ) {
+				for ( final LabelingSegment labelingSegment : clique ) {
+					forcedSegmentNodes.remove( labelingSegment );
+				}
+			}
+		}
+
+		// force the one!
+		forcedSegmentNodes.add( segVar );
+	}
+
+	/**
+	 * Avoids the given SegmentNode in any found solution.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @see com.indago.pg.SegmentationProblem#avoid(com.indago.pg.segments.SegmentNode)
+	 */
+	@Override
+	public void avoid( final SegmentNode segVar ) {
+		// ensure not also being forced
+		forcedSegmentNodes.remove( segVar );
+
+		// unavoid all conflicting segment nodes
+		final Collection< ? extends Collection< LabelingSegment > > cliques = conflictGraph.getConflictGraphCliques();
+		for ( final Collection< LabelingSegment > clique : cliques ) {
+			if ( clique.contains( segVar ) ) {
+				for ( final LabelingSegment labelingSegment : clique ) {
+					avoidedSegmentNodes.remove( labelingSegment );
+				}
+			}
+		}
+
+		// avoid the one!
+		avoidedSegmentNodes.add( segVar );
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedNodes()
+	 */
+	@Override
+	public Set< SegmentNode > getForcedNodes() {
+		return forcedSegmentNodes;
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getAvoidedNodes()
+	 */
+	@Override
+	public Set< SegmentNode > getAvoidedNodes() {
+		return avoidedSegmentNodes;
 	}
 }
