@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -24,6 +25,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
@@ -62,6 +64,7 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.view.Views;
+import net.miginfocom.swing.MigLayout;
 import net.trackmate.graph.GraphIdBimap;
 import net.trackmate.graph.algorithm.ShortestPath;
 import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
@@ -135,6 +138,12 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	private TrackSchemePanel trackschemePanel;
 
+	private JButton bForceSelected;
+	private JButton bAvoidSelected;
+	private JButton bForceSelectionExactly;
+
+	private JButton bSelectionFromSolution;
+
 	// === INNER CLASSES ETC. ==========================================================
 
 	static class CheckedPairs {
@@ -192,6 +201,41 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	}
 
 	private void buildGui() {
+		final JPanel panelRightSide = new JPanel( new BorderLayout() );
+
+		// LEFT SIDE
+		final JPanel controls = new JPanel( new MigLayout() );
+
+		MigLayout layout = new MigLayout();
+		final JPanel panelLeveragedEditing = new JPanel( layout );
+		panelLeveragedEditing.setBorder( BorderFactory.createTitledBorder( "leveraged editing" ) );
+		bForceSelected = new JButton( "force selected" );
+		bForceSelected.addActionListener( this );
+		bAvoidSelected = new JButton( "avoid selected" );
+		bAvoidSelected.addActionListener( this );
+		bAvoidSelected = new JButton( "avoid selected" );
+		bAvoidSelected.addActionListener( this );
+		bForceSelectionExactly = new JButton( "all as selected" );
+		bForceSelectionExactly.addActionListener( this );
+		panelLeveragedEditing.add( bForceSelected, "wrap" );
+		panelLeveragedEditing.add( bAvoidSelected, "wrap" );
+		panelLeveragedEditing.add( bForceSelectionExactly, "wrap" );
+
+		layout = new MigLayout();
+		final JPanel panelSelection = new JPanel( layout );
+		panelSelection.setBorder( BorderFactory.createTitledBorder( "selection" ) );
+		bSelectionFromSolution = new JButton( "from solution" );
+		bSelectionFromSolution.addActionListener( this );
+		panelSelection.add( bSelectionFromSolution, "wrap" );
+
+//		bRun = new JButton( "track" );
+//		bRun.addActionListener( this );
+
+		controls.add( panelLeveragedEditing, "wrap" );
+		controls.add( panelSelection, "wrap" );
+//		controls.add( bRun, "growx, wrap" );
+
+		// RIGHT SIDE
 		buttonFirst = new JButton( "<<" );
 		buttonPrev = new JButton( "<" );
 		buttonNext = new JButton( ">" );
@@ -226,8 +270,12 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		split.setResizeWeight( 1 );
 		split.setOneTouchExpandable( true );
 
-		this.add( panelFrameSwitcher, BorderLayout.NORTH );
-		this.add( split, BorderLayout.CENTER );
+		// ASSEMBLY
+		panelRightSide.add( panelFrameSwitcher, BorderLayout.NORTH );
+		panelRightSide.add( split, BorderLayout.CENTER );
+
+		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, panelRightSide );
+		this.add( splitPane, BorderLayout.CENTER );
 	}
 
 	private void displayFrameData() {
@@ -568,22 +616,44 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 */
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
+		// FRAME NAVIGATION
 		if ( e.getSource().equals( buttonFirst ) ) {
 			this.currentFrame = 0;
+			setFrameToShow( this.currentFrame );
+			selectionFromCurrentSolution();
 		} else if ( e.getSource().equals( buttonPrev ) ) {
 			this.currentFrame = Math.max( 0, currentFrame - 1 );
+			setFrameToShow( this.currentFrame );
+			selectionFromCurrentSolution();
 		} else if ( e.getSource().equals( buttonNext ) ) {
 			this.currentFrame = Math.min( model.getLabelingFrames().getNumFrames() - 1, currentFrame + 1 );
+			setFrameToShow( this.currentFrame );
+			selectionFromCurrentSolution();
 		} else if ( e.getSource().equals( buttonLast ) ) {
 			this.currentFrame = model.getLabelingFrames().getNumFrames() - 1;
+			setFrameToShow( this.currentFrame );
+			selectionFromCurrentSolution();
 		} else if ( e.getSource().equals( txtCurFrame ) ) {
 			this.currentFrame = Math.max(
 					0,
 					Math.min(
 							model.getLabelingFrames().getNumFrames() - 1,
 							Integer.parseInt( txtCurFrame.getText() ) - 1 ) );
+			setFrameToShow( this.currentFrame );
+			selectionFromCurrentSolution();
+
+		// LEVERAGED EDITING BUTTONS
+		} else if ( e.getSource().equals( bForceSelected ) ) {
+			throw new NotImplementedException( "Leveraged Editing: force selected" );
+		} else if ( e.getSource().equals( bAvoidSelected ) ) {
+			throw new NotImplementedException( "Leveraged Editing: avoid selected" );
+		} else if ( e.getSource().equals( bForceSelectionExactly ) ) {
+			throw new NotImplementedException( "Leveraged Editing: force selection exactly" );
+
+		// SELECTION RELATED
+		} else if ( e.getSource().equals( bSelectionFromSolution ) ) {
+			selectionFromCurrentSolution();
 		}
-		setFrameToShow( this.currentFrame );
 	}
 
 	/**
@@ -656,20 +726,21 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 * coincide with all active segments in this current tracking solution.
 	 */
 	public void selectionFromCurrentSolution() {
-		final LabelingPlus labelingPlus = model.getLabelingFrames().getLabelingPlusForFrame( this.currentFrame );
-		final Tr2dSegmentationProblem frameSegmentationModel = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		if (model.getTrackingProblem() != null) { // there must be a current solution... :)
+//    		final LabelingPlus labelingPlus = model.getLabelingFrames().getLabelingPlusForFrame( this.currentFrame );
+    		final Tr2dSegmentationProblem frameSegmentationModel = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 
-		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
-		final Assignment< IndicatorNode > pgSolution = model.getSolution();
-		for ( final SegmentNode segNode : segProblem.getSegments() ) {
-			final LabelingSegment labelingSegment = frameSegmentationModel.getLabelingSegment( segNode );
-			if ( pgSolution.getAssignment( segNode ) == 1 ) {
-//				System.out.println( "ON" );
-				selectionModel.setSelected( labelingSegment2SegmentVertex.get( labelingSegment ), true );
-			} else {
-//				System.out.println( "OFF" );
-				selectionModel.setSelected( labelingSegment2SegmentVertex.get( labelingSegment ), false );
-			}
+    		final Assignment< IndicatorNode > pgSolution = model.getSolution();
+			for ( final SegmentNode segNode : frameSegmentationModel.getSegments() ) {
+    			final LabelingSegment labelingSegment = frameSegmentationModel.getLabelingSegment( segNode );
+    			if ( pgSolution.getAssignment( segNode ) == 1 ) {
+    //				System.out.println( "ON" );
+    				selectionModel.setSelected( labelingSegment2SegmentVertex.get( labelingSegment ), true );
+    			} else {
+    //				System.out.println( "OFF" );
+    				selectionModel.setSelected( labelingSegment2SegmentVertex.get( labelingSegment ), false );
+    			}
+    		}
 		}
 	}
 }
