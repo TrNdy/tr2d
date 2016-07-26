@@ -108,14 +108,14 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * @see com.indago.pg.SegmentationProblem#force(com.indago.pg.segments.SegmentNode)
 	 */
 	@Override
-	public void force( final SegmentNode segVar ) {
+	public void force( final SegmentNode segNode ) {
 		// ensure not also being avoided
-		avoidedSegmentNodes.remove( segVar );
+		avoidedSegmentNodes.remove( segNode );
 
 		// unforce all conflicting segment nodes
 		final Collection< ? extends Collection< LabelingSegment > > cliques = conflictGraph.getConflictGraphCliques();
 		for ( final Collection< LabelingSegment > clique : cliques ) {
-			if ( clique.contains( segVar ) ) {
+			if ( clique.contains( segNode ) ) {
 				for ( final LabelingSegment labelingSegment : clique ) {
 					forcedSegmentNodes.remove( labelingSegment );
 				}
@@ -123,7 +123,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		}
 
 		// force the one!
-		forcedSegmentNodes.add( segVar );
+		forcedSegmentNodes.add( segNode );
 	}
 
 	/**
@@ -134,14 +134,14 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * @see com.indago.pg.SegmentationProblem#avoid(com.indago.pg.segments.SegmentNode)
 	 */
 	@Override
-	public void avoid( final SegmentNode segVar ) {
+	public void avoid( final SegmentNode segNode ) {
 		// ensure not also being forced
-		forcedSegmentNodes.remove( segVar );
+		forcedSegmentNodes.remove( segNode );
 
 		// unavoid all conflicting segment nodes
 		final Collection< ? extends Collection< LabelingSegment > > cliques = conflictGraph.getConflictGraphCliques();
 		for ( final Collection< LabelingSegment > clique : cliques ) {
-			if ( clique.contains( segVar ) ) {
+			if ( clique.contains( segNode ) ) {
 				for ( final LabelingSegment labelingSegment : clique ) {
 					avoidedSegmentNodes.remove( labelingSegment );
 				}
@@ -149,7 +149,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		}
 
 		// avoid the one!
-		avoidedSegmentNodes.add( segVar );
+		avoidedSegmentNodes.add( segNode );
 	}
 
 	/**

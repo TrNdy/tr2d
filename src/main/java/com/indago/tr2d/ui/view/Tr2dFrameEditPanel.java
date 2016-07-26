@@ -25,7 +25,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
@@ -644,31 +643,53 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		// LEVERAGED EDITING BUTTONS
 		} else if ( e.getSource().equals( bForceSelected ) ) {
-			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
-			for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
-				final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
-				final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-				System.out.println( "Forcing: " + segVar.toString() );
-				segProblem.force( segVar );
-			}
+			forceCurrentSelection();
 			model.prepareFG();
 			model.runInThread();
 		} else if ( e.getSource().equals( bAvoidSelected ) ) {
-			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
-			for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
-				final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
-				final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-				System.out.println( "Avoiding: " + segVar.toString() );
-				segProblem.avoid( segVar );
-			}
+			avoidCurrentSelection();
 			model.prepareFG();
 			model.runInThread();
 		} else if ( e.getSource().equals( bForceSelectionExactly ) ) {
-			throw new NotImplementedException( "Leveraged Editing: force selection exactly" );
+			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+			// avoid all...
+			for ( final SegmentNode segNode : segProblem.getSegments() ) {
+				segProblem.avoid( segNode );
+			}
+			// then force selected
+			forceCurrentSelection();
+			model.prepareFG();
+			model.runInThread();
 
 		// SELECTION RELATED
 		} else if ( e.getSource().equals( bSelectionFromSolution ) ) {
 			selectionFromCurrentSolution();
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void avoidCurrentSelection() {
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+			System.out.println( "Avoiding: " + segVar.toString() );
+			segProblem.avoid( segVar );
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void forceCurrentSelection() {
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+			System.out.println( "Forcing: " + segVar.toString() );
+			segProblem.force( segVar );
 		}
 	}
 
@@ -743,17 +764,15 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 */
 	public void selectionFromCurrentSolution() {
 		if (model.getTrackingProblem() != null) { // there must be a current solution... :)
-//    		final LabelingPlus labelingPlus = model.getLabelingFrames().getLabelingPlusForFrame( this.currentFrame );
+			selectionModel.clearSelection();
     		final Tr2dSegmentationProblem frameSegmentationModel = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 
     		final Assignment< IndicatorNode > pgSolution = model.getSolution();
 			for ( final SegmentNode segNode : frameSegmentationModel.getSegments() ) {
     			final LabelingSegment labelingSegment = frameSegmentationModel.getLabelingSegment( segNode );
     			if ( pgSolution.getAssignment( segNode ) == 1 ) {
-    //				System.out.println( "ON" );
 					selectionModel.setSelected( mapLabelingSegment2SegmentVertex.get( labelingSegment ), true );
     			} else {
-    //				System.out.println( "OFF" );
 					selectionModel.setSelected( mapLabelingSegment2SegmentVertex.get( labelingSegment ), false );
     			}
     		}
