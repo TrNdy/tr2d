@@ -11,7 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -184,29 +183,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		{
 			e.printStackTrace();
 		}
-
-		// - - - - - - - - - - - - - - - - - - - - - - - -
-		// KEYSTROKE SETUP (usingInput- and ActionMaps)
-		// - - - - - - - - - - - - - - - - - - - - - - - -
-//		this.getInputMap( WHEN_IN_FOCUSED_WINDOW ).put(
-//				KeyStroke.getKeyStroke( '.' ),
-//				"tr2d_bindings" );
-//		this.getInputMap( WHEN_IN_FOCUSED_WINDOW ).put(
-//				KeyStroke.getKeyStroke( ',' ),
-//				"tr2d_bindings" );
-
-		this.getActionMap().put( "tr2d_bindings", new AbstractAction() {
-
-			private static final long serialVersionUID = 2L;
-
-			@Override
-			public void actionPerformed( final ActionEvent e ) {
-				if ( e.getActionCommand().equals( "," ) ) {
-				}
-				if ( e.getActionCommand().equals( "." ) ) {
-				}
-			}
-		} );
 	}
 
 	/**
