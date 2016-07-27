@@ -3,11 +3,23 @@
  */
 package com.indago.app.hernan.costs;
 
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import com.indago.data.segmentation.LabelingSegment;
+import com.indago.geometry.GrahamScan;
 import com.indago.old_fg.CostsFactory;
 
+import net.imglib2.Cursor;
+import net.imglib2.IterableInterval;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.roi.Regions;
 import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 
 
 /**
@@ -16,6 +28,9 @@ import net.imglib2.type.numeric.real.DoubleType;
 public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment > {
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
+
+	private static double s_1 = 10;
+	private static double s_2 = 10;
 
 	/**
 	 * @param frameId
@@ -32,7 +47,61 @@ public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment >
 	 */
 	@Override
 	public double getCost( final LabelingSegment segment ) {
-		return -100 * segment.getArea();
+		return -( s_1 * segment.getArea() - s_2 * getNonConvexityPenalty( segment ) );
+	}
+
+	/**
+	 * Computes the convex hull of a segment an returns the area difference of
+	 * the convex hull and the segment itself (in pixels, always positive).
+	 *
+	 * @param segment
+	 * @return
+	 */
+	private double getNonConvexityPenalty( final LabelingSegment segment ) {
+		final HashMap< Integer, Pair< Integer, Integer > > minmaxPerLine = new HashMap<>();
+		final RandomAccess< DoubleType > ra = sourceImage.randomAccess();
+
+		final IterableInterval< DoubleType > pixels = Regions.sample( segment.getRegion(), sourceImage );
+
+		final Cursor< ? > cSegment = segment.getRegion().cursor();
+		while ( cSegment.hasNext() ) {
+			cSegment.fwd();
+			ra.setPosition( cSegment );
+
+			final int xCoordinate = ra.getIntPosition( 0 );
+			final int yCoordinate = ra.getIntPosition( 1 );
+
+			final Pair< Integer, Integer > minmax = minmaxPerLine.get( yCoordinate );
+			if ( minmax == null ) {
+				minmaxPerLine.put( yCoordinate, new ValuePair< Integer, Integer >( xCoordinate, xCoordinate ) );
+			} else {
+				boolean replace = false;
+				if ( minmax.getA() > xCoordinate ) {
+					replace = true;
+				}
+				if ( minmax.getB() < xCoordinate ) {
+					replace = true;
+				}
+				if ( replace ) {
+					minmaxPerLine.replace(
+							yCoordinate,
+							new ValuePair<>( Math.min( minmax.getA(), xCoordinate ), Math.max( minmax.getB(), xCoordinate ) ) );
+				}
+			}
+		}
+
+		final List< Point > points = new ArrayList<>();
+		for ( final int y : minmaxPerLine.keySet() ) {
+			final Pair< Integer, Integer > minmax = minmaxPerLine.get( y );
+			points.add( new Point( minmax.getA(), y ) );
+			points.add( new Point( minmax.getB(), y ) );
+		}
+		try {
+			final List< java.awt.Point > convexHull = GrahamScan.getConvexHull( points );
+			return Math.max( 0, GrahamScan.getHullArea( convexHull ) - segment.getArea() );
+		} catch ( final IllegalArgumentException iae ) {
+			return 0;
+		}
 	}
 
 }
