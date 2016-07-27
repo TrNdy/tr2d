@@ -326,7 +326,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
 
 		try {
-			this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getWekaModel().getClassifications().get( 0 ), new IntType() );
+			if ( tr2dSegModel.getImportedSegmentationModel().getSegmentHypothesesImages().isEmpty() ) {
+				this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getWekaModel().getClassifications().get( 0 ), new IntType() );
+			} else {
+				this.imgSolution = DataMover
+						.createEmptyArrayImgLike( tr2dSegModel.getImportedSegmentationModel().getSegmentHypothesesImages().get( 0 ), new IntType() );
+			}
 		} catch ( final ArrayIndexOutOfBoundsException e ) {
 			this.imgSolution =
 					DataMover.createEmptyArrayImgLike(

@@ -120,12 +120,16 @@ public class LabelingTimeLapse {
 
 	/**
 	 * Returns the <code>LabelingPlus</code> for the requested frame.
-	 * 
+	 *
 	 * @param frameId
-	 * @return
+	 * @return the <code>LabelingPlus</code> requested, or <code>null</code> if
+	 *         it does not exists.
 	 */
 	public LabelingPlus getLabelingPlusForFrame( final int frameId ) {
-		return frameLabelingBuilders.get( frameId );
+		if ( frameId < frameLabelingBuilders.size() )
+			return frameLabelingBuilders.get( frameId );
+		else
+			return null;
 	}
 
 	/**
