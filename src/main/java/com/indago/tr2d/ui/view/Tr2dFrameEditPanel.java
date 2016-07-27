@@ -280,86 +280,88 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private void displayFrameData() {
 		final LabelingPlus labelingPlus = model.getLabelingFrames().getLabelingPlusForFrame( this.currentFrame );
 
-		segmentGraph = new SegmentGraph();
-		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( segmentGraph, true );
+		if ( labelingPlus != null ) {
+			segmentGraph = new SegmentGraph();
+			final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( segmentGraph, true );
 
-		// create vertices for all segments
-		mapLabelData2SegmentVertex = new HashMap<>();
-		mapLabelingSegment2SegmentVertex = new HashMap<>();
-		for ( final LabelData labelData : labelingPlus.getLabeling().getMapping().getLabels() ) {
-			mapLabelData2SegmentVertex.put( labelData, segmentGraph.addVertex().init( labelData ) );
-			mapLabelingSegment2SegmentVertex.put( labelData.getSegment(), segmentGraph.addVertex().init( labelData ) );
-		}
+			// create vertices for all segments
+			mapLabelData2SegmentVertex = new HashMap<>();
+			mapLabelingSegment2SegmentVertex = new HashMap<>();
+			for ( final LabelData labelData : labelingPlus.getLabeling().getMapping().getLabels() ) {
+				mapLabelData2SegmentVertex.put( labelData, segmentGraph.addVertex().init( labelData ) );
+				mapLabelingSegment2SegmentVertex.put( labelData.getSegment(), segmentGraph.addVertex().init( labelData ) );
+			}
 
-		final CheckedPairs pairs = new CheckedPairs( segmentGraph.getGraphIdBimap() );
-		// Build partial order graph
-		for ( final LabelingFragment fragment : labelingPlus.getFragments() ) {
-			final ArrayList< LabelData > conflictingSegments = fragment.getSegments();
+			final CheckedPairs pairs = new CheckedPairs( segmentGraph.getGraphIdBimap() );
+			// Build partial order graph
+			for ( final LabelingFragment fragment : labelingPlus.getFragments() ) {
+				final ArrayList< LabelData > conflictingSegments = fragment.getSegments();
 
-			// connect regarding subset relation (while removing transitive edges)
-			for ( final LabelData subset : conflictingSegments ) {
-				final SegmentVertex subv = mapLabelData2SegmentVertex.get( subset );
-				for ( final LabelData superset : conflictingSegments ) {
-					if ( subset.equals( superset ) )
-						continue;
-					final SegmentVertex superv = mapLabelData2SegmentVertex.get( superset );
+				// connect regarding subset relation (while removing transitive edges)
+				for ( final LabelData subset : conflictingSegments ) {
+					final SegmentVertex subv = mapLabelData2SegmentVertex.get( subset );
+					for ( final LabelData superset : conflictingSegments ) {
+						if ( subset.equals( superset ) )
+							continue;
+						final SegmentVertex superv = mapLabelData2SegmentVertex.get( superset );
 
-					// Was this (ordered) pair of vertices already checked?
-					// If yes, abort.
-					if ( !pairs.isNewPair( subv, superv ) )
-						continue;
+						// Was this (ordered) pair of vertices already checked?
+						// If yes, abort.
+						if ( !pairs.isNewPair( subv, superv ) )
+							continue;
 
-					// Is "subset" really a subset of "superset"?
-					// If not, abort.
-					if ( !isSubset( subset, superset ) )
-						continue;
+						// Is "subset" really a subset of "superset"?
+						// If not, abort.
+						if ( !isSubset( subset, superset ) )
+							continue;
 
-					// Is there already a path superv --> subv
-					// If yes, abort, because the new edge is not necessary.
-					if ( sp.findPath( superv, subv ) != null )
-						continue;
+						// Is there already a path superv --> subv
+						// If yes, abort, because the new edge is not necessary.
+						if ( sp.findPath( superv, subv ) != null )
+							continue;
 
-					// At this point, we know that we will add a new edge superv --> subv.
-					// Before we do that, we remove edges that are made obsolete (become transitive) by the new edge.
+						// At this point, we know that we will add a new edge superv --> subv.
+						// Before we do that, we remove edges that are made obsolete (become transitive) by the new edge.
 
-					// for all edges leaving any vertex in ancestors:
-					// delete if target is within descendants
-					final Set< SegmentVertex > descendants = new HashSet<>();
-					final Set< SegmentVertex > ancestors = new HashSet<>();
-					new BreadthFirstIterator<>( subv, segmentGraph ).forEachRemaining( v -> descendants.add( v ) );
-					new InverseBreadthFirstIterator<>( superv, segmentGraph ).forEachRemaining( v -> ancestors.add( v ) );
-					final ArrayList< SubsetEdge > remove = new ArrayList<>();
-					for ( final SegmentVertex a : ancestors )
-						for ( final SubsetEdge edge : a.outgoingEdges() )
-							if ( descendants.contains( edge.getTarget() ) )
-								remove.add( edge );
-					remove.forEach( edge -> segmentGraph.remove( edge ) );
+						// for all edges leaving any vertex in ancestors:
+						// delete if target is within descendants
+						final Set< SegmentVertex > descendants = new HashSet<>();
+						final Set< SegmentVertex > ancestors = new HashSet<>();
+						new BreadthFirstIterator<>( subv, segmentGraph ).forEachRemaining( v -> descendants.add( v ) );
+						new InverseBreadthFirstIterator<>( superv, segmentGraph ).forEachRemaining( v -> ancestors.add( v ) );
+						final ArrayList< SubsetEdge > remove = new ArrayList<>();
+						for ( final SegmentVertex a : ancestors )
+							for ( final SubsetEdge edge : a.outgoingEdges() )
+								if ( descendants.contains( edge.getTarget() ) )
+									remove.add( edge );
+						remove.forEach( edge -> segmentGraph.remove( edge ) );
 
-					// Add the edge, finally.
-					segmentGraph.addEdge( superv, subv );
+						// Add the edge, finally.
+						segmentGraph.addEdge( superv, subv );
+					}
 				}
 			}
-		}
 
-		// Find all roots
-		final Set< SegmentVertex > roots = new HashSet<>();
-		for ( final SegmentVertex v : segmentGraph.vertices() ) {
-			if ( v.incomingEdges().isEmpty() ) {
-				roots.add( v );
+			// Find all roots
+			final Set< SegmentVertex > roots = new HashSet<>();
+			for ( final SegmentVertex v : segmentGraph.vertices() ) {
+				if ( v.incomingEdges().isEmpty() ) {
+					roots.add( v );
+				}
 			}
-		}
-		// For each root perform BFS and push level number (timepoint) through graph.
-		for ( final SegmentVertex root : roots ) {
-			root.setTimepoint( 0 );
-			final BreadthFirstIterator< SegmentVertex, SubsetEdge > bfi =
-					new BreadthFirstIterator<>( root, segmentGraph );
-			while ( bfi.hasNext() ) {
-				final SegmentVertex v = bfi.next();
-				v.setTimepoint( getMaxParentTimepoint( v ) + 1 );
+			// For each root perform BFS and push level number (timepoint) through graph.
+			for ( final SegmentVertex root : roots ) {
+				root.setTimepoint( 0 );
+				final BreadthFirstIterator< SegmentVertex, SubsetEdge > bfi =
+						new BreadthFirstIterator<>( root, segmentGraph );
+				while ( bfi.hasNext() ) {
+					final SegmentVertex v = bfi.next();
+					v.setTimepoint( getMaxParentTimepoint( v ) + 1 );
+				}
 			}
-		}
 
-		display( segmentGraph, labelingPlus );
+			display( segmentGraph, labelingPlus );
+		}
 	}
 
 	/**
@@ -656,7 +658,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			for ( final SegmentNode segNode : segProblem.getSegments() ) {
 				segProblem.avoid( segNode );
 			}
-			// then force selected
+			// ...then force selected
 			forceCurrentSelection();
 			model.prepareFG();
 			model.runInThread();
