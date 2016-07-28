@@ -29,8 +29,8 @@ public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment >
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
 
-	private static double s_1 = 10;
-	private static double s_2 = 10;
+	private static double a_1 = 1;
+	private static double a_2 = 1;
 
 	/**
 	 * @param frameId
@@ -47,12 +47,13 @@ public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment >
 	 */
 	@Override
 	public double getCost( final LabelingSegment segment ) {
-		return -( s_1 * segment.getArea() - s_2 * getNonConvexityPenalty( segment ) );
+		return -( a_1 * segment.getArea() - a_2 * getNonConvexityPenalty( segment ) );
 	}
 
 	/**
 	 * Computes the convex hull of a segment an returns the area difference of
-	 * the convex hull and the segment itself (in pixels, always positive).
+	 * the convex hull and the segment itself (in pixels, returns 0 if negative
+	 * (due to discrete pixels vs polygon area)).
 	 *
 	 * @param segment
 	 * @return

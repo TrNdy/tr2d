@@ -20,7 +20,10 @@ public class HernanMappingCostFactory
 		implements
 		CostsFactory< Pair< LabelingSegment, LabelingSegment > > {
 
-	private final Object sourceImage;
+	private final RandomAccessibleInterval< DoubleType > sourceImage;
+
+	private static double a_1 = .4;
+	private static double a_2 = .6;
 
 	/**
 	 * @param destFrameId
@@ -36,17 +39,35 @@ public class HernanMappingCostFactory
 	 */
 	@Override
 	public double getCost( final Pair< LabelingSegment, LabelingSegment > segments ) {
-		final RealLocalizable posA = segments.getA().getCenterOfMass();
-		final RealLocalizable posB = segments.getB().getCenterOfMass();
-		final double[] vecA = new double[ posA.numDimensions() ];
-		final double[] vecB = new double[ posB.numDimensions() ];
-		posA.localize( vecA );
-		posB.localize( vecB );
+		final double deltaSize = deltaSize( segments.getA(), segments.getB() );
+		final double deltaPos = deltaPosSquared( segments.getA(), segments.getB() );
+
+		if ( deltaPos > HernanCostConstants.MAX_SQUARED_MOVEMENT_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
+
+		return a_1 * deltaSize + a_2 * deltaPos;
+	}
+
+	/**
+	 * @param segments
+	 * @return
+	 */
+	private double deltaSize( final LabelingSegment s1, final LabelingSegment s2 ) {
+		return Math.abs( s1.getArea() - s2.getArea() );
+	}
+
+	/**
+	 * @param segments
+	 * @return
+	 */
+	private double deltaPosSquared( final LabelingSegment s1, final LabelingSegment s2 ) {
+		final RealLocalizable pos1 = s1.getCenterOfMass();
+		final RealLocalizable pos2 = s2.getCenterOfMass();
+		final double[] vecA = new double[ pos1.numDimensions() ];
+		final double[] vecB = new double[ pos2.numDimensions() ];
+		pos1.localize( vecA );
+		pos2.localize( vecB );
 		final double centroidDistance = VectorUtil.getSquaredDistance( vecA, vecB );
-
-		if ( centroidDistance > HernanCostConstants.MAX_SQUARED_MOVEMENT_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
-
-		return centroidDistance / Math.PI; // *0.0;
+		return centroidDistance;
 	}
 
 }
