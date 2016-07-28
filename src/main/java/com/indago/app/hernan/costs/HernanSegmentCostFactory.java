@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.geometry.GrahamScan;
-import com.indago.old_fg.CostsFactory;
 
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
@@ -43,7 +43,7 @@ public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment >
 	}
 
 	/**
-	 * @see com.indago.old_fg.CostsFactory#getCost(java.lang.Object)
+	 * @see com.indago.costs.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
 	public double getCost( final LabelingSegment segment ) {

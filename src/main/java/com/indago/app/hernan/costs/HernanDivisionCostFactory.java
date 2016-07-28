@@ -3,8 +3,11 @@
  */
 package com.indago.app.hernan.costs;
 
+import org.apache.commons.math3.stat.regression.SimpleRegression;
+
+import com.indago.costs.CostsFactory;
+import com.indago.costs.SegmentCostUtils;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.old_fg.CostsFactory;
 import com.indago.util.math.VectorUtil;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -26,6 +29,7 @@ public class HernanDivisionCostFactory
 	private static double a_2 = 50;
 	private static double a_3 = 1 / 3;
 	private static double a_4 = 1 / 3;
+	private static double a_5 = 50;
 
 	/**
     * @param destFrameId
@@ -37,7 +41,7 @@ public class HernanDivisionCostFactory
     }
 
 	/**
-	 * @see com.indago.old_fg.CostsFactory#getCost(java.lang.Object)
+	 * @see com.indago.costs.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
 	public double getCost(
@@ -46,11 +50,20 @@ public class HernanDivisionCostFactory
 		final double deltaSizeBetween2s = deltaSize( segments.getB().getA(), segments.getB().getB() );
 		final double avgDeltaPosToChildren = avgDeltaPosSquared( segments.getA(), segments.getB().getA(), segments.getB().getB() );
 		final double deltaPosChildren = deltaPosSquared( segments.getB().getA(), segments.getB().getB() );
+		final double offElongationPenalty = offElongationPenalty( segments.getA(), segments.getB().getA(), segments.getB().getB() );
 
 		if ( avgDeltaPosToChildren > HernanCostConstants.MAX_AVG_SQUARED_DIVISION_MOVE_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 		if ( deltaPosChildren > HernanCostConstants.MAX_SQUARED_DIVISION_OFFSPRING_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 
-		return a_1 * deltaSize1to2 + a_2 * deltaSizeBetween2s + a_3 * avgDeltaPosToChildren + a_4 * deltaPosChildren;
+//		System.out.println(
+//				String.format(
+//						"DivisionCost terms:\t%f\t%f\t%f\t%f\t%f",
+//						deltaSize1to2,
+//						deltaSizeBetween2s,
+//						avgDeltaPosToChildren,
+//						deltaPosChildren,
+//						offElongationPenalty ) );
+		return a_1 * deltaSize1to2 + a_2 * deltaSizeBetween2s + a_3 * avgDeltaPosToChildren + a_4 * deltaPosChildren + a_5 * offElongationPenalty;
 	}
 
 	/**
@@ -103,6 +116,24 @@ public class HernanDivisionCostFactory
 		final double dist1to2_1 = VectorUtil.getSquaredDistance( vecTo1, vecTo2_1 );
 		final double dist1to2_2 = VectorUtil.getSquaredDistance( vecTo1, vecTo2_2 );
 		return .5 * ( dist1to2_1 + dist1to2_2 );
+	}
+
+	/**
+	 * @param s1
+	 * @param s2_1
+	 * @param s2_2
+	 * @return Values between 0 and 90 (degrees)
+	 */
+	private double offElongationPenalty( final LabelingSegment s1, final LabelingSegment s2_1, final LabelingSegment s2_2 ) {
+		final SimpleRegression regressionS1 = SegmentCostUtils.getSimpleRegressionOfSegmentPixels( s1 );
+		final double angleS1 = Math.toDegrees( Math.atan( regressionS1.getSlope() ) );
+		final double confidenceS1 = 1 - regressionS1.getRSquare();
+
+		final SimpleRegression regressionS2s = SegmentCostUtils.getSimpleRegressionOfSegmentPixels( s2_1, s2_2 );
+		final double angleS2s = Math.toDegrees( Math.atan( regressionS2s.getSlope() ) );
+//		final double confidenceS2s = 1-regressionS2s.getRSquare();
+
+		return confidenceS1 * Math.abs( angleS1 - angleS2s );
 	}
 
 }

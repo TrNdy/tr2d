@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.old_fg.CostsFactory;
 import com.indago.pg.SegmentationProblem;
 import com.indago.pg.assignments.AssignmentNodes;
 import com.indago.pg.segments.ConflictSet;

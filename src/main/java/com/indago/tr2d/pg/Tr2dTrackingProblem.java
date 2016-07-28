@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.old_fg.CostsFactory;
 import com.indago.pg.TrackingProblem;
 import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.DisappearanceHypothesis;

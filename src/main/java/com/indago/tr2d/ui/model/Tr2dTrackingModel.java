@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.indago.app.hernan.costs.HernanCostConstants;
+import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.data.segmentation.LabelingTimeLapse;
@@ -23,7 +24,6 @@ import com.indago.ilp.SolveGurobi;
 import com.indago.io.DataMover;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFolder;
-import com.indago.old_fg.CostsFactory;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.DivisionHypothesis;

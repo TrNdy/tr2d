@@ -3,8 +3,8 @@
  */
 package com.indago.app.hernan.costs;
 
+import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.old_fg.CostsFactory;
 import com.indago.util.math.VectorUtil;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -22,8 +22,8 @@ public class HernanMappingCostFactory
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
 
-	private static double a_1 = .4;
-	private static double a_2 = .6;
+	private static double a_1 = .33;
+	private static double a_2 = 1.0;
 
 	/**
 	 * @param destFrameId
@@ -35,7 +35,7 @@ public class HernanMappingCostFactory
 	}
 
 	/**
-	 * @see com.indago.old_fg.CostsFactory#getCost(java.lang.Object)
+	 * @see com.indago.costs.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
 	public double getCost( final Pair< LabelingSegment, LabelingSegment > segments ) {
