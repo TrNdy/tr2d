@@ -147,7 +147,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 				// retrieve flow vector at desired location
 				final int t = segProblemL.getTime();
 				final int x = ( int ) segVarL.getSegment().getCenterOfMass().getFloatPosition( 0 );
-				final int y = ( int ) segVarL.getSegment().getCenterOfMass().getFloatPosition( 0 );
+				final int y = ( int ) segVarL.getSegment().getCenterOfMass().getFloatPosition( 1 );
 				final ValuePair< Double, Double > flow_vec = flowModel.getFlowVector( t, x, y );
 
 				final double cost = movementCosts.getCost(
