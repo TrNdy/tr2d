@@ -91,8 +91,6 @@ public class Tr2dFlowModel implements BdvOwner {
 	 * @return
 	 */
 	public ValuePair< Double, Double > getFlowVector( final int t, final int x, final int y ) {
-		final double dx = 0;
-		final double dy = 0;
 		final double[] polar = new double[ 2 ];
 
 		final RandomAccess< FloatType > ra = imgs.get( 0 ).randomAccess();
@@ -106,6 +104,19 @@ public class Tr2dFlowModel implements BdvOwner {
 		polar[ 1 ] = ra.get().get();
 
 		// GET dx, dy FROM POLAR (attention to NaN)
+		double dx;
+		double dy;
+		if ( polar[ 0 ] == 0 || Double.isNaN( polar[ 1 ] ) ) {
+			dx = 0;
+			dy = 0;
+		} else {
+			dx = polar[ 0 ] * Math.sin( polar[ 1 ] );
+			dy = polar[ 0 ] * Math.cos( polar[ 1 ] );
+		}
+
+//		if ( t == 2 ) {
+//			System.out.println( String.format( "t,x,y: %d,%d%d: polar=(%f,%f); cart=(%f,%f);", t, x, y, polar[ 0 ], polar[ 1 ], dx, dy ) );
+//		}
 
 		return new ValuePair<>( dx, dy );
 	}
@@ -142,5 +153,14 @@ public class Tr2dFlowModel implements BdvOwner {
 		final int idx = imgs.indexOf( img );
 		if ( idx == -1 ) return null;
 		return bdvGetSources().get( idx );
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean hasFlowLoaded() {
+		if ( imgs.size() == 1 )
+			return true;
+		return false;
 	}
 }

@@ -155,7 +155,25 @@ public class Tr2dTrackingProblem implements TrackingProblem {
     						new ValuePair< LabelingSegment, LabelingSegment >(
     								segVarL.getSegment(),
     								segVarR.getSegment() ),
+							new ValuePair<Double,Double>(0d,0d) ) );
+
+				final double cost_flow = movementCosts.getCost(
+						new ValuePair<> (
+    						new ValuePair< LabelingSegment, LabelingSegment >(
+    								segVarL.getSegment(),
+    								segVarR.getSegment() ),
 							flow_vec ) );
+
+				if (t==2 && x<30 && y<30) {
+					System.out.println(
+							String.format("t==2; x=%d; y=%d; vec=(%.2f,%.2f); cost=%.2f; cost_flow=%.2f",
+									t, x, y,
+									flow_vec.getA(),
+									flow_vec.getB(),
+									cost,
+									cost_flow));
+				}
+
 				if ( cost <= maxRelevantMovementCost ) {
 					final MovementHypothesis moveHyp =
 							new MovementHypothesis( cost, segVarL, segVarR );

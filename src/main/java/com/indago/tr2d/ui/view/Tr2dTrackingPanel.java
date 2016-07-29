@@ -16,6 +16,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
+import com.indago.tr2d.ui.view.bdv.overlays.Tr2dFlowOverlay;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 
 import bdv.util.Bdv;
@@ -45,7 +46,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		if ( model.getImgSolution() != null ) {
 			model.bdvAdd( model.getImgSolution(), "solution" );
 		}
-		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay" );
+		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay_tracking" );
+		model.bdvAdd( new Tr2dFlowOverlay( model.getTr2dModel().getFlowModel() ), "overlay_flow" );
 	}
 
 	/**
