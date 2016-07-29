@@ -18,7 +18,7 @@ import net.imglib2.util.Pair;
  */
 public class HernanMappingCostFactory
 		implements
-		CostsFactory< Pair< LabelingSegment, LabelingSegment > > {
+		CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > {
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
 
@@ -38,9 +38,11 @@ public class HernanMappingCostFactory
 	 * @see com.indago.costs.CostsFactory#getCost(java.lang.Object)
 	 */
 	@Override
-	public double getCost( final Pair< LabelingSegment, LabelingSegment > segments ) {
+	public double getCost( final Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > segmentsAndFlowVector ) {
+		final Pair< LabelingSegment, LabelingSegment > segments = segmentsAndFlowVector.getA();
+		final Pair< Double, Double > flow = segmentsAndFlowVector.getB();
 		final double deltaSize = deltaSize( segments.getA(), segments.getB() );
-		final double deltaPos = deltaPosSquared( segments.getA(), segments.getB() );
+		final double deltaPos = deltaPosSquared( segments.getA(), segments.getB(), flow );
 
 		if ( deltaPos > HernanCostConstants.MAX_SQUARED_MOVEMENT_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 
@@ -59,13 +61,18 @@ public class HernanMappingCostFactory
 	 * @param segments
 	 * @return
 	 */
-	private double deltaPosSquared( final LabelingSegment s1, final LabelingSegment s2 ) {
+	private double deltaPosSquared( final LabelingSegment s1, final LabelingSegment s2, final Pair< Double, Double > flow ) {
 		final RealLocalizable pos1 = s1.getCenterOfMass();
 		final RealLocalizable pos2 = s2.getCenterOfMass();
 		final double[] vecA = new double[ pos1.numDimensions() ];
 		final double[] vecB = new double[ pos2.numDimensions() ];
 		pos1.localize( vecA );
 		pos2.localize( vecB );
+
+		// add flow vector to 'from segment'
+		vecA[ 0 ] += flow.getA();
+		vecA[ 1 ] += flow.getB();
+
 		final double centroidDistance = VectorUtil.getSquaredDistance( vecA, vecB );
 		return centroidDistance;
 	}

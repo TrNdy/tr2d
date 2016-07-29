@@ -13,6 +13,7 @@ import com.indago.pg.assignments.DisappearanceHypothesis;
 import com.indago.pg.assignments.DivisionHypothesis;
 import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
+import com.indago.tr2d.ui.model.Tr2dFlowModel;
 
 import net.imglib2.KDTree;
 import net.imglib2.RealLocalizable;
@@ -22,9 +23,11 @@ import net.imglib2.util.ValuePair;
 
 public class Tr2dTrackingProblem implements TrackingProblem {
 
+	private final Tr2dFlowModel flowModel;
+
 	private final List< Tr2dSegmentationProblem > timepoints;
 	private final CostsFactory< LabelingSegment > appearanceCosts;
-	private final CostsFactory< Pair< LabelingSegment, LabelingSegment > > movementCosts;
+	private final CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts;
 	private final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
 	private final CostsFactory< LabelingSegment > disappearanceCosts;
 
@@ -32,12 +35,14 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	private double maxRelevantDivisionCost = Double.MAX_VALUE;
 
 	public Tr2dTrackingProblem(
+			final Tr2dFlowModel flowModel,
 			final CostsFactory< LabelingSegment > appearanceCosts,
-			final CostsFactory< Pair< LabelingSegment, LabelingSegment > > movementCosts,
+			final CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts,
 			final double maxRelevantMovementCost,
 			final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
 			final double maxRelevantDivisionCost,
 			final CostsFactory< LabelingSegment > disappearanceCosts ) {
+		this.flowModel = flowModel;
 		timepoints = new ArrayList< >();
 		this.appearanceCosts = appearanceCosts;
 		this.movementCosts = movementCosts;
@@ -139,10 +144,18 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			for ( int i = 0; i < numNeighbors; ++i ) {
 				final SegmentNode segVarR = search.getSampler( i ).get();
 
+				// retrieve flow vector at desired location
+				final int t = segProblemL.getTime();
+				final int x = ( int ) segVarL.getSegment().getCenterOfMass().getFloatPosition( 0 );
+				final int y = ( int ) segVarL.getSegment().getCenterOfMass().getFloatPosition( 0 );
+				final ValuePair< Double, Double > flow_vec = flowModel.getFlowVector( t, x, y );
+
 				final double cost = movementCosts.getCost(
-						new ValuePair< LabelingSegment, LabelingSegment >(
-								segVarL.getSegment(),
-								segVarR.getSegment() ) );
+						new ValuePair<> (
+    						new ValuePair< LabelingSegment, LabelingSegment >(
+    								segVarL.getSegment(),
+    								segVarR.getSegment() ),
+							flow_vec ) );
 				if ( cost <= maxRelevantMovementCost ) {
 					final MovementHypothesis moveHyp =
 							new MovementHypothesis( cost, segVarL, segVarR );

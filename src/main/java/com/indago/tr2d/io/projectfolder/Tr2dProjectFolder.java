@@ -16,6 +16,7 @@ public class Tr2dProjectFolder extends ProjectFolder {
 
 	// FOLDERS
 	public static String SEGMENTATION_FOLDER = "SEGMENTATION_FOLDER";
+	public static String FLOW_FOLDER = "FLOW_FOLDER";
 	public static String TRACKING_FOLDER = "TRACKING_FOLDER";
 
 	// FILES
@@ -33,6 +34,7 @@ public class Tr2dProjectFolder extends ProjectFolder {
 		addFile( FRAME_PROPERTIES, "frame.props" );
 		try {
 			addFolder( SEGMENTATION_FOLDER, "segmentation" );
+			addFolder( FLOW_FOLDER, "flow" );
 			addFolder( TRACKING_FOLDER, "tracking" );
 		} catch ( final IOException ioe ) {
 			ioe.printStackTrace();

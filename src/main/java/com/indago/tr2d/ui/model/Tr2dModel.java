@@ -3,6 +3,11 @@
  */
 package com.indago.tr2d.ui.model;
 
+import com.indago.app.hernan.costs.HernanAppearanceCostFactory;
+import com.indago.app.hernan.costs.HernanDisappearanceCostFactory;
+import com.indago.app.hernan.costs.HernanDivisionCostFactory;
+import com.indago.app.hernan.costs.HernanMappingCostFactory;
+import com.indago.app.hernan.costs.HernanSegmentCostFactory;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFolder;
 import com.indago.util.ImglibUtil;
@@ -26,6 +31,10 @@ public class Tr2dModel {
 
 	private final ProjectFolder projectFolder;
 
+	private final Tr2dSegmentationCollectionModel segModel;
+	private final Tr2dFlowModel flowModel;
+	private final Tr2dTrackingModel trackingModel;
+
 	/**
 	 *
 	 * @param projectFolderBasePath
@@ -37,6 +46,11 @@ public class Tr2dModel {
 		final Img< DoubleType > temp = ImagePlusAdapter.wrapNumeric( imgPlus );
 		imgRaw = DoubleTypeImgLoader.wrapEnsureType( imgPlus );
 		ImglibUtil.computeMinMax( Views.iterable( imgRaw ), min, max );
+
+		segModel = new Tr2dSegmentationCollectionModel( this );
+		flowModel = new Tr2dFlowModel( this );
+		trackingModel =
+				new Tr2dTrackingModel( this, getSegmentationModel(), new HernanSegmentCostFactory( imgRaw ), new HernanAppearanceCostFactory( imgRaw ), new HernanMappingCostFactory( imgRaw ), new HernanDivisionCostFactory( imgRaw ), new HernanDisappearanceCostFactory( imgRaw ) );
 	}
 
 	/**
@@ -80,6 +94,27 @@ public class Tr2dModel {
 	 */
 	public double getMinRawValue() {
 		return min.getRealDouble();
+	}
+
+	/**
+	 * @return the segModel
+	 */
+	public Tr2dSegmentationCollectionModel getSegmentationModel() {
+		return segModel;
+	}
+
+	/**
+	 * @return the flowModel
+	 */
+	public Tr2dFlowModel getFlowModel() {
+		return flowModel;
+	}
+
+	/**
+	 * @return the trackingModel
+	 */
+	public Tr2dTrackingModel getTrackingModel() {
+		return trackingModel;
 	}
 
 }

@@ -26,14 +26,7 @@ import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
 import com.indago.app.hernan.Tr2dApplication;
-import com.indago.app.hernan.costs.HernanAppearanceCostFactory;
-import com.indago.app.hernan.costs.HernanDisappearanceCostFactory;
-import com.indago.app.hernan.costs.HernanDivisionCostFactory;
-import com.indago.app.hernan.costs.HernanMappingCostFactory;
-import com.indago.app.hernan.costs.HernanSegmentCostFactory;
 import com.indago.tr2d.ui.model.Tr2dModel;
-import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
-import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.util.MessageConsole;
 
 import bdv.util.AbstractActions;
@@ -57,6 +50,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	private JTabbedPane tabs;
 	private JPanel tabData;
 	private JPanel tabSegmentation;
+	private JPanel tabFlow;
 	private JPanel tabTracking;
 
 	private BdvHandlePanel bdvData;
@@ -94,25 +88,21 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		source.setDisplayRange( model.getMinRawValue(), model.getMaxRawValue() );
 
 		// === TAB SEGMENTATION ===================================================================
-		final Tr2dSegmentationCollectionModel segModel = new Tr2dSegmentationCollectionModel( model );
-		tabSegmentation = new Tr2dSegmentationCollectionPanel( segModel );
+		tabSegmentation = new Tr2dSegmentationCollectionPanel( model.getSegmentationModel() );
+
+		// === TAB FLOW ===================================================================
+		tabFlow = new Tr2dFlowPanel( model.getFlowModel() );
 
 		// === TAB TRACKING========================================================================
 		final RandomAccessibleInterval< DoubleType > imgOrig = model.getRawData();
 		//TODO this should at some point be a given model, not fixed the Hernan thing...
-		tabTracking =
-				new Tr2dTrackingPanel(
-						new Tr2dTrackingModel( model, segModel,
-								new HernanSegmentCostFactory( imgOrig ),
-								new HernanAppearanceCostFactory( imgOrig ),
-								new HernanMappingCostFactory( imgOrig ),
-								new HernanDivisionCostFactory( imgOrig ),
-								new HernanDisappearanceCostFactory( imgOrig ) ) );
+		tabTracking = new Tr2dTrackingPanel( model.getTrackingModel() );
 
 		// --- ASSEMBLE PANEL ---------------------------------------------------------------------
 
 		tabs.add( "data", tabData );
-		tabs.add( "segment hypotheses", tabSegmentation );
+		tabs.add( "segments", tabSegmentation );
+		tabs.add( "flow", tabFlow );
 		tabs.add( "tracking", tabTracking );
 
 		final JPanel logPanel = new JPanel( new BorderLayout() );

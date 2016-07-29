@@ -72,7 +72,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private final CostsFactory< LabelingSegment > segmentCosts;
 	private final CostsFactory< LabelingSegment > appearanceCosts;
-	private final CostsFactory< Pair< LabelingSegment, LabelingSegment > > moveCosts;
+	private final CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > moveCosts;
 	private final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
 	private final CostsFactory< LabelingSegment > disappearanceCosts;
 
@@ -98,7 +98,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			final Tr2dSegmentationCollectionModel modelSeg,
 			final CostsFactory< LabelingSegment > segmentCosts,
 			final CostsFactory< LabelingSegment > appearanceCosts,
-			final CostsFactory< Pair< LabelingSegment, LabelingSegment > > movementCosts,
+			final CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts,
 			final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
 			final CostsFactory< LabelingSegment > disappearanceCosts ) {
 		this.tr2dModel = model;
@@ -258,7 +258,14 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		final TicToc tictoc = new TicToc();
 
 		this.tr2dTraProblem =
-				new Tr2dTrackingProblem( appearanceCosts, moveCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD, divisionCosts, HernanCostConstants.TRUNCATE_COST_THRESHOLD, disappearanceCosts );
+				new Tr2dTrackingProblem(
+						tr2dModel.getFlowModel(),
+						appearanceCosts,
+						moveCosts,
+						HernanCostConstants.TRUNCATE_COST_THRESHOLD,
+						divisionCosts,
+						HernanCostConstants.TRUNCATE_COST_THRESHOLD,
+						disappearanceCosts );
 
 		for ( int frameId = 0; frameId < labelingFrames.getNumFrames(); frameId++ ) {
 			System.out.println(
