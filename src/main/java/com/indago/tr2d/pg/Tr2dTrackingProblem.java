@@ -17,6 +17,7 @@ import com.indago.tr2d.ui.model.Tr2dFlowModel;
 
 import net.imglib2.KDTree;
 import net.imglib2.RealLocalizable;
+import net.imglib2.RealPoint;
 import net.imglib2.neighborsearch.RadiusNeighborSearchOnKDTree;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
@@ -137,18 +138,24 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		final RadiusNeighborSearchOnKDTree< SegmentNode > search = new RadiusNeighborSearchOnKDTree<>( kdtree );
 
 		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
+
+			// retrieve flow vector at desired location
+			final int t = segProblemL.getTime();
+			final int x = ( int ) segVarL.getSegment().getCenterOfMass().getFloatPosition( 0 );
+			final int y = ( int ) segVarL.getSegment().getCenterOfMass().getFloatPosition( 1 );
+			final ValuePair< Double, Double > flow_vec = flowModel.getFlowVector( t, x, y );
+
 			final RealLocalizable pos = segVarL.getSegment().getCenterOfMass();
+			final RealPoint flow_pos = new RealPoint(
+					pos.getDoublePosition( 0 ) + flow_vec.getA(),
+					pos.getDoublePosition( 1 ) + flow_vec.getB() );
+
 			final double radius = 20; // TODO
-			search.search( pos, radius, false );
+
+			search.search( flow_pos, radius, false );
 			final int numNeighbors = search.numNeighbors();
 			for ( int i = 0; i < numNeighbors; ++i ) {
 				final SegmentNode segVarR = search.getSampler( i ).get();
-
-				// retrieve flow vector at desired location
-				final int t = segProblemL.getTime();
-				final int x = ( int ) segVarL.getSegment().getCenterOfMass().getFloatPosition( 0 );
-				final int y = ( int ) segVarL.getSegment().getCenterOfMass().getFloatPosition( 1 );
-				final ValuePair< Double, Double > flow_vec = flowModel.getFlowVector( t, x, y );
 
 				final double cost = movementCosts.getCost(
 						new ValuePair<> (
@@ -164,9 +171,10 @@ public class Tr2dTrackingProblem implements TrackingProblem {
     								segVarR.getSegment() ),
 							flow_vec ) );
 
-				if (t==2 && x<30 && y<30) {
+				if ( t >= 49 && t <= 50 && x < 100 && y < 100 ) {
 					System.out.println(
-							String.format("t==2; x=%d; y=%d; vec=(%.2f,%.2f); cost=%.2f; cost_flow=%.2f",
+							String.format(
+									"t==%d; x=%d; y=%d; vec=(%.2f,%.2f); cost=%.2f; cost_flow=%.2f",
 									t, x, y,
 									flow_vec.getA(),
 									flow_vec.getB(),
@@ -174,9 +182,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 									cost_flow));
 				}
 
-				if ( cost <= maxRelevantMovementCost ) {
+				if ( cost_flow <= maxRelevantMovementCost ) {
 					final MovementHypothesis moveHyp =
-							new MovementHypothesis( cost, segVarL, segVarR );
+							new MovementHypothesis( cost_flow, segVarL, segVarR );
 					segVarL.getOutAssignments().add( moveHyp );
 					segVarR.getInAssignments().add( moveHyp );
 				}
