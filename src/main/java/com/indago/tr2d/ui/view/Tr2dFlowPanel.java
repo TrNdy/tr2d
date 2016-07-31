@@ -16,6 +16,8 @@ import com.indago.tr2d.ui.model.Tr2dFlowModel;
 
 import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 import net.miginfocom.swing.MigLayout;
 
@@ -41,20 +43,23 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		// show loaded image
-		model.bdvAdd( Views.hyperSlice( model.getFlowImage(), 2, 0 ), "r" );
-		model.bdvAdd( Views.hyperSlice( model.getFlowImage(), 2, 1 ), "phi" );
+		final RandomAccessibleInterval< FloatType > flowImg = model.getFlowImage();
+		if ( flowImg != null ) {
+			model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r" );
+			model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi" );
 
-		final MigLayout layout = new MigLayout();
-		final JPanel controls = new JPanel( layout );
-		JLabel label;
-		for ( int t = 0; t < 20; t++ ) {
-			label = new JLabel( "t=" + t + ": " + model.getFlowVector( t, 25, 25 ).getA() + "," + model.getFlowVector( t, 25, 25 ).getB() );
-			controls.add( label, "wrap" );
+			final MigLayout layout = new MigLayout();
+			final JPanel controls = new JPanel( layout );
+			JLabel label;
+			for ( int t = 0; t < 20; t++ ) {
+				label = new JLabel( "t=" + t + ": " + model.getFlowVector( t, 25, 25 ).getA() + "," + model.getFlowVector( t, 25, 25 ).getB() );
+				controls.add( label, "wrap" );
+			}
+
+			final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
+			splitPane.setResizeWeight( 0.1 ); // 1.0 == extra space given to left component alone!
+			this.add( splitPane, BorderLayout.CENTER );
 		}
-
-		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
-		splitPane.setResizeWeight( 0.1 ); // 1.0 == extra space given to left component alone!
-		this.add( splitPane, BorderLayout.CENTER );
 	}
 
 	/**

@@ -49,7 +49,8 @@ public class Tr2dFlowModel implements BdvOwner {
 		final Vector< ProjectFile > files =
 				new Vector< ProjectFile >( projectFolder.getFiles( new ExtensionFileFilter( "tif", "TIFF Image Stack" ) ) );
 		if ( files.size() != 1 ) {
-			System.err.println( "ERROR: Flow subfolder does not contain any or more than one image files." );
+			System.err
+					.println( "\nINFO: Flow subfolder does not contain any or contains more than one image files -- will not use flow information." );
 		} else {
 			try {
 				imgs.add( FloatTypeImgLoader.loadTiff( files.get( 0 ).getFile() ) );
@@ -77,7 +78,10 @@ public class Tr2dFlowModel implements BdvOwner {
 	 * @return
 	 */
 	public RandomAccessibleInterval< FloatType > getFlowImage() {
-		return imgs.get( 0 );
+		if ( imgs.size() > 0 )
+			return imgs.get( 0 );
+		else
+			return null;
 	}
 
 	/**
@@ -93,32 +97,36 @@ public class Tr2dFlowModel implements BdvOwner {
 	public ValuePair< Double, Double > getFlowVector( final int t, final int x, final int y ) {
 		final double[] polar = new double[ 2 ];
 
-		final RandomAccess< FloatType > ra = imgs.get( 0 ).randomAccess();
-
-		final int[] pos_for_x_direction = new int[] { x, y, 0, t };
-		ra.setPosition( pos_for_x_direction );
-		polar[ 0 ] = ra.get().get();
-
-		final int[] pos_for_y_direction = new int[] { x, y, 1, t };
-		ra.setPosition( pos_for_y_direction );
-		polar[ 1 ] = ra.get().get();
-
-		// GET dx, dy FROM POLAR (attention to NaN)
-		double dx;
-		double dy;
-		if ( polar[ 0 ] == 0 || Double.isNaN( polar[ 1 ] ) ) {
-			dx = 0;
-			dy = 0;
+		if ( imgs.size() == 0 ) {
+			return new ValuePair<>( 0.0, 0.0 );
 		} else {
-			dx = polar[ 0 ] * Math.sin( polar[ 1 ] );
-			dy = polar[ 0 ] * Math.cos( polar[ 1 ] );
+			final RandomAccess< FloatType > ra = imgs.get( 0 ).randomAccess();
+
+			final int[] pos_for_x_direction = new int[] { x, y, 0, t };
+			ra.setPosition( pos_for_x_direction );
+			polar[ 0 ] = ra.get().get();
+
+			final int[] pos_for_y_direction = new int[] { x, y, 1, t };
+			ra.setPosition( pos_for_y_direction );
+			polar[ 1 ] = ra.get().get();
+
+			// GET dx, dy FROM POLAR (attention to NaN)
+			double dx;
+			double dy;
+			if ( polar[ 0 ] == 0 || Double.isNaN( polar[ 1 ] ) ) {
+				dx = 0;
+				dy = 0;
+			} else {
+				dx = polar[ 0 ] * Math.sin( polar[ 1 ] );
+				dy = polar[ 0 ] * Math.cos( polar[ 1 ] );
+			}
+
+			//		if ( t == 2 ) {
+			//			System.out.println( String.format( "t,x,y: %d,%d%d: polar=(%f,%f); cart=(%f,%f);", t, x, y, polar[ 0 ], polar[ 1 ], dx, dy ) );
+			//		}
+
+			return new ValuePair<>( dx, dy );
 		}
-
-//		if ( t == 2 ) {
-//			System.out.println( String.format( "t,x,y: %d,%d%d: polar=(%f,%f); cart=(%f,%f);", t, x, y, polar[ 0 ], polar[ 1 ], dx, dy ) );
-//		}
-
-		return new ValuePair<>( dx, dy );
 	}
 
 	/**
