@@ -198,6 +198,6 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	public void computeAndStoreFlow() {
 		final MSEBlockFlow flowMagic = new MSEBlockFlow();
 		imgs.clear();
-		imgs.add( flowMagic.computeAndStoreFlow( model.getRawData(), 20, ( byte ) 15, flowFile.getAbsolutePath() ) );
+		imgs.add( flowMagic.computeAndStoreFlow( model.getImgPlus(), 40, ( byte ) 30, flowFile.getAbsolutePath() ) );
 	}
 }
