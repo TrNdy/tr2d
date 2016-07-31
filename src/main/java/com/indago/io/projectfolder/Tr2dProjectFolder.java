@@ -1,13 +1,13 @@
 /**
  *
  */
-package com.indago.tr2d.io.projectfolder;
+package com.indago.io.projectfolder;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import com.indago.io.projectfolder.ProjectFolder;
+import com.indago.io.ProjectFolder;
 
 /**
  * @author jug

@@ -8,7 +8,6 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
@@ -44,25 +43,22 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		// show loaded image
-		final RandomAccessibleInterval< FloatType > flowImg = model.getFlowImage();
-		if ( flowImg != null ) {
-			model.bdvAdd( model.getModel().getRawData(), "RAW" );
-			model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r" );
-			model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi" );
-			model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
-
-			final MigLayout layout = new MigLayout();
-			final JPanel controls = new JPanel( layout );
-			JLabel label;
-			for ( int t = 0; t < 20; t++ ) {
-				label = new JLabel( "t=" + t + ": " + model.getFlowVector( t, 25, 25 ).getA() + "," + model.getFlowVector( t, 25, 25 ).getB() );
-				controls.add( label, "wrap" );
-			}
-
-			final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
-			splitPane.setResizeWeight( 0.1 ); // 1.0 == extra space given to left component alone!
-			this.add( splitPane, BorderLayout.CENTER );
+		RandomAccessibleInterval< FloatType > flowImg = model.getFlowImage();
+		if ( flowImg == null ) {
+			model.computeAndStoreFlow();
+			flowImg = model.getFlowImage();
 		}
+		model.bdvAdd( model.getModel().getRawData(), "RAW" );
+		model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r" );
+		model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi" );
+		model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
+
+		final MigLayout layout = new MigLayout();
+		final JPanel controls = new JPanel( layout );
+
+		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
+		splitPane.setResizeWeight( 0.1 ); // 1.0 == extra space given to left component alone!
+		this.add( splitPane, BorderLayout.CENTER );
 	}
 
 	/**

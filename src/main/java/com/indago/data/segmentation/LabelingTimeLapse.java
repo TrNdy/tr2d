@@ -13,8 +13,8 @@ import java.util.Map;
 import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree;
 import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree.Filter;
 import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree.MaxGrowthPerStep;
-import com.indago.io.projectfolder.ProjectFile;
-import com.indago.io.projectfolder.ProjectFolder;
+import com.indago.io.ProjectFile;
+import com.indago.io.ProjectFolder;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 
 import net.imglib2.Dimensions;
@@ -58,6 +58,8 @@ public class LabelingTimeLapse {
 	 */
 	public boolean processFrames() {
 		try {
+			if ( getSegmentHypothesesImages().size() == 0 ) { return false; }
+
 			final RandomAccessibleInterval< IntType > firstSumImg = getSegmentHypothesesImages().get( 0 );
 
 			for ( int frameId = 0; frameId < firstSumImg.dimension( 2 ); frameId++ ) {

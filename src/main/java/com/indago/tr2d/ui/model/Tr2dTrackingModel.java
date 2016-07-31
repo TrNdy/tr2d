@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JOptionPane;
+
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.app.hernan.costs.HernanCostConstants;
 import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.ConflictGraph;
@@ -23,13 +26,13 @@ import com.indago.fg.Variable;
 import com.indago.ilp.SolveGurobi;
 import com.indago.io.DataMover;
 import com.indago.io.IntTypeImgLoader;
-import com.indago.io.projectfolder.ProjectFolder;
+import com.indago.io.ProjectFolder;
+import com.indago.io.projectfolder.Tr2dProjectFolder;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.DivisionHypothesis;
 import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
-import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
 import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
@@ -149,11 +152,15 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * data in
 	 * project folder).
 	 */
-	private void preparePG() {
-		processSegmentationInputs();
-		buildTrackingProblem();
-		saveTrackingProblem();
-		mfg = null;
+	private boolean preparePG() {
+		if ( processSegmentationInputs() ) {
+			buildTrackingProblem();
+			saveTrackingProblem();
+			mfg = null;
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -174,17 +181,23 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * of BDV.
 	 */
 	public void run() {
+		boolean doSolving = false;
+
 		if ( tr2dTraProblem == null ) {
-			preparePG();
-			prepareFG();
+			if ( preparePG() ) {
+				prepareFG();
+				doSolving = true;
+			}
 		} else if ( mfg == null ) {
 			prepareFG();
+			doSolving = true;
 		}
 
-		solveFactorGraph();
-
-		drawSolution();
-		saveSolution();
+		if (doSolving) {
+    		solveFactorGraph();
+    		drawSolution();
+    		saveSolution();
+		}
 	}
 
 	/**
@@ -200,7 +213,9 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				self.run();
 				bdvRemoveAll();
 				bdvAdd( getTr2dModel().getRawData(), "RAW" );
-				bdvAdd( getImgSolution(), "solution" );
+				final RandomAccessibleInterval< IntType > solution = getImgSolution();
+				if ( solution != null )
+					bdvAdd( solution, "solution" );
 			}
 
 		};
@@ -240,15 +255,17 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	/**
 	 *
 	 */
-	public void processSegmentationInputs() {
+	public boolean processSegmentationInputs() {
 		if ( labelingFrames.needProcessing() ) {
 			if ( !labelingFrames.processFrames() ) {
-				System.err.println(
-						"Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!" );
-				return;
+				final String msg = "Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!";
+				System.err.println( msg );
+				JOptionPane.showMessageDialog( Tr2dApplication.getGuiFrame(), msg, "No segmentation found...", JOptionPane.ERROR_MESSAGE );
+				return false;
 			}
 			labelingFrames.saveTo( hypothesesFolder );
 		}
+		return true;
 	}
 
 	/**

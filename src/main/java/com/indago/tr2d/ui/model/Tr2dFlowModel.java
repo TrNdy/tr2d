@@ -5,12 +5,12 @@ package com.indago.tr2d.ui.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
+import com.indago.flow.MSEBlockFlow;
 import com.indago.io.FloatTypeImgLoader;
-import com.indago.io.projectfolder.ProjectFile;
-import com.indago.io.projectfolder.ProjectFolder;
-import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
+import com.indago.io.ProjectFile;
+import com.indago.io.ProjectFolder;
+import com.indago.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 
 import bdv.util.BdvHandlePanel;
@@ -24,7 +24,6 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
-import weka.gui.ExtensionFileFilter;
 
 /**
  * @author jug
@@ -34,6 +33,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	private final Tr2dModel model;
 
 	private final ProjectFolder projectFolder;
+	private final ProjectFile flowFile;
 
 	private BdvHandlePanel bdvHandlePanel;
 	private final List< BdvSource > bdvSources = new ArrayList<>();
@@ -47,16 +47,17 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	public Tr2dFlowModel( final Tr2dModel model ) {
 		this.model = model;
 		projectFolder = model.getProjectFolder().getFolder( Tr2dProjectFolder.FLOW_FOLDER );
+		if ( !projectFolder.exists() ) {
+			projectFolder.getFolder().mkdir();
+		}
+		flowFile = projectFolder.addFile( "flow.tif" );
 
-		this.projectFolder.loadFiles();
-		final Vector< ProjectFile > files =
-				new Vector< ProjectFile >( projectFolder.getFiles( new ExtensionFileFilter( "tif", "TIFF Image Stack" ) ) );
-		if ( files.size() != 1 ) {
+		if ( !flowFile.canRead() ) {
 			System.err
-					.println( "\nINFO: Flow subfolder does not contain any or contains more than one image files -- will not use flow information." );
+					.println( "\nINFO: Flow subfolder does not contain a file 'flow.tif'." );
 		} else {
 			try {
-				imgs.add( FloatTypeImgLoader.loadTiff( files.get( 0 ).getFile() ) );
+				imgs.add( FloatTypeImgLoader.loadTiff( flowFile.getFile() ) );
 			} catch ( final ImgIOException e ) {
 				e.printStackTrace();
 			}
@@ -189,5 +190,14 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	@Override
 	public List< BdvSource > bdvGetOverlaySources() {
 		return bdvOverlaySources;
+	}
+
+	/**
+	 *
+	 */
+	public void computeAndStoreFlow() {
+		final MSEBlockFlow flowMagic = new MSEBlockFlow();
+		imgs.clear();
+		imgs.add( flowMagic.computeAndStoreFlow( model.getRawData(), 20, ( byte ) 15, flowFile.getAbsolutePath() ) );
 	}
 }

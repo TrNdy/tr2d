@@ -19,7 +19,7 @@ import com.indago.data.segmentation.SegmentationMagic;
 import com.indago.io.DataMover;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.IntTypeImgLoader;
-import com.indago.io.projectfolder.ProjectFolder;
+import com.indago.io.ProjectFolder;
 import com.indago.tr2d.ui.view.bdv.BdvOwner;
 import com.indago.util.converter.IntTypeThresholdConverter;
 import com.univocity.parsers.csv.CsvParser;

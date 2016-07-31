@@ -6,8 +6,8 @@ package com.indago.tr2d.ui.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.indago.io.projectfolder.ProjectFolder;
-import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
+import com.indago.io.ProjectFolder;
+import com.indago.io.projectfolder.Tr2dProjectFolder;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.integer.IntType;

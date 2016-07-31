@@ -18,7 +18,7 @@ import javax.swing.JSplitPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.indago.io.projectfolder.ProjectFile;
+import com.indago.io.ProjectFile;
 import com.indago.tr2d.ui.model.Tr2dImportedSegmentationModel;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
 

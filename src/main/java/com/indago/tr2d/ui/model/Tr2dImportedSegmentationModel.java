@@ -14,8 +14,8 @@ import java.util.Vector;
 import javax.swing.ListModel;
 
 import com.indago.io.IntTypeImgLoader;
-import com.indago.io.projectfolder.ProjectFile;
-import com.indago.io.projectfolder.ProjectFolder;
+import com.indago.io.ProjectFile;
+import com.indago.io.ProjectFolder;
 import com.indago.tr2d.ui.view.bdv.BdvOwner;
 import com.jgoodies.common.collect.LinkedListModel;
 

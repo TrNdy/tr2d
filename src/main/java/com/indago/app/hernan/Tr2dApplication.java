@@ -23,7 +23,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import com.apple.eawt.Application;
-import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
+import com.indago.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.FrameProperties;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
@@ -85,7 +85,7 @@ public class Tr2dApplication {
 		try {
 			FrameProperties.load( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
 		} catch ( final IOException e ) {
-			System.err.println( "WARNING: Frame properties not found. Will use default values." );
+			System.err.println( "\nWARNING: Frame properties not found. Will use default values." );
 			guiFrame.setBounds( FrameProperties.getCenteredRectangle( 1200, 1024 ) );
 		}
 
@@ -151,7 +151,7 @@ public class Tr2dApplication {
 					projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
 					inputStack = projectFolder.getFile( Tr2dProjectFolder.RAW_DATA ).getFile();
 					if ( !inputStack.canRead() || !inputStack.exists() ) {
-						final String msg = "Project folder empty, read protected, or invalid!";
+						final String msg = "Invalid project folder -- missing RAW data or read protected!";
 						JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
 						System.out.println( "ERROR: " + msg );
 						System.exit( 1 );
@@ -198,13 +198,13 @@ public class Tr2dApplication {
 							projectFolderBasePath );
 					final int overwrite = JOptionPane.showConfirmDialog( guiFrame, msg, "Project Folder Exists", JOptionPane.YES_NO_OPTION );
 					if ( overwrite == JOptionPane.YES_OPTION ) {
-						projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
 						validSelection = true;
 					}
 				} else {
 					validSelection = true;
 				}
 			}
+			projectFolder.restartWithRawDataFile( inputStack.getAbsolutePath() );
 		}
 
 		final ImagePlus imgPlus = WindowManager.getCurrentImage();

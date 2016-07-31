@@ -9,7 +9,7 @@ import com.indago.app.hernan.costs.HernanDivisionCostFactory;
 import com.indago.app.hernan.costs.HernanMappingCostFactory;
 import com.indago.app.hernan.costs.HernanSegmentCostFactory;
 import com.indago.io.DoubleTypeImgLoader;
-import com.indago.io.projectfolder.ProjectFolder;
+import com.indago.io.ProjectFolder;
 import com.indago.util.ImglibUtil;
 
 import ij.ImagePlus;
