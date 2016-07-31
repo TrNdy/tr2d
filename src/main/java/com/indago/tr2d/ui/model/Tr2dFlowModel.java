@@ -11,9 +11,10 @@ import com.indago.io.FloatTypeImgLoader;
 import com.indago.io.projectfolder.ProjectFile;
 import com.indago.io.projectfolder.ProjectFolder;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
-import com.indago.tr2d.ui.view.bdv.BdvOwner;
+import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 
 import bdv.util.BdvHandlePanel;
+import bdv.util.BdvOverlay;
 import bdv.util.BdvSource;
 import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccess;
@@ -28,7 +29,7 @@ import weka.gui.ExtensionFileFilter;
 /**
  * @author jug
  */
-public class Tr2dFlowModel implements BdvOwner {
+public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 
 	private final Tr2dModel model;
 
@@ -37,6 +38,8 @@ public class Tr2dFlowModel implements BdvOwner {
 	private BdvHandlePanel bdvHandlePanel;
 	private final List< BdvSource > bdvSources = new ArrayList<>();
 	private final List< RandomAccessibleInterval< FloatType > > imgs = new ArrayList<>();
+	private final List< BdvOverlay > overlays = new ArrayList<>();
+	private final List< BdvSource > bdvOverlaySources = new ArrayList<>();
 
 	/**
 	 * @param model
@@ -170,5 +173,21 @@ public class Tr2dFlowModel implements BdvOwner {
 		if ( imgs.size() == 1 )
 			return true;
 		return false;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
+	 */
+	@Override
+	public List< BdvOverlay > bdvGetOverlays() {
+		return overlays;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
+	 */
+	@Override
+	public List< BdvSource > bdvGetOverlaySources() {
+		return bdvOverlaySources;
 	}
 }

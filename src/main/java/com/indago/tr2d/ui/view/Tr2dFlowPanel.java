@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
 import com.indago.tr2d.ui.model.Tr2dFlowModel;
+import com.indago.tr2d.ui.view.bdv.overlays.Tr2dFlowOverlay;
 
 import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;
@@ -45,8 +46,10 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		// show loaded image
 		final RandomAccessibleInterval< FloatType > flowImg = model.getFlowImage();
 		if ( flowImg != null ) {
+			model.bdvAdd( model.getModel().getRawData(), "RAW" );
 			model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r" );
 			model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi" );
+			model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
 
 			final MigLayout layout = new MigLayout();
 			final JPanel controls = new JPanel( layout );
