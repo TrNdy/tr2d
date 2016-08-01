@@ -113,11 +113,14 @@ public class Tr2dWekaSegmentationModel implements BdvOwner {
 		for ( final String string : listClassifierFilenames ) {
 			i++;
 			try {
-				imgsClassification.add(
-						DoubleTypeImgLoader.loadTiff( new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" ) ) );
-				final RandomAccessibleInterval< IntType > sumimg =
-						IntTypeImgLoader.loadTiffEnsureType( new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) );
-				imgsSegmentHypotheses.add( sumimg );
+				final File file = new File( projectFolder.getFolder(), FILENAME_PREFIX_CLASSIFICATION_IMGS + i + ".tif" );
+				if ( file.canRead() ) {
+    				imgsClassification.add(
+    						DoubleTypeImgLoader.loadTiff( file ) );
+    				final RandomAccessibleInterval< IntType > sumimg =
+    						IntTypeImgLoader.loadTiffEnsureType( new File( projectFolder.getFolder(), FILENAME_PREFIX_SUM_IMGS + i + ".tif" ) );
+    				imgsSegmentHypotheses.add( sumimg );
+				}
 			} catch ( final ImgIOException e ) {
 				JOptionPane.showMessageDialog(
 						Tr2dApplication.getGuiFrame(),
