@@ -6,6 +6,8 @@ package com.indago.tr2d.ui.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.scijava.Context;
+
 import com.indago.flow.MSEBlockFlow;
 import com.indago.io.FloatTypeImgLoader;
 import com.indago.io.ProjectFile;
@@ -16,9 +18,17 @@ import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOverlay;
 import bdv.util.BdvSource;
+import ij.IJ;
+import ij.ImagePlus;
+import io.scif.img.IO;
 import io.scif.img.ImgIOException;
+import net.imagej.ops.OpMatchingService;
+import net.imagej.ops.OpService;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -33,6 +43,8 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	private final Tr2dModel model;
 
 	private final ProjectFolder projectFolder;
+	private final ProjectFile scaledInputFile;
+	private final ProjectFile scaledFlowFile;
 	private final ProjectFile flowFile;
 
 	private BdvHandlePanel bdvHandlePanel;
@@ -41,6 +53,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	private final List< BdvOverlay > overlays = new ArrayList<>();
 	private final List< BdvSource > bdvOverlaySources = new ArrayList<>();
 
+	private double scaleFactor = .25;
 	private int blockRadius = 20;
 	private int maxDistance = 15;
 
@@ -53,7 +66,9 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		if ( !projectFolder.exists() ) {
 			projectFolder.getFolder().mkdir();
 		}
+		scaledInputFile = projectFolder.addFile( "input_scaled.tif" );
 		flowFile = projectFolder.addFile( "flow.tif" );
+		scaledFlowFile = projectFolder.addFile( "flow_scaled.tif" );
 
 		if ( !flowFile.canRead() ) {
 			System.err
@@ -200,8 +215,56 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	 */
 	public void computeAndStoreFlow() {
 		final MSEBlockFlow flowMagic = new MSEBlockFlow();
-		imgs.clear();
-		imgs.add( flowMagic.computeAndStoreFlow( model.getImgPlus(), getBlockRadius(), ( byte ) getMaxDistance(), flowFile.getAbsolutePath() ) );
+
+		//scaling
+		final Img< FloatType > img = ImageJFunctions.convertFloat( model.getImgPlus() );
+		final Context context = new Context( OpService.class, OpMatchingService.class );
+		final OpService ops = context.getService( OpService.class );
+
+//		final Context context =
+//				new Context( OpService.class, OpMatchingService.class,
+//						IOService.class, DatasetIOService.class, LocationService.class,
+//						DatasetService.class, ImgUtilityService.class, StatusService.class,
+//						TranslatorService.class, QTJavaService.class, TiffService.class,
+//						CodecService.class, JAIIIOService.class );
+//		final OpService ops = context.getService( OpService.class );
+//		final IOService io = context.getService( IOService.class );
+//		final DatasetService dss = context.getService( DatasetService.class );
+
+		final Img< FloatType > imgScaled =
+				ops.transform().scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NearestNeighborInterpolatorFactory<>() );
+
+		System.out.println( ">>> " + scaledInputFile.getAbsolutePath() );
+		IO.saveImg( scaledInputFile.getAbsolutePath(), imgScaled );
+		final ImagePlus scaledImagePlus = IJ.openImage( scaledInputFile.getAbsolutePath() );
+		flowMagic.computeAndStoreFlow(
+				scaledImagePlus,
+				getScaleFactor(),
+				getBlockRadius(),
+				( byte ) getMaxDistance(),
+				scaledFlowFile.getAbsolutePath() );
+
+		Img< FloatType > scaledFlow;
+		try {
+			scaledFlow = FloatTypeImgLoader.loadTiffEnsureType( scaledFlowFile.getFile() );
+//			final Img< FloatType > scaledFlow = IO.openFloat( scaledFlowFile.getAbsolutePath() );
+			ImageJFunctions.show( scaledFlow );
+
+			//inverse scaling
+			final Img< FloatType > flow =
+					ops.transform().scale(
+							scaledFlow,
+							new double[] { 1. / scaleFactor, 1. / scaleFactor, 1, 1 },
+							new NearestNeighborInterpolatorFactory<>() );
+			ImageJFunctions.show( flow );
+
+			final ImagePlus ip = ImageJFunctions.wrap( flow, "flow" );
+			IJ.save( ip.duplicate(), flowFile.getAbsolutePath() );
+			imgs.clear();
+			imgs.add( flow );
+		} catch ( final ImgIOException e ) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -230,5 +293,19 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	 */
 	public void setMaxDistance( final int maxDistance ) {
 		this.maxDistance = maxDistance;
+	}
+
+	/**
+	 * @return the maxDistance
+	 */
+	public double getScaleFactor() {
+		return scaleFactor;
+	}
+
+	/**
+	 * @param parseDouble
+	 */
+	public void setScaleFactor( final double factor ) {
+		this.scaleFactor = factor;
 	}
 }

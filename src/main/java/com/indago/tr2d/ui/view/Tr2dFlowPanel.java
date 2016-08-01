@@ -33,7 +33,7 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 
 	private final Tr2dFlowModel model;
 
-	private JTextField txtDownscaleFactor;
+	private JTextField txtScaleFactor;
 	private JTextField txtBlockRadius;
 	private JTextField txtMaxDist;
 	private JButton btnComputeFlow;
@@ -62,8 +62,8 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		final MigLayout layout = new MigLayout( "", "[][grow]", "" );
 		final JPanel controls = new JPanel( layout );
 
-		final JLabel labelDownscaleFactor = new JLabel( "Downscale factor:" );
-		txtDownscaleFactor = new JTextField( "4" );
+		final JLabel labelScaleFactor = new JLabel( "Downscale factor:" );
+		txtScaleFactor = new JTextField( "" + model.getScaleFactor() );
 		final JLabel labelBlockRadius = new JLabel( "Block radius:" );
 		txtBlockRadius = new JTextField( "" + model.getBlockRadius() );
 		final JLabel labelMaxDist = new JLabel( "Max. distance:" );
@@ -71,8 +71,8 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		btnComputeFlow = new JButton( "compute flow" );
 		btnComputeFlow.addActionListener( this );
 
-		controls.add( labelDownscaleFactor );
-		controls.add( txtDownscaleFactor, "growx, wrap" );
+		controls.add( labelScaleFactor );
+		controls.add( txtScaleFactor, "growx, wrap" );
 		controls.add( labelBlockRadius );
 		controls.add( txtBlockRadius, "growx, wrap" );
 		controls.add( labelMaxDist );
@@ -92,6 +92,7 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		if ( e.getSource().equals( btnComputeFlow ) ) {
 
 			try {
+				model.setScaleFactor( Double.parseDouble( txtScaleFactor.getText() ) );
 				model.setBlockRadius( Integer.parseInt( txtBlockRadius.getText() ) );
 				model.setMaxDistance( Integer.parseInt( txtMaxDist.getText() ) );
 				model.computeAndStoreFlow();
