@@ -8,8 +8,11 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 
 import com.indago.tr2d.ui.model.Tr2dFlowModel;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dFlowOverlay;
@@ -30,6 +33,11 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 
 	private final Tr2dFlowModel model;
 
+	private JTextField txtDownscaleFactor;
+	private JTextField txtBlockRadius;
+	private JTextField txtMaxDist;
+	private JButton btnComputeFlow;
+
 	public Tr2dFlowPanel( final Tr2dFlowModel model ) {
 		super( new BorderLayout() );
 		this.model = model;
@@ -43,18 +51,33 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		// show loaded image
-		RandomAccessibleInterval< FloatType > flowImg = model.getFlowImage();
-		if ( flowImg == null ) {
-			model.computeAndStoreFlow();
-			flowImg = model.getFlowImage();
-		}
+		final RandomAccessibleInterval< FloatType > flowImg = model.getFlowImage();
 		model.bdvAdd( model.getModel().getRawData(), "RAW" );
-		model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r" );
-		model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi" );
-		model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
+		if ( flowImg != null ) {
+			model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r" );
+			model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi" );
+			model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
+		}
 
-		final MigLayout layout = new MigLayout();
+		final MigLayout layout = new MigLayout( "", "[][grow]", "" );
 		final JPanel controls = new JPanel( layout );
+
+		final JLabel labelDownscaleFactor = new JLabel( "Downscale factor:" );
+		txtDownscaleFactor = new JTextField( "4" );
+		final JLabel labelBlockRadius = new JLabel( "Block radius:" );
+		txtBlockRadius = new JTextField( "" + model.getBlockRadius() );
+		final JLabel labelMaxDist = new JLabel( "Max. distance:" );
+		txtMaxDist = new JTextField( "" + model.getMaxDistance() );
+		btnComputeFlow = new JButton( "compute flow" );
+		btnComputeFlow.addActionListener( this );
+
+		controls.add( labelDownscaleFactor );
+		controls.add( txtDownscaleFactor, "growx, wrap" );
+		controls.add( labelBlockRadius );
+		controls.add( txtBlockRadius, "growx, wrap" );
+		controls.add( labelMaxDist );
+		controls.add( txtMaxDist, "growx, wrap" );
+		controls.add( btnComputeFlow, "span, growx, wrap" );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
 		splitPane.setResizeWeight( 0.1 ); // 1.0 == extra space given to left component alone!
@@ -66,5 +89,24 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
+		if ( e.getSource().equals( btnComputeFlow ) ) {
+
+			try {
+				model.setBlockRadius( Integer.parseInt( txtBlockRadius.getText() ) );
+				model.setMaxDistance( Integer.parseInt( txtMaxDist.getText() ) );
+				model.computeAndStoreFlow();
+
+				final RandomAccessibleInterval< FloatType > flowImg = model.getFlowImage();
+				model.bdvRemoveAll();
+				model.bdvRemoveAllOverlays();
+				model.bdvAdd( model.getModel().getRawData(), "RAW" );
+				model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r" );
+				model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi" );
+				model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
+
+			} catch ( final NumberFormatException nfe ) {
+				System.err.println( "NumberFormatException@tr2dFlowPanel: " + nfe.getMessage() );
+			}
+		}
 	}
 }

@@ -41,6 +41,9 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	private final List< BdvOverlay > overlays = new ArrayList<>();
 	private final List< BdvSource > bdvOverlaySources = new ArrayList<>();
 
+	private int blockRadius = 20;
+	private int maxDistance = 15;
+
 	/**
 	 * @param model
 	 */
@@ -198,6 +201,34 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	public void computeAndStoreFlow() {
 		final MSEBlockFlow flowMagic = new MSEBlockFlow();
 		imgs.clear();
-		imgs.add( flowMagic.computeAndStoreFlow( model.getImgPlus(), 40, ( byte ) 30, flowFile.getAbsolutePath() ) );
+		imgs.add( flowMagic.computeAndStoreFlow( model.getImgPlus(), getBlockRadius(), ( byte ) getMaxDistance(), flowFile.getAbsolutePath() ) );
+	}
+
+	/**
+	 * @return the blockRadius
+	 */
+	public int getBlockRadius() {
+		return blockRadius;
+	}
+
+	/**
+	 * @param blockRadius the blockRadius to set
+	 */
+	public void setBlockRadius( final int blockRadius ) {
+		this.blockRadius = blockRadius;
+	}
+
+	/**
+	 * @return the maxDistance
+	 */
+	public int getMaxDistance() {
+		return maxDistance;
+	}
+
+	/**
+	 * @param maxDistance the maxDistance to set
+	 */
+	public void setMaxDistance( final int maxDistance ) {
+		this.maxDistance = maxDistance;
 	}
 }
