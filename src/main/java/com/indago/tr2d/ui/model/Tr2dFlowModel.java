@@ -3,8 +3,14 @@
  */
 package com.indago.tr2d.ui.model;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.scijava.Context;
 
@@ -40,9 +46,17 @@ import net.imglib2.view.Views;
  */
 public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 
+	private static String SCALE = "scale";
+	private static String RADIUS = "radius";
+	private static String MAX_DIST = "max_dist";
+
 	private final Tr2dModel model;
 
 	private final ProjectFolder projectFolder;
+
+	private final ProjectFile propsFileParamValues;
+	private final Properties propsParamValues;
+
 	private final ProjectFile scaledInputFile;
 	private final ProjectFile scaledFlowFile;
 	private final ProjectFile flowFile;
@@ -66,6 +80,9 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		if ( !projectFolder.exists() ) {
 			projectFolder.getFolder().mkdir();
 		}
+		propsFileParamValues = projectFolder.addFile( "guiValues.props" );
+		propsParamValues = loadParameterProps( propsFileParamValues.getFile() );
+
 		scaledInputFile = projectFolder.addFile( "input_scaled.tif" );
 		flowFile = projectFolder.addFile( "flow.tif" );
 		scaledFlowFile = projectFolder.addFile( "flow_scaled.tif" );
@@ -214,6 +231,9 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	 *
 	 */
 	public void computeAndStoreFlow() {
+		// make the parameter values persistent
+		saveParameterProps( propsFileParamValues.getFile() );
+
 		final MSEBlockFlow flowMagic = new MSEBlockFlow();
 
 		//scaling
@@ -302,5 +322,41 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	 */
 	public void setScaleFactor( final double factor ) {
 		this.scaleFactor = factor;
+	}
+
+	private Properties loadParameterProps( final File propsFile ) {
+		InputStream is = null;
+		final Properties props = new Properties();
+		props.setProperty( Tr2dFlowModel.SCALE, "" + scaleFactor );
+		props.setProperty( Tr2dFlowModel.RADIUS, "" + blockRadius );
+		props.setProperty( Tr2dFlowModel.MAX_DIST, "" + maxDistance );
+
+		// First try loading from the current directory
+		try {
+			is = new FileInputStream( propsFile );
+			props.load( is );
+		} catch ( final Exception e ) {
+			System.err.println( "\nWARNING: no GUI props found for Tr2dFlowModel." );
+		}
+
+		scaleFactor = Double.parseDouble( props.getProperty( SCALE, "" + scaleFactor ) );
+		blockRadius = Integer.parseInt( props.getProperty( RADIUS, "" + blockRadius ) );
+		maxDistance = Integer.parseInt( props.getProperty( MAX_DIST, "" + maxDistance ) );
+
+		return props;
+	}
+
+	public void saveParameterProps( final File propsFile ) {
+		try {
+			final OutputStream out = new FileOutputStream( propsFile );
+
+			propsParamValues.setProperty( Tr2dFlowModel.SCALE, "" + this.scaleFactor );
+			propsParamValues.setProperty( Tr2dFlowModel.RADIUS, "" + this.blockRadius );
+			propsParamValues.setProperty( Tr2dFlowModel.MAX_DIST, "" + this.maxDistance );
+
+			propsParamValues.store( out, "Tr2dFlowModel parameters" );
+		} catch ( final Exception e ) {
+			e.printStackTrace();
+		}
 	}
 }
