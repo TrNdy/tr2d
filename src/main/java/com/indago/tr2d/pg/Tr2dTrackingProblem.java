@@ -171,17 +171,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
     								segVarR.getSegment() ),
 							flow_vec ) );
 
-				if ( t >= 49 && t <= 50 && x < 100 && y < 100 ) {
-					System.out.println(
-							String.format(
-									"t==%d; x=%d; y=%d; vec=(%.2f,%.2f); cost=%.2f; cost_flow=%.2f",
-									t, x, y,
-									flow_vec.getA(),
-									flow_vec.getB(),
-									cost,
-									cost_flow));
-				}
-
 				if ( cost_flow <= maxRelevantMovementCost ) {
 					final MovementHypothesis moveHyp =
 							new MovementHypothesis( cost_flow, segVarL, segVarR );
