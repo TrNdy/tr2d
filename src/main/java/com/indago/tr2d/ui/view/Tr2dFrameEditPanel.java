@@ -436,19 +436,19 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				labelingPlus.getLabeling().getIndexImg(),
 				new SelectedSegmentsConverter( labelingPlus, selectionModel ),
 				new UnsignedShortType() );
-		this.bdvAdd( overlay, "selected segments", 0, 2, new ARGBType( 0x00FF00 ) );
+		this.bdvAdd( overlay, "selected segments", 0, 2, new ARGBType( 0x00FF00 ), true );
 
 		overlay = Converters.convert(
 				labelingPlus.getLabeling().getIndexImg(),
 				new HighlightedSegmentsConverter( labelingPlus, highlightModel ),
 				new UnsignedShortType() );
-		this.bdvAdd( overlay, "highlighted segment", 0, 1, new ARGBType( 0xFF00FF ) );
+		this.bdvAdd( overlay, "highlighted segment", 0, 1, new ARGBType( 0xFF00FF ), true );
 
 		overlay = Converters.convert(
 				labelingPlus.getLabeling().getIndexImg(),
 				new FocusedSegmentsConverter( labelingPlus, focusModel ),
 				new UnsignedShortType() );
-		this.bdvAdd( overlay, "focused segment", 0, 1, new ARGBType( 0x0000FF ) );
+		this.bdvAdd( overlay, "focused segment", 0, 1, new ARGBType( 0x0000FF ), true );
 
 		highlightModel.addHighlightListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
 		selectionModel.addSelectionListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );

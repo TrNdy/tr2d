@@ -33,12 +33,20 @@ public interface BdvWithOverlaysOwner extends BdvOwner {
 	 * @param img
 	 */
 	public default void bdvAdd( final BdvOverlay overlay, final String title ) {
+		bdvAdd( overlay, title, true );
+	}
+
+	/**
+	 * @param img
+	 */
+	public default void bdvAdd( final BdvOverlay overlay, final String title, final boolean isActive ) {
 		final BdvSource source = BdvFunctions.showOverlay(
 				overlay,
 				title,
 				Bdv.options().addTo( bdvGetHandlePanel() ) );
 		bdvGetOverlaySources().add( source );
 		bdvGetOverlays().add( overlay );
+		source.setActive( isActive );
 	}
 
 	/**

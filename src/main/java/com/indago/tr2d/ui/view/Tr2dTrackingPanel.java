@@ -47,7 +47,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 			model.bdvAdd( model.getImgSolution(), "solution" );
 		}
 		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay_tracking" );
-		model.bdvAdd( new Tr2dFlowOverlay( model.getTr2dModel().getFlowModel() ), "overlay_flow" );
+		model.bdvAdd( new Tr2dFlowOverlay( model.getTr2dModel().getFlowModel() ), "overlay_flow", false );
 	}
 
 	/**

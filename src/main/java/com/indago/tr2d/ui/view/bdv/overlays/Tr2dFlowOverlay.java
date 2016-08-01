@@ -35,7 +35,9 @@ public class Tr2dFlowOverlay extends BdvOverlay {
 	@Override
 	protected void draw( final Graphics2D g ) {
 		if ( flowModel.hasFlowLoaded() ) {
-			drawRegularSpacesVectors( g, info.getTimePointIndex() );
+			if ( info.getTimePointIndex() < flowModel.getFlowImage().dimension( 3 ) ) {
+				drawRegularSpacesVectors( g, info.getTimePointIndex() );
+			}
 		}
 	}
 

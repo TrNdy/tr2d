@@ -54,15 +54,15 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		final RandomAccessibleInterval< FloatType > flowImg = model.getFlowImage();
 		model.bdvAdd( model.getModel().getRawData(), "RAW" );
 		if ( flowImg != null ) {
-			model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r" );
-			model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi" );
+			model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r", false );
+			model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi", false );
 			model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
 		}
 
 		final MigLayout layout = new MigLayout( "", "[][grow]", "" );
 		final JPanel controls = new JPanel( layout );
 
-		final JLabel labelScaleFactor = new JLabel( "Downscale factor:" );
+		final JLabel labelScaleFactor = new JLabel( "Scale factor:" );
 		txtScaleFactor = new JTextField( "" + model.getScaleFactor() );
 		final JLabel labelBlockRadius = new JLabel( "Block radius:" );
 		txtBlockRadius = new JTextField( "" + model.getBlockRadius() );
@@ -101,8 +101,8 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 				model.bdvRemoveAll();
 				model.bdvRemoveAllOverlays();
 				model.bdvAdd( model.getModel().getRawData(), "RAW" );
-				model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r" );
-				model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi" );
+				model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r", false );
+				model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi", false );
 				model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
 
 			} catch ( final NumberFormatException nfe ) {

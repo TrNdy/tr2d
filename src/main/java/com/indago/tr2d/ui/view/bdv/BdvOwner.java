@@ -37,6 +37,17 @@ public interface BdvOwner {
 	 * @param title
 	 */
 	public default < T extends RealType< T > & NativeType< T > > void bdvAdd( final RandomAccessibleInterval< T > img, final String title ) {
+		bdvAdd( img, title, true );
+	}
+
+	/**
+	 * @param img
+	 * @param title
+	 */
+	public default < T extends RealType< T > & NativeType< T > > void bdvAdd(
+			final RandomAccessibleInterval< T > img,
+			final String title,
+			final boolean isActive ) {
 		final BdvSource source = BdvFunctions.show(
 				img,
 				title,
@@ -48,6 +59,7 @@ public interface BdvOwner {
 		ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
 		source.setDisplayRangeBounds( 0, max.getRealDouble() );
 		source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
+		source.setActive( isActive );
 	}
 
 	/**
@@ -62,7 +74,8 @@ public interface BdvOwner {
 			final String title,
 			final double minVal,
 			final double maxVal,
-			final ARGBType color ) {
+			final ARGBType color,
+			final boolean isActive ) {
 		final BdvSource source = BdvFunctions.show(
 				img,
 				title,
@@ -72,6 +85,7 @@ public interface BdvOwner {
 		source.setDisplayRangeBounds( 0, maxVal );
 		source.setDisplayRange( minVal, maxVal );
 		source.setColor( color );
+		source.setActive( isActive );
 	}
 
 	/**

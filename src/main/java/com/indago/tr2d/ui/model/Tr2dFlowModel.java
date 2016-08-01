@@ -234,7 +234,6 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		final Img< FloatType > imgScaled =
 				ops.transform().scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NearestNeighborInterpolatorFactory<>() );
 
-		System.out.println( ">>> " + scaledInputFile.getAbsolutePath() );
 		IO.saveImg( scaledInputFile.getAbsolutePath(), imgScaled );
 		final ImagePlus scaledImagePlus = IJ.openImage( scaledInputFile.getAbsolutePath() );
 		flowMagic.computeAndStoreFlow(
@@ -244,11 +243,8 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 				( byte ) getMaxDistance(),
 				scaledFlowFile.getAbsolutePath() );
 
-		Img< FloatType > scaledFlow;
 		try {
-			scaledFlow = FloatTypeImgLoader.loadTiffEnsureType( scaledFlowFile.getFile() );
-//			final Img< FloatType > scaledFlow = IO.openFloat( scaledFlowFile.getAbsolutePath() );
-			ImageJFunctions.show( scaledFlow );
+			final Img< FloatType > scaledFlow = FloatTypeImgLoader.loadTiffEnsureType( scaledFlowFile.getFile() );
 
 			//inverse scaling
 			final Img< FloatType > flow =
@@ -256,7 +252,6 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 							scaledFlow,
 							new double[] { 1. / scaleFactor, 1. / scaleFactor, 1, 1 },
 							new NearestNeighborInterpolatorFactory<>() );
-			ImageJFunctions.show( flow );
 
 			final ImagePlus ip = ImageJFunctions.wrap( flow, "flow" );
 			IJ.save( ip.duplicate(), flowFile.getAbsolutePath() );
