@@ -119,7 +119,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	// === Hypotheses browser related stuff ============================================
 	private final GroupManager manager;
 	private final GroupHandle trackSchemeGroupHandle;
-	private final TrackSchemeOptions optional;
+	private final TrackSchemeOptions trackSchemeOptions;
 	private final InputTriggerConfig inputConf;
 
 	private final InputActionBindings keybindings;
@@ -185,8 +185,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		manager = new GroupManager();
 		trackSchemeGroupHandle = manager.createGroupHandle();
-		optional = TrackSchemeOptions.options();
-		inputConf = getKeyConfig( optional );
+		trackSchemeOptions = TrackSchemeOptions.options();
+		inputConf = getKeyConfig( trackSchemeOptions );
 
 		imgs = new ArrayList<>();
 		keybindings = new InputActionBindings();
@@ -288,8 +288,9 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			mapLabelData2SegmentVertex = new HashMap<>();
 			mapLabelingSegment2SegmentVertex = new HashMap<>();
 			for ( final LabelData labelData : labelingPlus.getLabeling().getMapping().getLabels() ) {
-				mapLabelData2SegmentVertex.put( labelData, segmentGraph.addVertex().init( labelData ) );
-				mapLabelingSegment2SegmentVertex.put( labelData.getSegment(), segmentGraph.addVertex().init( labelData ) );
+				final SegmentVertex newVertex = segmentGraph.addVertex().init( labelData );
+				mapLabelData2SegmentVertex.put( labelData, newVertex );
+				mapLabelingSegment2SegmentVertex.put( labelData.getSegment(), newVertex );
 			}
 
 			final CheckedPairs pairs = new CheckedPairs( segmentGraph.getGraphIdBimap() );
@@ -359,6 +360,9 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 					v.setTimepoint( getMaxParentTimepoint( v ) + 1 );
 				}
 			}
+			for ( final SegmentVertex root : roots ) {
+				root.setTimepoint( 5 );
+			}
 
 			display( segmentGraph, labelingPlus );
 		}
@@ -403,7 +407,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 						new TrackSchemeNavigation(
 								new DefaultModelNavigationProperties<>( modelGraph, idmap, navigationHandler ),
 								trackSchemeGraph ),
-						optional );
+						trackSchemeOptions );
 		helperPanel.add( trackschemePanel, BorderLayout.CENTER );
 
 		mouseAndKeyHandler.setInputMap( triggerbindings.getConcatenatedInputTriggerMap() );
@@ -474,7 +478,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 					continue A;
 				}
 			}
-			return false;
+			return true;
 		}
 		return true;
 	}
@@ -484,10 +488,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 * timepoint found.
 	 *
 	 * @param v
-	 * @return
+	 * @return -1 for roots, otherwise the max timepoint of all vertices that
+	 *         connect to v.
 	 */
 	private static int getMaxParentTimepoint( final SegmentVertex v ) {
-		int ret = 0;
+		int ret = -1;
 		for ( final SubsetEdge incomingEdge : v.incomingEdges() ) {
 			ret = Math.max( ret, incomingEdge.getSource().getTimepoint() );
 		}
