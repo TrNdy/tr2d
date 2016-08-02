@@ -57,7 +57,7 @@ public interface BdvOwner {
 		final T min = img.randomAccess().get().copy();
 		final T max = min.copy();
 		ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
-		source.setDisplayRangeBounds( 0, max.getRealDouble() );
+		source.setDisplayRangeBounds( Math.min( min.getRealDouble(), 0 ), max.getRealDouble() );
 		source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
 		source.setActive( isActive );
 	}
