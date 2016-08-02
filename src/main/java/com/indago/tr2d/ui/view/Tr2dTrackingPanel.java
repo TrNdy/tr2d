@@ -109,10 +109,10 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
 		if ( e.getSource().equals( bRun ) ) {
-			model.runInThread();
+			model.runInThread( false );
 		} else if ( e.getSource().equals( bRestart ) ) {
 			model.reset();
-			model.runInThread();
+			model.runInThread( true );
 		} else if ( e.getSource().equals( bEditFrame ) ) {
 			frameEditPanel.setFrameToShow( model.bdvGetHandlePanel().getBdvHandle().getViewerPanel().getState().getCurrentTimepoint() );
 			frameEditPanel.selectionFromCurrentSolution();

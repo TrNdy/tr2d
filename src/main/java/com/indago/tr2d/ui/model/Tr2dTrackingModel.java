@@ -179,9 +179,24 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * Does not take care of the BDV.
 	 * For a threaded version us <code>runInThread</code>, which also takes care
 	 * of BDV.
+	 * Does not force resolving. If wanted: call <code>run(true)</code>.
 	 */
 	public void run() {
-		boolean doSolving = false;
+		run( false );
+	}
+
+	/**
+	 * Runs the optimization for the prepared tracking (in <code>prepare</code>
+	 * was never called, this function will call it).
+	 * Does not take care of the BDV.
+	 * For a threaded version us <code>runInThread</code>, which also takes care
+	 * of BDV.
+	 *
+	 * @param forceSolving
+	 *            true, force resolve in any case.
+	 */
+	public void run( final boolean forceSolving ) {
+		boolean doSolving = forceSolving;
 
 		if ( tr2dTraProblem == null ) {
 			if ( preparePG() ) {
@@ -204,13 +219,13 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * (Re)runs the trackins problem in a thread of it's own.
 	 * Additionally also takes care of the BDV.
 	 */
-	public void runInThread() {
+	public void runInThread( final boolean forceResolve ) {
 		final Tr2dTrackingModel self = this;
 		final Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
-				self.run();
+				self.run( forceResolve );
 				bdvRemoveAll();
 				bdvAdd( getTr2dModel().getRawData(), "RAW" );
 				final RandomAccessibleInterval< IntType > solution = getImgSolution();

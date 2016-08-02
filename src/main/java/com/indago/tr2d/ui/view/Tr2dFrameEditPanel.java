@@ -647,11 +647,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		} else if ( e.getSource().equals( bForceSelected ) ) {
 			forceCurrentSelection();
 			model.prepareFG();
-			model.runInThread();
+			model.runInThread( true );
 		} else if ( e.getSource().equals( bAvoidSelected ) ) {
 			avoidCurrentSelection();
 			model.prepareFG();
-			model.runInThread();
+			model.runInThread( true );
 		} else if ( e.getSource().equals( bForceSelectionExactly ) ) {
 			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 			// avoid all...
@@ -661,7 +661,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			// ...then force selected
 			forceCurrentSelection();
 			model.prepareFG();
-			model.runInThread();
+			model.runInThread( true );
 
 		// SELECTION RELATED
 		} else if ( e.getSource().equals( bSelectionFromSolution ) ) {
