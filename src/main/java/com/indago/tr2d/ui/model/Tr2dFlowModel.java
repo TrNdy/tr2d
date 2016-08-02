@@ -364,6 +364,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	 * Deletes scaled input, scaled flow, and actual flow files (if exist).
 	 */
 	public void removeFlowFiles() {
+		imgs.clear();
 		fileScaledInput.getFile().delete();
 		fileScaledFlow.getFile().delete();
 		fileFlow.getFile().delete();

@@ -33,9 +33,9 @@ public class LabelingTimeLapse {
 	private final Tr2dSegmentationCollectionModel model;
 
 	// Parameters for FilteredComponentTrees
-	private final int minComponentSize = 10;
-	private final int maxComponentSize = 10000;
-	private final Filter maxGrowthPerStep = new MaxGrowthPerStep( 1 );
+	private final int minComponentSize;
+	private final int maxComponentSize;
+	private final Filter maxGrowthPerStep;
 	private final boolean darkToBright = false;
 
 	private final List< LabelingBuilder > frameLabelingBuilders;
@@ -48,6 +48,11 @@ public class LabelingTimeLapse {
 	 */
 	public LabelingTimeLapse( final Tr2dSegmentationCollectionModel model ) {
 		this.model = model;
+
+		minComponentSize = 25;
+		maxComponentSize = ( int ) ( model.getModel().getRawData().dimension( 0 ) * model.getModel().getRawData().dimension( 1 ) - 1 );
+		maxGrowthPerStep = new MaxGrowthPerStep( maxComponentSize );
+
 		this.frameLabelingBuilders = new ArrayList< >();
 		processedOrLoaded = false;
 	}

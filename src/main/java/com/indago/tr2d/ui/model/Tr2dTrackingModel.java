@@ -141,9 +141,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * Marks this tracking model as 'reset'.
+	 * (Re-)fetches all hypotheses and marks this tracking model as 'reset'.
 	 */
 	public void reset() {
+		dataFolder.getFile( FILENAME_TRACKING ).getFile().delete();
+		processSegmentationInputs( true );
 		tr2dTraProblem = null;
 	}
 
@@ -153,7 +155,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * project folder).
 	 */
 	private boolean preparePG() {
-		if ( processSegmentationInputs() ) {
+		if ( processSegmentationInputs( false ) ) {
 			buildTrackingProblem();
 			saveTrackingProblem();
 			mfg = null;
@@ -268,10 +270,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 *
+	 * @return returns true if segmentations could be processed, false e.g. if
+	 *         no segmentation was found.
 	 */
-	public boolean processSegmentationInputs() {
-		if ( labelingFrames.needProcessing() ) {
+	public boolean processSegmentationInputs( final boolean forceHypothesesRefetch ) {
+		if ( forceHypothesesRefetch || labelingFrames.needProcessing() ) {
 			if ( !labelingFrames.processFrames() ) {
 				final String msg = "Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!";
 				System.err.println( msg );
