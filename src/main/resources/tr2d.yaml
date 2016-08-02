@@ -2,4 +2,4 @@
 - !mapping
   action: tr2d_bindings
   contexts: [tr2d]
-  triggers: [COMMA, COLON]
+  triggers: [CONTROL N, CONTROL P]

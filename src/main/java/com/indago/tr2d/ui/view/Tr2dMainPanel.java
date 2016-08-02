@@ -145,7 +145,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 //			final KeyStrokeAdder adder = conf.keyStrokeAdder(
 //					this.getInputMap( WHEN_IN_FOCUSED_WINDOW ),
 //					"tr2d" );
-//			adder.put( "tr2d_bindings", "COMMA", "COLON" );
+//			adder.put( "tr2d_bindings", "CONTROL N", "CONTROL P" );
 //
 //			// dump config...
 //			final InputTriggerDescriptionsBuilder builder = new InputTriggerDescriptionsBuilder();
@@ -163,11 +163,11 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 			a.runnableAction(
 					() -> tabs.setSelectedIndex( Math.min( tabs.getSelectedIndex() + 1, tabs.getTabCount() - 1 ) ),
 					"next tab",
-					"PERIOD" );
+					"CONTROL N" );
 			a.runnableAction(
 					() -> tabs.setSelectedIndex( Math.max( tabs.getSelectedIndex() - 1, 0 ) ),
 					"previous tab",
-					"COMMA" );
+					"CONTROL P" );
 		}
 		catch ( IllegalArgumentException | IOException e )
 		{
