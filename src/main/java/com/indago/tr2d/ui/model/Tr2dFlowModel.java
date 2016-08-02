@@ -54,12 +54,12 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 
 	private final ProjectFolder projectFolder;
 
-	private final ProjectFile propsFileParamValues;
+	private final ProjectFile filePropsParamValues;
 	private final Properties propsParamValues;
 
-	private final ProjectFile scaledInputFile;
-	private final ProjectFile scaledFlowFile;
-	private final ProjectFile flowFile;
+	private final ProjectFile fileScaledInput;
+	private final ProjectFile fileScaledFlow;
+	private final ProjectFile fileFlow;
 
 	private BdvHandlePanel bdvHandlePanel;
 	private final List< BdvSource > bdvSources = new ArrayList<>();
@@ -68,7 +68,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	private final List< BdvSource > bdvOverlaySources = new ArrayList<>();
 
 	private double scaleFactor = .25;
-	private int blockRadius = 20;
+	private int blockRadius = 15;
 	private int maxDistance = 15;
 
 	/**
@@ -80,19 +80,19 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		if ( !projectFolder.exists() ) {
 			projectFolder.getFolder().mkdir();
 		}
-		propsFileParamValues = projectFolder.addFile( "guiValues.props" );
-		propsParamValues = loadParameterProps( propsFileParamValues.getFile() );
+		filePropsParamValues = projectFolder.addFile( "guiValues.props" );
+		propsParamValues = loadParameterProps( filePropsParamValues.getFile() );
 
-		scaledInputFile = projectFolder.addFile( "input_scaled.tif" );
-		flowFile = projectFolder.addFile( "flow.tif" );
-		scaledFlowFile = projectFolder.addFile( "flow_scaled.tif" );
+		fileScaledInput = projectFolder.addFile( "input_scaled.tif" );
+		fileFlow = projectFolder.addFile( "flow.tif" );
+		fileScaledFlow = projectFolder.addFile( "flow_scaled.tif" );
 
-		if ( !flowFile.canRead() ) {
+		if ( !fileFlow.canRead() ) {
 			System.err
 					.println( "\nINFO: Flow subfolder does not contain a file 'flow.tif'." );
 		} else {
 			try {
-				imgs.add( FloatTypeImgLoader.loadTiff( flowFile.getFile() ) );
+				imgs.add( FloatTypeImgLoader.loadTiff( fileFlow.getFile() ) );
 			} catch ( final ImgIOException e ) {
 				e.printStackTrace();
 			}
@@ -232,7 +232,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	 */
 	public void computeAndStoreFlow() {
 		// make the parameter values persistent
-		saveParameterProps( propsFileParamValues.getFile() );
+		saveParameterProps( filePropsParamValues.getFile() );
 
 		final MSEBlockFlow flowMagic = new MSEBlockFlow();
 
@@ -254,17 +254,17 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		final Img< FloatType > imgScaled =
 				ops.transform().scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NearestNeighborInterpolatorFactory<>() );
 
-		IO.saveImg( scaledInputFile.getAbsolutePath(), imgScaled );
-		final ImagePlus scaledImagePlus = IJ.openImage( scaledInputFile.getAbsolutePath() );
+		IO.saveImg( fileScaledInput.getAbsolutePath(), imgScaled );
+		final ImagePlus scaledImagePlus = IJ.openImage( fileScaledInput.getAbsolutePath() );
 		flowMagic.computeAndStoreFlow(
 				scaledImagePlus,
 				getScaleFactor(),
 				getBlockRadius(),
 				( byte ) getMaxDistance(),
-				scaledFlowFile.getAbsolutePath() );
+				fileScaledFlow.getAbsolutePath() );
 
 		try {
-			final Img< FloatType > scaledFlow = FloatTypeImgLoader.loadTiffEnsureType( scaledFlowFile.getFile() );
+			final Img< FloatType > scaledFlow = FloatTypeImgLoader.loadTiffEnsureType( fileScaledFlow.getFile() );
 
 			//inverse scaling
 			final Img< FloatType > flow =
@@ -274,7 +274,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 							new NearestNeighborInterpolatorFactory<>() );
 
 			final ImagePlus ip = ImageJFunctions.wrap( flow, "flow" );
-			IJ.save( ip.duplicate(), flowFile.getAbsolutePath() );
+			IJ.save( ip.duplicate(), fileFlow.getAbsolutePath() );
 			imgs.clear();
 			imgs.add( flow );
 		} catch ( final ImgIOException e ) {
@@ -358,5 +358,14 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		} catch ( final Exception e ) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Deletes scaled input, scaled flow, and actual flow files (if exist).
+	 */
+	public void removeFlowFiles() {
+		fileScaledInput.getFile().delete();
+		fileScaledFlow.getFile().delete();
+		fileFlow.getFile().delete();
 	}
 }

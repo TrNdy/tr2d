@@ -21,7 +21,6 @@ import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.view.Views;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -37,6 +36,7 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 	private JTextField txtBlockRadius;
 	private JTextField txtMaxDist;
 	private JButton btnComputeFlow;
+	private JButton btnRemoveFlow;
 
 	public Tr2dFlowPanel( final Tr2dFlowModel model ) {
 		super( new BorderLayout() );
@@ -54,8 +54,8 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		final RandomAccessibleInterval< FloatType > flowImg = model.getFlowImage();
 		model.bdvAdd( model.getModel().getRawData(), "RAW" );
 		if ( flowImg != null ) {
-			model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r", false );
-			model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi", false );
+//			model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r", false );
+//			model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi", false );
 			model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
 		}
 
@@ -70,6 +70,8 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		txtMaxDist = new JTextField( "" + model.getMaxDistance() );
 		btnComputeFlow = new JButton( "compute flow" );
 		btnComputeFlow.addActionListener( this );
+		btnRemoveFlow = new JButton( "remove flow" );
+		btnRemoveFlow.addActionListener( this );
 
 		controls.add( labelScaleFactor );
 		controls.add( txtScaleFactor, "growx, wrap" );
@@ -78,6 +80,7 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 		controls.add( labelMaxDist );
 		controls.add( txtMaxDist, "growx, wrap" );
 		controls.add( btnComputeFlow, "span, growx, wrap" );
+		controls.add( btnRemoveFlow, "span, growx, wrap" );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
 		splitPane.setResizeWeight( 0.1 ); // 1.0 == extra space given to left component alone!
@@ -101,13 +104,20 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 				model.bdvRemoveAll();
 				model.bdvRemoveAllOverlays();
 				model.bdvAdd( model.getModel().getRawData(), "RAW" );
-				model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r", false );
-				model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi", false );
+//				model.bdvAdd( Views.hyperSlice( flowImg, 2, 0 ), "r", false );
+//				model.bdvAdd( Views.hyperSlice( flowImg, 2, 1 ), "phi", false );
 				model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
 
 			} catch ( final NumberFormatException nfe ) {
 				System.err.println( "NumberFormatException@tr2dFlowPanel: " + nfe.getMessage() );
 			}
+		} else
+		if ( e.getSource().equals( btnRemoveFlow ) ) {
+			model.removeFlowFiles();
+			final RandomAccessibleInterval< FloatType > flowImg = null;
+			model.bdvRemoveAllOverlays();
+			model.bdvRemoveAll();
+			model.bdvAdd( model.getModel().getRawData(), "RAW" );
 		}
 	}
 }

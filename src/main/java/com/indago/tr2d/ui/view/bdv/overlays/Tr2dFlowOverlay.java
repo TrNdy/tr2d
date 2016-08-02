@@ -50,8 +50,16 @@ public class Tr2dFlowOverlay extends BdvOverlay {
 		final RandomAccessibleInterval< FloatType > flowImg = flowModel.getFlowImage( t );
 		final long sizeX = flowImg.dimension( 0 );
 		final long sizeY = flowImg.dimension( 1 );
-		for ( int x = 0; x < sizeX; x += 10 ) {
-			for ( int y = 0; y < sizeY; y += 10 ) {
+		int spacing = 10; // at most all 10 pixels
+		spacing = Math.max( spacing, ( int ) Math.max( sizeX, sizeY ) / 25 ); // but if large image only 25 vecs along longer side
+
+		int startx = ( int ) ( sizeX % spacing ) / 2;
+		startx = ( startx == 0 ) ? spacing / 2 : startx;
+		int starty = ( int ) ( sizeY % spacing ) / 2;
+		starty = ( starty == 0 ) ? spacing / 2 : starty;
+
+		for ( int x = startx; x < sizeX; x += spacing ) {
+			for ( int y = starty; y < sizeY; y += spacing ) {
 				drawVector( g, t, x, y );
 			}
 		}
