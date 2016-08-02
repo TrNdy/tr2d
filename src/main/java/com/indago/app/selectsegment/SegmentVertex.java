@@ -14,7 +14,7 @@ public class SegmentVertex extends AbstractObjectVertex< SegmentVertex, SubsetEd
 
 	public SegmentVertex init( final LabelData labelData ) {
 		this.labelData = labelData;
-		this.timepoint = 0;
+		this.timepoint = -1;
 		return this;
 	}
 
