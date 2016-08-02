@@ -435,7 +435,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 			final IterableRegion< ? > region = segVar.getSegment().getRegion();
 			final int c = color;
-			Regions.sample( region, slice ).forEach( t -> t.set( c ) );
+			try {
+				Regions.sample( region, slice ).forEach( t -> t.set( c ) );
+			} catch ( final ArrayIndexOutOfBoundsException aiaob ) {
+				System.err.print( "." );
+			}
 
 			for ( final MovementHypothesis move : segVar.getOutAssignments().getMoves() ) {
 				if ( pgSolution.getAssignment( move ) == 1 ) {
