@@ -463,10 +463,11 @@ public class BuildSegmentGraph
 	 * timepoint found.
 	 *
 	 * @param v
-	 * @return
+	 * @return -1 for roots, otherwise the max timepoint of all vertices that
+	 *         connect to v.
 	 */
 	private static int getMaxParentTimepoint( final SegmentVertex v ) {
-		int ret = 0;
+		int ret = -1;
 		for ( final SubsetEdge incomingEdge : v.incomingEdges() ) {
 			ret = Math.max( ret, incomingEdge.getSource().getTimepoint() );
 		}
