@@ -476,7 +476,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 					continue A;
 				}
 			}
-			return true;
+			return false;
 		}
 		return true;
 	}
