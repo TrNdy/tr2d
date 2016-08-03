@@ -304,29 +304,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				// connect regarding subset relation (while removing transitive edges)
 				for ( final LabelData subset : conflictingSegments ) {
 
-					// DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG
-					boolean from_fits = false;
-					if ( subset.getId() == 9 || subset.getId() == 39 || subset.getId() == 13 || subset.getId() == 37 ) {
-						System.out.println( ">>> sub-id = " + subset.getId() );
-						from_fits = true;
-					}
-					// DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG
-
 					final SegmentVertex subv = mapLabelData2SegmentVertex.get( subset );
 					for ( final LabelData superset : conflictingSegments ) {
 						if ( subset.equals( superset ) )
 							continue;
 						final SegmentVertex superv = mapLabelData2SegmentVertex.get( superset );
-
-						// DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG
-						boolean to_fits = false;
-						if ( from_fits ) {
-							if ( superset.getId() == 9 || superset.getId() == 39 || superset.getId() == 13 || superset.getId() == 37 ) {
-								System.out.println( ">>>>>> super-id = " + superset.getId() );
-								to_fits = true;
-							}
-						}
-						// DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG
 
 						// Was this (ordered) pair of vertices already checked?
 						// If yes, abort.
@@ -358,13 +340,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 								if ( descendants.contains( edge.getTarget() ) )
 									remove.add( edge );
 						remove.forEach( edge -> segmentGraph.remove( edge ) );
-
-						// DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG
-
-						if ( from_fits && to_fits ) {
-							System.out.println( ">>>>>>>>> ADDED!!!" );
-						}
-						// DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG  DEBUG
 
 						// Add the edge, finally.
 						segmentGraph.addEdge( superv, subv );
@@ -504,7 +479,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 					continue A;
 				}
 			}
-			return true;
+			return false;
 		}
 		return true;
 	}
