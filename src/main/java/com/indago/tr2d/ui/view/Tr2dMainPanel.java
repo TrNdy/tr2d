@@ -35,13 +35,13 @@ import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvSource;
 import bdv.viewer.InputActionBindings;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.real.DoubleType;
 
 /**
  * @author jug
  */
 public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListener {
+
+	private static final long serialVersionUID = 2153194588508418291L;
 
 	private final Frame frame;
 
@@ -62,7 +62,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	/**
 	 * @param imgPlus
 	 */
-	@SuppressWarnings( { "rawtypes", "unchecked" } )
 	public Tr2dMainPanel( final Frame frame, final Tr2dModel model ) {
 		super( new BorderLayout( 5, 5 ) );
 
@@ -96,7 +95,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabFlow = new Tr2dFlowPanel( model.getFlowModel() );
 
 		// === TAB TRACKING========================================================================
-		final RandomAccessibleInterval< DoubleType > imgOrig = model.getRawData();
 		//TODO this should at some point be a given model, not fixed the Hernan thing...
 		tabTracking = new Tr2dTrackingPanel( model.getTrackingModel() );
 
@@ -177,7 +175,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	 */
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
-		// TODO Auto-generated method stub
 	}
 
 	/**
@@ -185,7 +182,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	 */
 	@Override
 	public void stateChanged( final ChangeEvent e ) {
-		// TODO Auto-generated method stub
 	}
 
 	public void collapseLog() {

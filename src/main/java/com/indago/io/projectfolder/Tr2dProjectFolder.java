@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.io.ProjectFolder;
 
 /**
@@ -51,7 +52,7 @@ public class Tr2dProjectFolder extends ProjectFolder {
 		} catch ( final IOException e ) {
 			System.err.println( String.format( "ERROR: Project folder (%s) could not be set up.", super.getAbsolutePath() ) );
 			e.printStackTrace();
-			System.exit( 3 );
+			Tr2dApplication.quit( 3 );
 		}
 	}
 
