@@ -5,6 +5,7 @@ package com.indago.app.hernan.costs;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
+import com.indago.costs.CostParams;
 import com.indago.costs.CostsFactory;
 import com.indago.costs.SegmentCostUtils;
 import com.indago.data.segmentation.LabelingSegment;
@@ -24,6 +25,8 @@ public class HernanDivisionCostFactory
 		CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > {
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
+
+	private CostParams params;
 
 	private static double a_1 = 25;
 	private static double a_2 = 50;
@@ -136,4 +139,19 @@ public class HernanDivisionCostFactory
 		return confidenceS1 * Math.abs( angleS1 - angleS2s );
 	}
 
+	/**
+	 * @see com.indago.costs.CostsFactory#getParameters()
+	 */
+	@Override
+	public CostParams getParameters() {
+		return params;
+	}
+
+	/**
+	 * @see com.indago.costs.CostsFactory#setParameters(com.indago.costs.CostParams)
+	 */
+	@Override
+	public void setParameters( final CostParams p ) {
+		this.params = p;
+	}
 }

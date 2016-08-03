@@ -3,6 +3,7 @@
  */
 package com.indago.app.hernan.costs;
 
+import com.indago.costs.CostParams;
 import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.util.math.VectorUtil;
@@ -21,6 +22,8 @@ public class HernanMappingCostFactory
 		CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > {
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
+
+	private CostParams params;
 
 	private static double a_1 = .33;
 	private static double a_2 = 1.0;
@@ -77,4 +80,19 @@ public class HernanMappingCostFactory
 		return centroidDistance;
 	}
 
+	/**
+	 * @see com.indago.costs.CostsFactory#getParameters()
+	 */
+	@Override
+	public CostParams getParameters() {
+		return params;
+	}
+
+	/**
+	 * @see com.indago.costs.CostsFactory#setParameters(com.indago.costs.CostParams)
+	 */
+	@Override
+	public void setParameters( final CostParams p ) {
+		this.params = p;
+	}
 }
