@@ -88,7 +88,10 @@ public class Tr2dWekaSegmentationPanel extends JPanel implements ActionListener 
 
 		helper.add( bStartSegmentation );
 
-		final BdvHandlePanel bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
+		final BdvHandlePanel bdv = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
+				.options()
+				.is2D()
+				.inputTriggerConfig( model.getModel().getModel().getDefaultInputTriggerConfig() ) );
 		model.bdvSetHandlePanel( bdv );
 
 		this.add( helper, BorderLayout.NORTH );

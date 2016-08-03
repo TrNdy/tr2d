@@ -74,11 +74,13 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	}
 
 	private void buildGui() {
+		// --- INPUT TRIGGERS ---------------------------------------------------------------------
+		model.setDefaultInputTriggerConfig( loadInputTriggerConfig() );
 
 		// === TAB DATA ===========================================================================
 		tabs = new JTabbedPane();
 		tabData = new JPanel( new BorderLayout() );
-		bdvData = new BdvHandlePanel( frame, Bdv.options().is2D() );
+		bdvData = new BdvHandlePanel( frame, Bdv.options().is2D().inputTriggerConfig( model.getDefaultInputTriggerConfig() ) );
 		tabData.add( bdvData.getViewerPanel(), BorderLayout.CENTER );
 		final BdvSource source = BdvFunctions.show(
 				model.getRawData(),
@@ -120,8 +122,14 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		splitPane.setOneTouchExpandable( true );
 
 		this.add( splitPane, BorderLayout.CENTER );
+	}
 
-
+	/**
+	 * @return the loaded <code>InputTriggerConfig</code>, or <code>null</code>
+	 *         if none was found.
+	 *
+	 */
+	private InputTriggerConfig loadInputTriggerConfig() {
 		try
 		{
 			String path = "";
@@ -133,26 +141,11 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 //					System.out.println( "attempt 2..." );
 //					path = Tr2dApplication.class.getClassLoader().getResource( "resources/tr2d.yaml" ).getPath();
 //				} catch ( final Exception e2 ) {
-					System.out.println( ">>> Error: tr2d.yaml not found in project/JAR resources..." );
+				System.err.println( "\n>>> Error: tr2d.yaml not found in project/JAR resources..." );
 //				}
 			}
 
 			final InputTriggerConfig conf = new InputTriggerConfig( YamlConfigIO.read( path ) );
-
-//		Code to create an minimal tr2d.yaml...
-//		--------------------------------------
-//			final InputTriggerConfig conf = new InputTriggerConfig();
-//			final KeyStrokeAdder adder = conf.keyStrokeAdder(
-//					this.getInputMap( WHEN_IN_FOCUSED_WINDOW ),
-//					"tr2d" );
-//			adder.put( "tr2d_bindings", "CONTROL N", "CONTROL P" );
-//
-//			// dump config...
-//			final InputTriggerDescriptionsBuilder builder = new InputTriggerDescriptionsBuilder();
-//			builder.addMap(
-//					this.getInputMap( WHEN_IN_FOCUSED_WINDOW ),
-//					"tr2d" );
-//			YamlConfigIO.write( builder.getDescriptions(), "/Users/jug/Desktop/tr2d.yaml" );
 
 			final InputActionBindings bindings = new InputActionBindings();
 			SwingUtilities.replaceUIActionMap( this, bindings.getConcatenatedActionMap() );
@@ -163,16 +156,20 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 			a.runnableAction(
 					() -> tabs.setSelectedIndex( Math.min( tabs.getSelectedIndex() + 1, tabs.getTabCount() - 1 ) ),
 					"next tab",
-					"CONTROL N" );
+					"COLON" );
 			a.runnableAction(
 					() -> tabs.setSelectedIndex( Math.max( tabs.getSelectedIndex() - 1, 0 ) ),
 					"previous tab",
-					"CONTROL P" );
+					"COMMA" );
+
+			return conf;
 		}
 		catch ( IllegalArgumentException | IOException e )
 		{
 			e.printStackTrace();
 		}
+
+		return null;
 	}
 
 	/**

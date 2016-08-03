@@ -3,6 +3,8 @@
  */
 package com.indago.tr2d.ui.model;
 
+import org.scijava.ui.behaviour.io.InputTriggerConfig;
+
 import com.indago.app.hernan.costs.HernanAppearanceCostFactory;
 import com.indago.app.hernan.costs.HernanDisappearanceCostFactory;
 import com.indago.app.hernan.costs.HernanDivisionCostFactory;
@@ -28,6 +30,8 @@ public class Tr2dModel {
 	private RandomAccessibleInterval< DoubleType > imgRaw;
 	private final DoubleType min = new DoubleType();
 	private final DoubleType max = new DoubleType();
+
+	private InputTriggerConfig inputTriggerConfig;
 
 	private final ProjectFolder projectFolder;
 
@@ -115,6 +119,22 @@ public class Tr2dModel {
 	 */
 	public Tr2dTrackingModel getTrackingModel() {
 		return trackingModel;
+	}
+
+	/**
+	 * @param conf
+	 */
+	public void setDefaultInputTriggerConfig( final InputTriggerConfig conf ) {
+		this.inputTriggerConfig = conf;
+	}
+
+	/**
+	 * @return the set <code>InputTriggerConfig</code>, or <code>null</code> if
+	 *         none was set.
+	 * @return
+	 */
+	public InputTriggerConfig getDefaultInputTriggerConfig() {
+		return this.inputTriggerConfig;
 	}
 
 }

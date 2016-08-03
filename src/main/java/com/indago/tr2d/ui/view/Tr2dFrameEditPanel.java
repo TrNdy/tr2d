@@ -264,7 +264,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		SwingUtilities.replaceUIActionMap( helperPanel, keybindings.getConcatenatedActionMap() );
 		SwingUtilities.replaceUIInputMap( helperPanel, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keybindings.getConcatenatedInputMap() );
 
-		bdvHandlePanel = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() );
+		bdvHandlePanel = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
+				.options()
+				.is2D()
+				.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) );
 		final JSplitPane split = new JSplitPane( JSplitPane.VERTICAL_SPLIT, bdvHandlePanel.getViewerPanel(), helperPanel );
 		split.setResizeWeight( 1 );
 		split.setOneTouchExpandable( true );

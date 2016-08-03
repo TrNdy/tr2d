@@ -1,5 +1,101 @@
 ---
+#
+#
+#### tr2d related stuff
+#######################
 - !mapping
-  action: tr2d_bindings
+  action: next tab
   contexts: [tr2d]
-  triggers: [CONTROL N, CONTROL P]
+  triggers: [ctrl N]
+- !mapping
+  action: previous tab
+  contexts: [tr2d]
+  triggers: [ctrl P]
+#
+#
+#### BDV related stuff
+######################
+#### KEYS
+# rotate ###
+- !mapping
+  action: 2d rotate left
+  contexts: [bdv]
+  triggers: [RIGHT]
+- !mapping
+  action: 2d rotate left fast
+  contexts: [bdv]
+  triggers: [shift RIGHT]
+- !mapping
+  action: 2d rotate left slow
+  contexts: [bdv]
+  triggers: [ctrl RIGHT]
+- !mapping
+  action: 2d rotate right
+  contexts: [bdv]
+  triggers: [LEFT]
+- !mapping
+  action: 2d rotate right fast
+  contexts: [bdv]
+  triggers: [shift LEFT]
+- !mapping
+  action: 2d rotate right slow
+  contexts: [bdv]
+  triggers: [ctrl LEFT]
+# zoom ###
+- !mapping
+  action: 2d zoom in
+  contexts: [bdv]
+  triggers: [UP]
+- !mapping
+  action: 2d zoom in fast
+  contexts: [bdv]
+  triggers: [shift UP]
+- !mapping
+  action: 2d zoom in slow
+  contexts: [bdv]
+  triggers: [ctrl UP]
+- !mapping
+  action: 2d zoom out
+  contexts: [bdv]
+  triggers: [DOWN]
+- !mapping
+  action: 2d zoom out fast
+  contexts: [bdv]
+  triggers: [shift DOWN]
+- !mapping
+  action: 2d zoom out slow
+  contexts: [bdv]
+  triggers: [ctrl DOWN]
+#
+#### MOUSE
+# translate
+- !mapping
+  action: 2d drag translate
+  contexts: [bdv]
+  triggers: [button1]
+- !mapping
+  action: 2d scroll translate
+  contexts: [bdv]
+  triggers: [scroll]
+- !mapping
+# rotate
+  action: 2d drag rotate
+  contexts: [bdv]
+  triggers: [button3]
+- !mapping
+  action: 2d scroll rotate fast
+  contexts: [bdv]
+  triggers: [not mapped]
+- !mapping
+  action: 2d scroll rotate slow
+  contexts: [bdv]
+  triggers: [not mapped]
+- !mapping
+  action: 2d scroll rotate
+  contexts: [bdv]
+  triggers: [not mapped]
+# zoom
+- !mapping
+  action: 2d scroll zoom
+  contexts: [bdv]
+  triggers: [meta scroll, shift ctrl scroll]

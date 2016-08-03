@@ -53,7 +53,11 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 
 	private void buildGui() {
 		final JPanel viewer = new JPanel( new BorderLayout() );
-		model.bdvSetHandlePanel( new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() ) );
+		model.bdvSetHandlePanel(
+				new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
+						.options()
+						.is2D()
+						.inputTriggerConfig( model.getModel().getModel().getDefaultInputTriggerConfig() ) ) );
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		final JPanel list = new JPanel( new BorderLayout() );

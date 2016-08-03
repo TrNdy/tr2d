@@ -90,7 +90,11 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		bRestart = new JButton( "restart" );
 		bRestart.addActionListener( this );
 
-		model.bdvSetHandlePanel( new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() ) );
+		model.bdvSetHandlePanel(
+				new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
+						.options()
+						.is2D()
+						.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) ) );
 
 		controls.add( panelEdit, "wrap" );
 		controls.add( bRun, "growx, wrap" );

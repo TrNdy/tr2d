@@ -47,7 +47,11 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 
 	private void buildGui() {
 		final JPanel viewer = new JPanel( new BorderLayout() );
-		model.bdvSetHandlePanel( new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv.options().is2D() ) );
+		model.bdvSetHandlePanel(
+				new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
+						.options()
+						.is2D()
+						.inputTriggerConfig( model.getModel().getDefaultInputTriggerConfig() ) ) );
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		// show loaded image
