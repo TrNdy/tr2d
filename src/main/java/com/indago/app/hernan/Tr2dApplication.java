@@ -22,6 +22,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.scijava.Context;
+import org.scijava.app.StatusService;
+import org.scijava.io.IOService;
 
 import com.apple.eawt.Application;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
@@ -36,6 +38,15 @@ import gurobi.GRBException;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
+import io.scif.codec.CodecService;
+import io.scif.formats.qt.QTJavaService;
+import io.scif.formats.tiff.TiffService;
+import io.scif.img.ImgUtilityService;
+import io.scif.services.DatasetIOService;
+import io.scif.services.JAIIIOService;
+import io.scif.services.LocationService;
+import io.scif.services.TranslatorService;
+import net.imagej.DatasetService;
 import net.imagej.ops.OpMatchingService;
 import net.imagej.ops.OpService;
 import weka.gui.ExtensionFileFilter;
@@ -78,20 +89,15 @@ public class Tr2dApplication {
 			}
 
 			// Create context (since we did not receive one that was injected in 'Tr2dPlugin')
-			final Context context = new Context( OpService.class, OpMatchingService.class );
+//			final Context context = new Context( OpService.class, OpMatchingService.class );
+			final Context context = new Context( OpService.class, OpMatchingService.class,
+					IOService.class, DatasetIOService.class, LocationService.class,
+					DatasetService.class, ImgUtilityService.class, StatusService.class,
+					TranslatorService.class, QTJavaService.class, TiffService.class,
+					CodecService.class, JAIIIOService.class );
 			ops = context.getService( OpService.class );
-
-//			final Context context =
-//			new Context( OpService.class, OpMatchingService.class,
-//					IOService.class, DatasetIOService.class, LocationService.class,
-//					DatasetService.class, ImgUtilityService.class, StatusService.class,
-//					TranslatorService.class, QTJavaService.class, TiffService.class,
-//					CodecService.class, JAIIIOService.class );
-			//final OpService ops = context.getService( OpService.class );
-			//final IOService io = context.getService( IOService.class );
-			//final DatasetService dss = context.getService( DatasetService.class );
 		} else {
-			System.out.println( "COMMAND (Plugin) -- ops=" + ops.toString() );
+			System.out.println( "COMMAND -- ops=" + ops.toString() );
 		}
 
 		checkGurobiAvailability();

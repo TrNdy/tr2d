@@ -1,4 +1,5 @@
 import org.scijava.command.Command;
+import org.scijava.command.ContextCommand;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -12,7 +13,7 @@ import net.imagej.ops.OpService;
  * @author Florian Jug
  */
 
-@Plugin( type = Command.class, headless = true, menuPath = "Plugins>Tracking>Tr2d (alpha)" )
+@Plugin( type = ContextCommand.class, headless = true, menuPath = "Plugins>Tracking>Tr2d 0.1 (alpha)" )
 public class Tr2dPlugin implements Command {
 
 	@Parameter

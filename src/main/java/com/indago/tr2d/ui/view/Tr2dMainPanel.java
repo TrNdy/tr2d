@@ -28,7 +28,6 @@ import javax.swing.event.ChangeListener;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
-import com.indago.app.hernan.Tr2dApplication;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.MessageConsole;
 
@@ -134,37 +133,13 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		try
 		{
 
-			InputTriggerConfig conf = null;
-			if ( Tr2dApplication.isStandalone ) {
-				String path = "";
-//				try {
-					System.out.println( "Try to fetch yaml from " + Tr2dApplication.class.getClassLoader().getResource( "tr2d.yaml" ).getPath() );
-					path = Tr2dApplication.class.getClassLoader().getResource( "tr2d.yaml" ).getPath();
-//				} catch ( final Exception e ) {
-//					try {
-//						System.out.println(
-//								"Try to fetch yaml from " + Tr2dApplication.class.getClassLoader().getResource( "resources/tr2d.yaml" ).getPath() );
-//						path = Tr2dApplication.class.getClassLoader().getResource( "resources/tr2d.yaml" ).getPath();
-//					} catch ( final Exception e2 ) {
-//						System.err.println( "\n>>> Error: tr2d.yaml not found in project/JAR resources..." );
-//					}
-//				}
-				conf = new InputTriggerConfig( YamlConfigIO.read( path ) );
-			} else {
-//				System.out.println( "Try to fetch yaml from " + getClass().getClassLoader().getResource( "tr2d.yaml" ).getFile() );
-//				if ( path.contains( ".jar!" ) ) {
-//					System.out.println( "Modifying path since ressourse is located inside a JAR..." );
-//					path = path.substring( path.indexOf( ".jar!" ) + 6 );
-//					System.out.println( "...new path to load: " + path );
-//				}
-				System.out.println( "Try to fetch yaml from " + ClassLoader.getSystemResource( "tr2d.yaml" ) );
-				URL yamlURL = ClassLoader.getSystemResource( "tr2d.yaml" );
-				if ( yamlURL == null ) {
-					yamlURL = getClass().getClassLoader().getResource( "tr2d.yaml" );
-				}
-				final BufferedReader in = new BufferedReader( new InputStreamReader( yamlURL.openStream() ) );
-				conf = new InputTriggerConfig( YamlConfigIO.read( in ) );
+			System.out.println( "Try to fetch yaml from " + ClassLoader.getSystemResource( "tr2d.yaml" ) );
+			URL yamlURL = ClassLoader.getSystemResource( "tr2d.yaml" );
+			if ( yamlURL == null ) {
+				yamlURL = getClass().getClassLoader().getResource( "tr2d.yaml" );
 			}
+			final BufferedReader in = new BufferedReader( new InputStreamReader( yamlURL.openStream() ) );
+			final InputTriggerConfig conf = new InputTriggerConfig( YamlConfigIO.read( in ) );
 
 			final InputActionBindings bindings = new InputActionBindings();
 			SwingUtilities.replaceUIActionMap( this, bindings.getConcatenatedActionMap() );
