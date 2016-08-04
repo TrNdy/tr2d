@@ -72,6 +72,11 @@ public class Tr2dApplication {
 		if ( isStandalone ) { // main NOT called via Tr2dPlugin
 			System.out.println( "STANDALONE" );
 
+			final ImageJ temp = IJ.getInstance();
+			if ( temp == null ) {
+				new ImageJ();
+			}
+
 			// Create context (since we did not receive one that was injected in 'Tr2dPlugin')
 			final Context context = new Context( OpService.class, OpMatchingService.class );
 			ops = context.getService( OpService.class );
@@ -87,11 +92,6 @@ public class Tr2dApplication {
 			//final DatasetService dss = context.getService( DatasetService.class );
 		} else {
 			System.out.println( "COMMAND (Plugin) -- ops=" + ops.toString() );
-		}
-
-		final ImageJ temp = IJ.getInstance();
-		if ( temp == null ) {
-			new ImageJ();
 		}
 
 		checkGurobiAvailability();
