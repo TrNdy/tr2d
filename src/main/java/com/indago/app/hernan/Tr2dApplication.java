@@ -21,6 +21,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.scijava.Context;
 
 import com.apple.eawt.Application;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
@@ -35,6 +36,8 @@ import gurobi.GRBException;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
+import net.imagej.ops.OpMatchingService;
+import net.imagej.ops.OpService;
 import weka.gui.ExtensionFileFilter;
 
 /**
@@ -60,9 +63,31 @@ public class Tr2dApplication {
 	private static int maxTime = Integer.MAX_VALUE;
 	private static int initOptRange = Integer.MAX_VALUE;
 
+	public static OpService ops = null;
+
 	public static void main( final String[] args ) {
 
 		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
+
+		if ( isStandalone ) { // main NOT called via Tr2dPlugin
+			System.out.println( "STANDALONE" );
+
+			// Create context (since we did not receive one that was injected in 'Tr2dPlugin')
+			final Context context = new Context( OpService.class, OpMatchingService.class );
+			ops = context.getService( OpService.class );
+
+//			final Context context =
+//			new Context( OpService.class, OpMatchingService.class,
+//					IOService.class, DatasetIOService.class, LocationService.class,
+//					DatasetService.class, ImgUtilityService.class, StatusService.class,
+//					TranslatorService.class, QTJavaService.class, TiffService.class,
+//					CodecService.class, JAIIIOService.class );
+			//final OpService ops = context.getService( OpService.class );
+			//final IOService io = context.getService( IOService.class );
+			//final DatasetService dss = context.getService( DatasetService.class );
+		} else {
+			System.out.println( "COMMAND (Plugin) -- ops=" + ops.toString() );
+		}
 
 		final ImageJ temp = IJ.getInstance();
 		if ( temp == null ) {
@@ -73,7 +98,7 @@ public class Tr2dApplication {
 		parseCommandLineArgs( args );
 
 		guiFrame = new JFrame( "tr2d" );
-		setImageAppIcon();
+		if ( isStandalone ) setImageAppIcon();
 
 		final ImagePlus imgPlus = openStackOrProjectUserInteraction();
 		final Tr2dModel model = new Tr2dModel( projectFolder, imgPlus );

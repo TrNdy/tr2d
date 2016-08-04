@@ -1,9 +1,10 @@
 import org.scijava.command.Command;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import com.indago.app.hernan.Tr2dApplication;
 
-import ij.ImagePlus;
+import net.imagej.ops.OpService;
 
 /**
  * Tr2d Plugin for Fiji/ImageJ2
@@ -13,7 +14,9 @@ import ij.ImagePlus;
 
 @Plugin( type = Command.class, headless = true, menuPath = "Plugins>Tracking>Tr2d (alpha)" )
 public class Tr2dPlugin implements Command {
-	protected ImagePlus image;
+
+	@Parameter
+	private OpService ops;
 
 	/**
 	 * @see java.lang.Runnable#run()
@@ -21,6 +24,7 @@ public class Tr2dPlugin implements Command {
 	@Override
 	public void run() {
 		Tr2dApplication.isStandalone = false;
+		Tr2dApplication.ops = ops;
 		Tr2dApplication.main( null );
 	}
 }

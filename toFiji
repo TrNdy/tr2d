@@ -1,0 +1,1 @@
+mvn -Dimagej.app.directory=/Applications/Fiji_forTr2d_local.app/ -Ddelete.other.versions=true -Denforcer.skip=true clean install

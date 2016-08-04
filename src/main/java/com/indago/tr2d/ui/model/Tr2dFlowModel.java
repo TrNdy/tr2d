@@ -12,8 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.scijava.Context;
-
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.flow.MSEBlockFlow;
 import com.indago.io.FloatTypeImgLoader;
 import com.indago.io.ProjectFile;
@@ -28,8 +27,6 @@ import ij.IJ;
 import ij.ImagePlus;
 import io.scif.img.IO;
 import io.scif.img.ImgIOException;
-import net.imagej.ops.OpMatchingService;
-import net.imagej.ops.OpService;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
@@ -238,21 +235,11 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 
 		//scaling
 		final Img< FloatType > img = ImageJFunctions.convertFloat( model.getImgPlus() );
-		final Context context = new Context( OpService.class, OpMatchingService.class );
-		final OpService ops = context.getService( OpService.class );
-
-//		final Context context =
-//				new Context( OpService.class, OpMatchingService.class,
-//						IOService.class, DatasetIOService.class, LocationService.class,
-//						DatasetService.class, ImgUtilityService.class, StatusService.class,
-//						TranslatorService.class, QTJavaService.class, TiffService.class,
-//						CodecService.class, JAIIIOService.class );
-//		final OpService ops = context.getService( OpService.class );
-//		final IOService io = context.getService( IOService.class );
-//		final DatasetService dss = context.getService( DatasetService.class );
 
 		final Img< FloatType > imgScaled =
-				ops.transform().scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NearestNeighborInterpolatorFactory<>() );
+				Tr2dApplication.ops
+						.transform()
+						.scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NearestNeighborInterpolatorFactory<>() );
 
 		IO.saveImg( fileScaledInput.getAbsolutePath(), imgScaled );
 		final ImagePlus scaledImagePlus = IJ.openImage( fileScaledInput.getAbsolutePath() );
@@ -268,7 +255,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 
 			//inverse scaling
 			final Img< FloatType > flow =
-					ops.transform().scale(
+					Tr2dApplication.ops.transform().scale(
 							scaledFlow,
 							new double[] { 1. / scaleFactor, 1. / scaleFactor, 1, 1 },
 							new NearestNeighborInterpolatorFactory<>() );
