@@ -19,6 +19,7 @@ import javax.swing.WindowConstants;
 
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingFragment;
@@ -78,10 +79,10 @@ public class BuildSegmentGraph
 
 	static void display(
 			final SegmentGraph modelGraph,
-			final LabelingPlus labelingPlus ) {
+			final LabelingPlus labelingPlus,
+			final TrackSchemeOptions optional ) {
 		final GroupManager manager = new GroupManager();
 		final GroupHandle trackSchemeGroupHandle = manager.createGroupHandle();
-		final TrackSchemeOptions optional = TrackSchemeOptions.options();
 
 		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
 
@@ -186,7 +187,7 @@ public class BuildSegmentGraph
 		focusSource.setDisplayRange( 0, 1 );
 		focusSource.setColor( new ARGBType( 0x0000FF ) );
 
-		ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
+		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
 		InitializeViewerState.initTransform( viewer );
 		final AffineTransform3D t = new AffineTransform3D();
 		viewer.getState().getViewerTransform( t );
@@ -194,13 +195,16 @@ public class BuildSegmentGraph
 		viewer.setCurrentViewerTransform( t );
 
 		// debug... show slice of raw image...
-//		String fn = "/Users/pietzsch/Desktop/tr2d_test/raw_slice0000.tif";
-		final String fn = "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/DebugStack03-crop/raw.tif";
+		final String fn = "/Users/pietzsch/Desktop/tr2d_test/raw_slice0000.tif";
+//		final String fn = "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/DebugStack03-crop/raw.tif";
 		final BdvSource raw = BdvFunctions.show(
 				( RandomAccessibleInterval ) ImageJFunctions.wrap( new ImagePlus( fn ) ),
 				"raw",
 				BdvOptions.options().addTo( bdv ) );
 		raw.setDisplayRange( 0, 1000 );
+
+		// add "browse segments" behaviour to bdv
+		new SegmentBrowser( bdv, labelingPlus, inputConf );
 	}
 
 	static abstract class SegmentsColorTable implements ColorTable, VirtualChannel {
@@ -264,15 +268,15 @@ public class BuildSegmentGraph
 			if ( info == null )
 				return;
 
-			double max = info.getDisplayRangeMax();
-			double min = info.getDisplayRangeMin();
+			final double max = info.getDisplayRangeMax();
+			final double min = info.getDisplayRangeMin();
 			final double scale = 1.0 / ( max - min );
 			final int value = info.getColor().get();
-			int A = ARGBType.alpha( value );
-			double scaleR = ARGBType.red( value ) * scale;
-			double scaleG = ARGBType.green( value ) * scale;
-			double scaleB = ARGBType.blue( value ) * scale;
-			int black = ARGBType.rgba( 0, 0, 0, A );
+			final int A = ARGBType.alpha( value );
+			final double scaleR = ARGBType.red( value ) * scale;
+			final double scaleG = ARGBType.green( value ) * scale;
+			final double scaleB = ARGBType.blue( value ) * scale;
+			final int black = ARGBType.rgba( 0, 0, 0, A );
 			for ( int i = 0; i < lut.length; ++i )
 			{
 				final double v = lut[ i ] - min;
@@ -460,8 +464,12 @@ public class BuildSegmentGraph
 
 		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 
-//		final String folder = "/Users/pietzsch/Desktop/data/tr2d/tr2d_project_folder/DebugStack03-crop/tracking/labeling_frames/";
-		final String folder = "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/DebugStack03-crop/tracking/labeling_frames/";
+		final String folder = "/Users/pietzsch/Desktop/data/tr2d/tr2d_project_folder/DebugStack03-crop/tracking/labeling_frames/";
+//		final String folder = "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/DebugStack03-crop/tracking/labeling_frames/";
+
+		final InputTriggerConfig config = new InputTriggerConfig( YamlConfigIO.read( "/Users/pietzsch/Desktop/tr2d.yaml" ) );
+//		final InputTriggerConfig config = new InputTriggerConfig( YamlConfigIO.read( "/Users/jug/MPI/ProjectHernan/Tr2dProjectPath/tr2d.yaml" ) );
+//		final InputTriggerConfig config = new InputTriggerConfig();
 
 		final String fLabeling = folder + "labeling_frame0000.xml";
 
@@ -543,7 +551,7 @@ public class BuildSegmentGraph
 			}
 		}
 
-		display( graph, labelingPlus );
+		display( graph, labelingPlus, TrackSchemeOptions.options().inputTriggerConfig( config ) );
 	}
 
 	/**
