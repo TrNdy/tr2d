@@ -40,6 +40,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
 		this.model = trackingModel;
+
 		buildGui();
 
 		model.bdvAdd( model.getTr2dModel().getRawData(), "RAW" );

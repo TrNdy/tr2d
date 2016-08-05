@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.indago.costs.CostsFactory;
+import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.pg.SegmentationProblem;
@@ -18,7 +18,7 @@ import com.indago.util.Bimap;
 public class Tr2dSegmentationProblem implements SegmentationProblem {
 
 	private final int time;
-	private final CostsFactory< LabelingSegment > segmentCosts;
+	private final CostFactory< LabelingSegment > segmentCosts;
 
 	private final Collection< SegmentNode > segments;
 	private final ConflictGraph< LabelingSegment > conflictGraph;
@@ -33,7 +33,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	public Tr2dSegmentationProblem(
 			final int time,
 			final List< LabelingSegment > labelingSegments,
-			final CostsFactory< LabelingSegment > segmentCosts,
+			final CostFactory< LabelingSegment > segmentCosts,
 			final ConflictGraph< LabelingSegment > conflictGraph ) {
 		inAssignments = new AssignmentNodes();
 		outAssignments = new AssignmentNodes();

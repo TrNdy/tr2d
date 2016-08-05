@@ -13,7 +13,7 @@ import javax.swing.JOptionPane;
 
 import com.indago.app.hernan.Tr2dApplication;
 import com.indago.app.hernan.costs.HernanCostConstants;
-import com.indago.costs.CostsFactory;
+import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.data.segmentation.LabelingTimeLapse;
@@ -73,11 +73,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private final Tr2dModel tr2dModel;
 	private final Tr2dSegmentationCollectionModel tr2dSegModel;
 
-	private final CostsFactory< LabelingSegment > segmentCosts;
-	private final CostsFactory< LabelingSegment > appearanceCosts;
-	private final CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > moveCosts;
-	private final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
-	private final CostsFactory< LabelingSegment > disappearanceCosts;
+	private final List< CostFactory< ? > > costFactories = new ArrayList<>();
+	private final CostFactory< LabelingSegment > segmentCosts;
+	private final CostFactory< LabelingSegment > appearanceCosts;
+	private final CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > moveCosts;
+	private final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
+	private final CostFactory< LabelingSegment > disappearanceCosts;
 
 	private Tr2dTrackingProblem tr2dTraProblem;
 	private final LabelingTimeLapse labelingFrames;
@@ -99,15 +100,21 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public Tr2dTrackingModel(
 			final Tr2dModel model,
 			final Tr2dSegmentationCollectionModel modelSeg,
-			final CostsFactory< LabelingSegment > segmentCosts,
-			final CostsFactory< LabelingSegment > appearanceCosts,
-			final CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts,
-			final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
-			final CostsFactory< LabelingSegment > disappearanceCosts ) {
+			final CostFactory< LabelingSegment > segmentCosts,
+			final CostFactory< LabelingSegment > appearanceCosts,
+			final CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts,
+			final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
+			final CostFactory< LabelingSegment > disappearanceCosts ) {
 		this.tr2dModel = model;
 
 		dataFolder = model.getProjectFolder().getFolder( Tr2dProjectFolder.TRACKING_FOLDER );
 		dataFolder.mkdirs();
+
+		getCostFactories().add( segmentCosts );
+		getCostFactories().add( appearanceCosts );
+		getCostFactories().add( disappearanceCosts );
+		getCostFactories().add( movementCosts );
+		getCostFactories().add( divisionCosts );
 
 		this.appearanceCosts = appearanceCosts;
 		this.moveCosts = movementCosts;
@@ -538,5 +545,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public LabelingTimeLapse getLabelingFrames() {
 		return labelingFrames;
+	}
+
+	/**
+	 * @return the costFactories
+	 */
+	public List< CostFactory< ? > > getCostFactories() {
+		return costFactories;
 	}
 }

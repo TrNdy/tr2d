@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.indago.costs.CostsFactory;
+import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.pg.TrackingProblem;
 import com.indago.pg.assignments.AppearanceHypothesis;
@@ -27,22 +27,22 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	private final Tr2dFlowModel flowModel;
 
 	private final List< Tr2dSegmentationProblem > timepoints;
-	private final CostsFactory< LabelingSegment > appearanceCosts;
-	private final CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts;
-	private final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
-	private final CostsFactory< LabelingSegment > disappearanceCosts;
+	private final CostFactory< LabelingSegment > appearanceCosts;
+	private final CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts;
+	private final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
+	private final CostFactory< LabelingSegment > disappearanceCosts;
 
 	private double maxRelevantMovementCost = Double.MAX_VALUE;
 	private double maxRelevantDivisionCost = Double.MAX_VALUE;
 
 	public Tr2dTrackingProblem(
 			final Tr2dFlowModel flowModel,
-			final CostsFactory< LabelingSegment > appearanceCosts,
-			final CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts,
+			final CostFactory< LabelingSegment > appearanceCosts,
+			final CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts,
 			final double maxRelevantMovementCost,
-			final CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
+			final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
 			final double maxRelevantDivisionCost,
-			final CostsFactory< LabelingSegment > disappearanceCosts ) {
+			final CostFactory< LabelingSegment > disappearanceCosts ) {
 		this.flowModel = flowModel;
 		timepoints = new ArrayList< >();
 		this.appearanceCosts = appearanceCosts;

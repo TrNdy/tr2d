@@ -3,8 +3,8 @@
  */
 package com.indago.app.hernan.costs;
 
+import com.indago.costs.CostFactory;
 import com.indago.costs.CostParams;
-import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.util.math.VectorUtil;
 
@@ -19,14 +19,11 @@ import net.imglib2.util.Pair;
  */
 public class HernanMappingCostFactory
 		implements
-		CostsFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > {
+		CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > {
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
 
 	private CostParams params;
-
-	private static double a_1 = .33;
-	private static double a_2 = 1.0;
 
 	/**
 	 * @param destFrameId
@@ -35,13 +32,28 @@ public class HernanMappingCostFactory
 	public HernanMappingCostFactory(
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
 		this.sourceImage = sourceImage;
+
+		params = new CostParams();
+		params.add( "Δsize(A,B)", 0.33 );
+		params.add( "Δpos(A,B)", 1 );
 	}
 
 	/**
-	 * @see com.indago.costs.CostsFactory#getCost(java.lang.Object)
+	 * @see com.indago.costs.CostFactory#getName()
+	 */
+	@Override
+	public String getName() {
+		return "Mapping Costs";
+	}
+
+	/**
+	 * @see com.indago.costs.CostFactory#getCost(java.lang.Object)
 	 */
 	@Override
 	public double getCost( final Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > segmentsAndFlowVector ) {
+		final double a_1 = params.get( 0 );
+		final double a_2 = params.get( 1 );
+
 		final Pair< LabelingSegment, LabelingSegment > segments = segmentsAndFlowVector.getA();
 		final Pair< Double, Double > flow = segmentsAndFlowVector.getB();
 		final double deltaSize = deltaSize( segments.getA(), segments.getB() );
@@ -81,7 +93,7 @@ public class HernanMappingCostFactory
 	}
 
 	/**
-	 * @see com.indago.costs.CostsFactory#getParameters()
+	 * @see com.indago.costs.CostFactory#getParameters()
 	 */
 	@Override
 	public CostParams getParameters() {
@@ -89,7 +101,7 @@ public class HernanMappingCostFactory
 	}
 
 	/**
-	 * @see com.indago.costs.CostsFactory#setParameters(com.indago.costs.CostParams)
+	 * @see com.indago.costs.CostFactory#setParameters(com.indago.costs.CostParams)
 	 */
 	@Override
 	public void setParameters( final CostParams p ) {

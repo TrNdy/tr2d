@@ -5,8 +5,8 @@ package com.indago.app.hernan.costs;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
+import com.indago.costs.CostFactory;
 import com.indago.costs.CostParams;
-import com.indago.costs.CostsFactory;
 import com.indago.costs.SegmentCostUtils;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.util.math.VectorUtil;
@@ -22,17 +22,11 @@ import net.imglib2.util.Pair;
  */
 public class HernanDivisionCostFactory
 		implements
-		CostsFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > {
+		CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > {
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
 
 	private CostParams params;
-
-	private static double a_1 = 25;
-	private static double a_2 = 50;
-	private static double a_3 = 1 / 3;
-	private static double a_4 = 1 / 3;
-	private static double a_5 = 50;
 
 	/**
     * @param destFrameId
@@ -41,14 +35,35 @@ public class HernanDivisionCostFactory
 	public HernanDivisionCostFactory(
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
 		this.sourceImage = sourceImage;
+
+		params = new CostParams();
+		params.add( "Δsize(A,B1+B2)", 25 );
+		params.add( "Δsize(B1,B2)", 50 );
+		params.add( "avg(Δpos(A↦B1),Δpos(A↦B2)) ", 1 / 3 );
+		params.add( "Δpos(B1↦B2)", 1 / 3 );
+		params.add( "off elong. penalty", 50 );
     }
 
 	/**
-	 * @see com.indago.costs.CostsFactory#getCost(java.lang.Object)
+	 * @see com.indago.costs.CostFactory#getName()
+	 */
+	@Override
+	public String getName() {
+		return "Division Costs";
+	}
+
+	/**
+	 * @see com.indago.costs.CostFactory#getCost(java.lang.Object)
 	 */
 	@Override
 	public double getCost(
 			final Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > segments ) {
+		final double a_1 = params.get( 0 );
+		final double a_2 = params.get( 1 );
+		final double a_3 = params.get( 2 );
+		final double a_4 = params.get( 3 );
+		final double a_5 = params.get( 4 );
+
 		final double deltaSize1to2 = deltaSize( segments.getA(), segments.getB().getA(), segments.getB().getB() );
 		final double deltaSizeBetween2s = deltaSize( segments.getB().getA(), segments.getB().getB() );
 		final double avgDeltaPosToChildren = avgDeltaPosSquared( segments.getA(), segments.getB().getA(), segments.getB().getB() );
@@ -58,14 +73,6 @@ public class HernanDivisionCostFactory
 		if ( avgDeltaPosToChildren > HernanCostConstants.MAX_AVG_SQUARED_DIVISION_MOVE_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 		if ( deltaPosChildren > HernanCostConstants.MAX_SQUARED_DIVISION_OFFSPRING_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 
-//		System.out.println(
-//				String.format(
-//						"DivisionCost terms:\t%f\t%f\t%f\t%f\t%f",
-//						deltaSize1to2,
-//						deltaSizeBetween2s,
-//						avgDeltaPosToChildren,
-//						deltaPosChildren,
-//						offElongationPenalty ) );
 		return a_1 * deltaSize1to2 + a_2 * deltaSizeBetween2s + a_3 * avgDeltaPosToChildren + a_4 * deltaPosChildren + a_5 * offElongationPenalty;
 	}
 
@@ -140,7 +147,7 @@ public class HernanDivisionCostFactory
 	}
 
 	/**
-	 * @see com.indago.costs.CostsFactory#getParameters()
+	 * @see com.indago.costs.CostFactory#getParameters()
 	 */
 	@Override
 	public CostParams getParameters() {
@@ -148,7 +155,7 @@ public class HernanDivisionCostFactory
 	}
 
 	/**
-	 * @see com.indago.costs.CostsFactory#setParameters(com.indago.costs.CostParams)
+	 * @see com.indago.costs.CostFactory#setParameters(com.indago.costs.CostParams)
 	 */
 	@Override
 	public void setParameters( final CostParams p ) {

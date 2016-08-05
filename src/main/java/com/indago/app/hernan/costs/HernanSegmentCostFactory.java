@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.indago.costs.CostFactory;
 import com.indago.costs.CostParams;
-import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.geometry.GrahamScan;
 
@@ -26,14 +26,11 @@ import net.imglib2.util.ValuePair;
 /**
  * @author jug
  */
-public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment > {
+public class HernanSegmentCostFactory implements CostFactory< LabelingSegment > {
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
 
 	private CostParams params;
-
-	private static double a_1 = 1;
-	private static double a_2 = 1;
 
 	/**
 	 * @param frameId
@@ -43,13 +40,28 @@ public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment >
 	public HernanSegmentCostFactory(
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
 		this.sourceImage = sourceImage;
+
+		params = new CostParams();
+		params.add( "area", 1 );
+		params.add( "non convexity penalty", 1 );
 	}
 
 	/**
-	 * @see com.indago.costs.CostsFactory#getCost(java.lang.Object)
+	 * @see com.indago.costs.CostFactory#getName()
+	 */
+	@Override
+	public String getName() {
+		return "Segment Costs (-)";
+	}
+
+	/**
+	 * @see com.indago.costs.CostFactory#getCost(java.lang.Object)
 	 */
 	@Override
 	public double getCost( final LabelingSegment segment ) {
+		final double a_1 = params.get( 0 );
+		final double a_2 = params.get( 1 );
+
 		return -( a_1 * segment.getArea() - a_2 * getNonConvexityPenalty( segment ) );
 	}
 
@@ -109,7 +121,7 @@ public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment >
 	}
 
 	/**
-	 * @see com.indago.costs.CostsFactory#getParameters()
+	 * @see com.indago.costs.CostFactory#getParameters()
 	 */
 	@Override
 	public CostParams getParameters() {
@@ -117,7 +129,7 @@ public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment >
 	}
 
 	/**
-	 * @see com.indago.costs.CostsFactory#setParameters(com.indago.costs.CostParams)
+	 * @see com.indago.costs.CostFactory#setParameters(com.indago.costs.CostParams)
 	 */
 	@Override
 	public void setParameters( final CostParams p ) {
