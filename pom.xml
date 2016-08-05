@@ -119,6 +119,13 @@
 			<artifactId>AppleJavaExtensions</artifactId>
 			<version>1.4</version>
 		</dependency>
+		<dependency>
+			<groupId>gurobi.com</groupId>
+			<artifactId>gurobi.jar</artifactId>
+			<version>6.5.0</version> 
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/gurobi.jar</systemPath>
+		</dependency>
 	</dependencies>
 
 	<developers>
