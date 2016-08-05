@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.indago.costs.CostParams;
 import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.geometry.GrahamScan;
@@ -28,6 +29,8 @@ import net.imglib2.util.ValuePair;
 public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment > {
 
 	private final RandomAccessibleInterval< DoubleType > sourceImage;
+
+	private CostParams params;
 
 	private static double a_1 = 1;
 	private static double a_2 = 1;
@@ -105,4 +108,19 @@ public class HernanSegmentCostFactory implements CostsFactory< LabelingSegment >
 		}
 	}
 
+	/**
+	 * @see com.indago.costs.CostsFactory#getParameters()
+	 */
+	@Override
+	public CostParams getParameters() {
+		return params;
+	}
+
+	/**
+	 * @see com.indago.costs.CostsFactory#setParameters(com.indago.costs.CostParams)
+	 */
+	@Override
+	public void setParameters( final CostParams p ) {
+		this.params = p;
+	}
 }

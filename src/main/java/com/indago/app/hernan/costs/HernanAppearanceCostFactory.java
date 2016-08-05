@@ -3,6 +3,7 @@
  */
 package com.indago.app.hernan.costs;
 
+import com.indago.costs.CostParams;
 import com.indago.costs.CostsFactory;
 import com.indago.data.segmentation.LabelingSegment;
 
@@ -16,6 +17,8 @@ import net.imglib2.type.numeric.real.DoubleType;
 public class HernanAppearanceCostFactory implements CostsFactory< LabelingSegment > {
 
 	private final RandomAccessibleInterval< DoubleType > imgOrig;
+
+	private CostParams params;
 
 	private static double a_1 = 3;
 	private static double a_2 = 1;
@@ -54,4 +57,19 @@ public class HernanAppearanceCostFactory implements CostsFactory< LabelingSegmen
 		return distBorder;
 	}
 
+	/**
+	 * @see com.indago.costs.CostsFactory#getParameters()
+	 */
+	@Override
+	public CostParams getParameters() {
+		return params;
+	}
+
+	/**
+	 * @see com.indago.costs.CostsFactory#setParameters(com.indago.costs.CostParams)
+	 */
+	@Override
+	public void setParameters( final CostParams p ) {
+		this.params = p;
+	}
 }
