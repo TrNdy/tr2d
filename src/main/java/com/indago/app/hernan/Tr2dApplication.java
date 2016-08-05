@@ -297,28 +297,40 @@ public class Tr2dApplication {
 		final String jlp = System.getProperty( "java.library.path" );
 //		System.out.println( jlp );
 		try {
-			new GRBEnv();
-		} catch ( final GRBException e ) {
-			final String msgs = "Initial Gurobi test threw exception... check your Gruobi setup!\n\nJava library path: " + jlp;
-			JOptionPane.showMessageDialog(
-					guiFrame,
-					msgs,
-					"Gurobi Error?",
-					JOptionPane.ERROR_MESSAGE );
-			e.printStackTrace();
-			Tr2dApplication.quit( 98 );
-		} catch ( final UnsatisfiedLinkError ulr ) {
+			try {
+				new GRBEnv();
+			} catch ( final GRBException e ) {
+				final String msgs = "Initial Gurobi test threw exception... check your Gruobi setup!\n\nJava library path: " + jlp;
+				JOptionPane.showMessageDialog(
+						guiFrame,
+						msgs,
+						"Gurobi Error?",
+						JOptionPane.ERROR_MESSAGE );
+				e.printStackTrace();
+				Tr2dApplication.quit( 98 );
+			} catch ( final UnsatisfiedLinkError ulr ) {
+				final String msgs =
+						"Could not initialize Gurobi.\n" + "You might not have installed Gurobi properly or you miss a valid license.\n" + "Please visit 'www.gurobi.com' for further information.\n\n" + ulr
+								.getMessage() + "\nJava library path: " + jlp;
+				JOptionPane.showMessageDialog(
+						guiFrame,
+						msgs,
+						"Gurobi Error?",
+						JOptionPane.ERROR_MESSAGE );
+				ulr.printStackTrace();
+				System.out.println( "\n>>>>> Java library path: " + jlp + "\n" );
+				Tr2dApplication.quit( 99 );
+			}
+		} catch ( final NoClassDefFoundError err ) {
 			final String msgs =
-					"Could initialize Gurobi.\n" + "You might not have installed Gurobi properly or you miss a valid license.\n" + "Please visit 'www.gurobi.com' for further information.\n\n" + ulr
-							.getMessage() + "\nJava library path: " + jlp;
+					"Gurobi seems to be not installed on your system.\n" + "Please visit 'www.gurobi.com' for further information.\n\n" + "Java library path: " + jlp;
 			JOptionPane.showMessageDialog(
 					guiFrame,
 					msgs,
-					"Gurobi Error?",
+					"Gurobi not installed?",
 					JOptionPane.ERROR_MESSAGE );
-			ulr.printStackTrace();
-			System.out.println( "\n>>>>> Java library path: " + jlp + "\n" );
-			Tr2dApplication.quit( 99 );
+			err.printStackTrace();
+			Tr2dApplication.quit( 100 );
 		}
 	}
 
