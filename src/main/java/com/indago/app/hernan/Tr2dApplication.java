@@ -26,6 +26,7 @@ import org.scijava.app.StatusService;
 import org.scijava.io.IOService;
 
 import com.apple.eawt.Application;
+import com.indago.io.ImageSaver;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.FrameProperties;
@@ -95,6 +96,7 @@ public class Tr2dApplication {
 					DatasetService.class, ImgUtilityService.class, StatusService.class,
 					TranslatorService.class, QTJavaService.class, TiffService.class,
 					CodecService.class, JAIIIOService.class );
+			ImageSaver.context = context;
 			ops = context.getService( OpService.class );
 		} else {
 			System.out.println( "COMMAND -- ops=" + ops.toString() );

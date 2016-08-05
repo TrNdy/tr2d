@@ -6,18 +6,16 @@ package com.indago.tr2d.ui.model;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.scijava.Context;
-
 import com.indago.app.hernan.Tr2dApplication;
 import com.indago.flow.MSEBlockFlow;
 import com.indago.io.FloatTypeImgLoader;
+import com.indago.io.ImageSaver;
 import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
@@ -29,9 +27,6 @@ import bdv.util.BdvSource;
 import ij.IJ;
 import ij.ImagePlus;
 import io.scif.img.ImgIOException;
-import io.scif.services.DatasetIOService;
-import net.imagej.Dataset;
-import net.imagej.DatasetService;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
@@ -246,16 +241,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 						.transform()
 						.scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NearestNeighborInterpolatorFactory<>() );
 
-//		IO.saveImg( fileScaledInput.getAbsolutePath(), imgScaled );
-		final Context context = Tr2dApplication.ops.getContext();
-		final DatasetService datasetService = context.getService( DatasetService.class );
-		final Dataset dataset = datasetService.create( imgScaled );
-		final DatasetIOService service = context.getService( DatasetIOService.class );
-		try {
-			service.save( dataset, fileScaledInput.getAbsolutePath() );
-		} catch ( final IOException exc ) {
-			exc.printStackTrace();
-		}
+		ImageSaver.saveAsTiff( fileScaledInput.getAbsolutePath(), imgScaled );
 
 		final ImagePlus scaledImagePlus = IJ.openImage( fileScaledInput.getAbsolutePath() );
 		flowMagic.computeAndStoreFlow(
