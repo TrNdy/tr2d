@@ -39,8 +39,8 @@ public class HernanDivisionCostFactory
 		params = new CostParams();
 		params.add( "Δsize(A,B1+B2)", 25 );
 		params.add( "Δsize(B1,B2)", 50 );
-		params.add( "avg(Δpos(A↦B1),Δpos(A↦B2)) ", 1 / 3 );
-		params.add( "Δpos(B1↦B2)", 1 / 3 );
+		params.add( "avg(Δpos(A↦B1),Δpos(A↦B2)) ", 0.333 );
+		params.add( "Δpos(B1↦B2)", 0.333 );
 		params.add( "off elong. penalty", 50 );
     }
 

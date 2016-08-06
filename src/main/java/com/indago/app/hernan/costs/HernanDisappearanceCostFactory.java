@@ -31,7 +31,7 @@ public class HernanDisappearanceCostFactory implements CostFactory< LabelingSegm
 		params = new CostParams();
 		params.add( "area", 3 );
 		params.add( "√(d_border)", 1 );
-		params.add( "d_border", 1 / 2 );
+		params.add( "d_border", .5 );
 	}
 
 	/**

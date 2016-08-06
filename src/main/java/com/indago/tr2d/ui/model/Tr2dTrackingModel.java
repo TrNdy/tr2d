@@ -30,6 +30,8 @@ import com.indago.io.ProjectFolder;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
+import com.indago.pg.assignments.AssignmentNodes;
+import com.indago.pg.assignments.DisappearanceHypothesis;
 import com.indago.pg.assignments.DivisionHypothesis;
 import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
@@ -52,6 +54,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
@@ -110,18 +113,17 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		dataFolder = model.getProjectFolder().getFolder( Tr2dProjectFolder.TRACKING_FOLDER );
 		dataFolder.mkdirs();
 
-		getCostFactories().add( segmentCosts );
-		getCostFactories().add( appearanceCosts );
-		getCostFactories().add( disappearanceCosts );
-		getCostFactories().add( movementCosts );
-		getCostFactories().add( divisionCosts );
-
+		this.segmentCosts = segmentCosts;
 		this.appearanceCosts = appearanceCosts;
 		this.moveCosts = movementCosts;
 		this.divisionCosts = divisionCosts;
 		this.disappearanceCosts = disappearanceCosts;
 
-		this.segmentCosts = segmentCosts;
+		getCostFactories().add( this.segmentCosts );
+		getCostFactories().add( this.appearanceCosts );
+		getCostFactories().add( this.disappearanceCosts );
+		getCostFactories().add( this.moveCosts );
+		getCostFactories().add( this.divisionCosts );
 
 		this.tr2dSegModel = modelSeg;
 
@@ -552,5 +554,57 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public List< CostFactory< ? > > getCostFactories() {
 		return costFactories;
+	}
+
+	/**
+	 * Recomputes all costs for the PG.
+	 * TODO: use this function also in the first place when building the PG (otherwise inconsistencies might occur!).
+	 */
+	public void updateCosts() {
+		// Update all assignment costs in PG...
+		for ( final Tr2dSegmentationProblem tp : tr2dTraProblem.getTimepoints() ) {
+			for ( final SegmentNode segNode : tp.getSegments() ) {
+				final LabelingSegment labelingSegment = tp.getLabelingSegment( segNode );
+				final SegmentNode segVar = tp.getSegmentVar( labelingSegment );
+
+				// SEGMENT COST UPDATE
+				tp.getSegmentVar( labelingSegment ).setCost( segmentCosts.getCost( labelingSegment ) );
+
+				// APPEARANCE COST UPDATE
+				for ( final AppearanceHypothesis inApp : tp.getSegmentVar( labelingSegment ).getInAssignments().getAppearances() ) {
+					inApp.setCost( appearanceCosts.getCost( labelingSegment ) );
+				}
+
+				// DISAPPEARANCE COST UPDATE
+				final AssignmentNodes outass = tp.getSegmentVar( labelingSegment ).getOutAssignments();
+				for ( final DisappearanceHypothesis outDisapp : outass.getDisappearances() ) {
+					outDisapp.setCost( disappearanceCosts.getCost( labelingSegment ) );
+				}
+
+				// MOVEMENT COST UPDATE
+				for ( final MovementHypothesis outMove : outass.getMoves() ) {
+					// retrieve flow vector at desired location
+					final int t = tp.getTime();
+					final int x = ( int ) segVar.getSegment().getCenterOfMass().getFloatPosition( 0 );
+					final int y = ( int ) segVar.getSegment().getCenterOfMass().getFloatPosition( 1 );
+					final ValuePair< Double, Double > flow_vec = tr2dModel.getFlowModel().getFlowVector( t, x, y );
+
+					final double cost_flow = moveCosts.getCost(
+							new ValuePair<>( new ValuePair< LabelingSegment, LabelingSegment >( labelingSegment, outMove
+									.getDest().getSegment() ), flow_vec ) );
+					System.out.println( "Movement cost: " + cost_flow + "; " + moveCosts.getParameters().get( 0 ) );
+					outMove.setCost( cost_flow );
+				}
+
+				// DIVISION COST UPDATE
+				for ( final DivisionHypothesis outDiv : outass.getDivisions() ) {
+					final ValuePair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > param =
+							new ValuePair<>( labelingSegment,
+									new ValuePair<>( outDiv.getDest1().getSegment(), outDiv.getDest2().getSegment() ) );
+					final double cost = divisionCosts.getCost( param );
+					outDiv.setCost( cost );
+				}
+			}
+		}
 	}
 }

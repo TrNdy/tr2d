@@ -17,7 +17,7 @@ import net.imglib2.util.Pair;
 /**
  * @author jug
  */
-public class HernanMappingCostFactory
+public class HernanMovementCostFactory
 		implements
 		CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > {
 
@@ -29,12 +29,12 @@ public class HernanMappingCostFactory
 	 * @param destFrameId
 	 * @param sourceImage
 	 */
-	public HernanMappingCostFactory(
+	public HernanMovementCostFactory(
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
 		this.sourceImage = sourceImage;
 
 		params = new CostParams();
-		params.add( "Δsize(A,B)", 0.33 );
+		params.add( "Δsize(A,B)", 0.333 );
 		params.add( "Δpos(A,B)", 1 );
 	}
 
@@ -47,6 +47,11 @@ public class HernanMappingCostFactory
 	}
 
 	/**
+	 * Gets a Pair containing a Pair of segments (from; to), and a Pair of
+	 * Doubles (flow vector).
+	 * TODO: make parameter some struct instead of such a crazy Pair of
+	 * Pair,Pair construction...
+	 *
 	 * @see com.indago.costs.CostFactory#getCost(java.lang.Object)
 	 */
 	@Override

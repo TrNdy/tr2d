@@ -51,7 +51,7 @@ public class HernanSegmentCostFactory implements CostFactory< LabelingSegment > 
 	 */
 	@Override
 	public String getName() {
-		return "Segment Costs (-)";
+		return "(Negative) Segment Costs";
 	}
 
 	/**

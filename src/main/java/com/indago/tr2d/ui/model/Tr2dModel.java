@@ -8,7 +8,7 @@ import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import com.indago.app.hernan.costs.HernanAppearanceCostFactory;
 import com.indago.app.hernan.costs.HernanDisappearanceCostFactory;
 import com.indago.app.hernan.costs.HernanDivisionCostFactory;
-import com.indago.app.hernan.costs.HernanMappingCostFactory;
+import com.indago.app.hernan.costs.HernanMovementCostFactory;
 import com.indago.app.hernan.costs.HernanSegmentCostFactory;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.ProjectFolder;
@@ -54,7 +54,7 @@ public class Tr2dModel {
 		segModel = new Tr2dSegmentationCollectionModel( this );
 		flowModel = new Tr2dFlowModel( this );
 		trackingModel =
-				new Tr2dTrackingModel( this, getSegmentationModel(), new HernanSegmentCostFactory( imgRaw ), new HernanAppearanceCostFactory( imgRaw ), new HernanMappingCostFactory( imgRaw ), new HernanDivisionCostFactory( imgRaw ), new HernanDisappearanceCostFactory( imgRaw ) );
+				new Tr2dTrackingModel( this, getSegmentationModel(), new HernanSegmentCostFactory( imgRaw ), new HernanAppearanceCostFactory( imgRaw ), new HernanMovementCostFactory( imgRaw ), new HernanDivisionCostFactory( imgRaw ), new HernanDisappearanceCostFactory( imgRaw ) );
 	}
 
 	/**

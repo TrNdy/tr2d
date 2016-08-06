@@ -22,6 +22,9 @@ import net.imglib2.neighborsearch.RadiusNeighborSearchOnKDTree;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 
+/**
+ * @author jug
+ */
 public class Tr2dTrackingProblem implements TrackingProblem {
 
 	private final Tr2dFlowModel flowModel;
@@ -156,13 +159,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			final int numNeighbors = search.numNeighbors();
 			for ( int i = 0; i < numNeighbors; ++i ) {
 				final SegmentNode segVarR = search.getSampler( i ).get();
-
-				final double cost = movementCosts.getCost(
-						new ValuePair<> (
-    						new ValuePair< LabelingSegment, LabelingSegment >(
-    								segVarL.getSegment(),
-    								segVarR.getSegment() ),
-							new ValuePair<Double,Double>(0d,0d) ) );
 
 				final double cost_flow = movementCosts.getCost(
 						new ValuePair<> (
