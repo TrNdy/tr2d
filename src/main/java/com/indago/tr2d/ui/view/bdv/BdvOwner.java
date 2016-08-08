@@ -65,6 +65,31 @@ public interface BdvOwner {
 	/**
 	 * @param img
 	 * @param title
+	 */
+	public default < T extends RealType< T > & NativeType< T > > void bdvAdd(
+			final RandomAccessibleInterval< T > img,
+			final String title,
+			final ARGBType color,
+			final boolean isActive ) {
+		final BdvSource source = BdvFunctions.show(
+				img,
+				title,
+				Bdv.options().addTo( bdvGetHandlePanel() ) );
+		bdvGetSources().add( source );
+
+		final T min = img.randomAccess().get().copy();
+		final T max = min.copy();
+		ImglibUtil.computeMinMax( Views.iterable( img ), min, max );
+		source.setDisplayRangeBounds( Math.min( min.getRealDouble(), 0 ), max.getRealDouble() );
+		source.setDisplayRange( min.getRealDouble(), max.getRealDouble() );
+
+		source.setColor( color );
+		source.setActive( isActive );
+	}
+
+	/**
+	 * @param img
+	 * @param title
 	 * @param minVal
 	 * @param maxVal
 	 * @param color

@@ -22,6 +22,7 @@ import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 
 import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;
+import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -48,7 +49,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 
 		model.bdvAdd( model.getTr2dModel().getRawData(), "RAW" );
 		if ( model.getImgSolution() != null ) {
-			model.bdvAdd( model.getImgSolution(), "solution" );
+			model.bdvAdd( model.getImgSolution(), "solution", 0, 5, new ARGBType( 0x00FF00 ), true );
 		}
 		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay_tracking" );
 		model.bdvAdd( new Tr2dFlowOverlay( model.getTr2dModel().getFlowModel() ), "overlay_flow", false );

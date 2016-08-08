@@ -6,16 +6,21 @@ package com.indago.tr2d.ui.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.SwingUtilities;
+
 import com.indago.fg.Assignment;
 import com.indago.pg.IndicatorNode;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
+import com.indago.tr2d.ui.util.SolutionVisulizer;
 import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
+import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOverlay;
 import bdv.util.BdvSource;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 
@@ -51,17 +56,34 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 	}
 
 	public void populateBdv() {
+		final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
+//		System.err.println( "\n\n\n\n\n\n\n\n\nbdvTime = " + bdvTime + "\n\n\n\n\n\n\n\n\n\n\n" );
 		bdvRemoveAll();
+		imgs.clear();
 
 		bdvAdd( trackingModel.getTr2dModel().getRawData(), "RAW" );
 
-		oldPgAssignment = trackingModel.getSolution();
-		if ( oldPgAssignment != null ) {
-			imgSolutionOld = trackingModel.getImgSolution();
-			bdvAdd( imgSolutionOld, "PREV SOL" );
-			imgs.add( imgSolutionOld );
-		}
+		newPgAssignment = trackingModel.getSolution();
 
+		if ( imgSolutionOld == null ) {
+			imgSolutionOld = SolutionVisulizer.drawSolutionSegmentImages( trackingModel, oldPgAssignment );
+		}
+		bdvAdd( imgSolutionOld, "PREVIOUS SOL", 0, 5, new ARGBType( 0xFF0000 ), true );
+		imgs.add( imgSolutionOld );
+
+		imgSolutionNew = SolutionVisulizer.drawSolutionSegmentImages( trackingModel, newPgAssignment );
+		bdvAdd( imgSolutionNew, "CURRENT SOL", 0, 5, new ARGBType( 0x00FF00 ), true );
+		imgs.add( imgSolutionNew );
+
+		bdvAdd( new Tr2dTrackingOverlay( trackingModel ), "overlay_tracking" );
+
+		SwingUtilities.invokeLater( new Runnable() {
+			@Override
+			public void run() {
+				bdvHandlePanel.getViewerPanel().getState().setCurrentTimepoint( bdvTime );
+				bdvHandlePanel.getViewerPanel().repaint();
+			}
+		});
 	}
 
 	/**
@@ -127,7 +149,10 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 	@Override
 	public void solutionChanged( final Assignment< IndicatorNode > newAssignment ) {
 		this.oldPgAssignment = this.newPgAssignment;
+		this.imgSolutionOld = this.imgSolutionNew;
+
 		this.newPgAssignment = newAssignment;
+
 		populateBdv();
 	}
 }

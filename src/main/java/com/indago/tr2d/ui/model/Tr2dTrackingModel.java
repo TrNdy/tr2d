@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -24,7 +23,6 @@ import com.indago.fg.MappedFactorGraph;
 import com.indago.fg.UnaryCostConstraintGraph;
 import com.indago.fg.Variable;
 import com.indago.ilp.SolveGurobi;
-import com.indago.io.DataMover;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.ProjectFolder;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
@@ -38,6 +36,7 @@ import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
+import com.indago.tr2d.ui.util.SolutionVisulizer;
 import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 import com.indago.util.TicToc;
 
@@ -49,15 +48,12 @@ import ij.IJ;
 import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.roi.IterableRegion;
-import net.imglib2.roi.Regions;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
-import net.imglib2.view.IntervalView;
-import net.imglib2.view.Views;
 
 
 /**
@@ -71,7 +67,6 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private ProjectFolder hypothesesFolder = null;
 
 	private final String FILENAME_PGRAPH = "tracking.pgraph";
-	private final String FILENAME_GUROBI_MODEL = "gurobiModel.jug";
 	private final String FILENAME_TRACKING = "tracking.tif";
 
 	private final Tr2dModel tr2dModel;
@@ -226,7 +221,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 		if (doSolving) {
     		solveFactorGraph();
-    		drawSolution();
+			imgSolution = SolutionVisulizer.drawSolutionSegmentImages( this, pgSolution );
     		saveSolution();
 			fireSolutionChangedEvent();
 		}
@@ -243,11 +238,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			@Override
 			public void run() {
 				self.run( forceResolve );
+//				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
 				bdvRemoveAll();
 				bdvAdd( getTr2dModel().getRawData(), "RAW" );
-				final RandomAccessibleInterval< IntType > solution = getImgSolution();
-				if ( solution != null )
-					bdvAdd( solution, "solution" );
+				if ( imgSolution != null )
+					bdvAdd( imgSolution, "solution", 0, 5, new ARGBType( 0x00FF00 ), true );
+//				bdvHandlePanel.getViewerPanel().getState().setCurrentTimepoint( bdvTime );
 			}
 
 		};
@@ -361,7 +357,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private void solveFactorGraph() {
 		final UnaryCostConstraintGraph fg = mfg.getFg();
 		final AssignmentMapper< Variable, IndicatorNode > assMapper = mfg.getAssmntMapper();
-		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
+//		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
 
 		fgSolution = null;
 		try {
@@ -375,99 +371,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 *
-	 */
-	private void drawSolution() {
-		final UnaryCostConstraintGraph fg = mfg.getFg();
-		final AssignmentMapper< Variable, IndicatorNode > assMapper = mfg.getAssmntMapper();
-		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
-
-		try {
-			if ( tr2dSegModel.getImportedSegmentationModel().getSegmentHypothesesImages().isEmpty() ) {
-				this.imgSolution = DataMover.createEmptyArrayImgLike( tr2dSegModel.getWekaModel().getClassifications().get( 0 ), new IntType() );
-			} else {
-				this.imgSolution = DataMover
-						.createEmptyArrayImgLike( tr2dSegModel.getImportedSegmentationModel().getSegmentHypothesesImages().get( 0 ), new IntType() );
-			}
-		} catch ( final ArrayIndexOutOfBoundsException e ) {
-			this.imgSolution =
-					DataMover.createEmptyArrayImgLike(
-							tr2dSegModel.getImportedSegmentationModel().getSegmentHypothesesImages().get( 0 ),
-							new IntType() );
-		}
-
-//		int time = 0;
-//		for ( final Tr2dSegmentationModel segProblem : tr2dTraModel.getTimepoints() ) {
-//			final IntervalView< DoubleType > slice = Views.hyperSlice( imgSolution, 2, time );
-//
-//			for ( final SegmentVar segVar : segProblem.getSegments() ) {
-//				if ( problemSolution.getAssignment( segVar ) == 1 ) {
-//					final IterableRegion< ? > region = segVar.getSegment().getRegion();
-//					Regions.sample( region, slice ).forEach( t -> t.set( t.get() + 1 ) );
-//				}
-//			}
-//			time++;
-//		}
-
-		int time = 0;
-		int curColorId = 1;
-		for ( final Tr2dSegmentationProblem segProblem : tr2dTraProblem.getTimepoints() ) {
-			for ( final SegmentNode segVar : segProblem.getSegments() ) {
-				for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
-					if ( pgSolution.getAssignment( app ) == 1 ) { // || time == 0
-						drawLineageWithId( time, segVar, 10 + curColorId );
-						curColorId++;
-					}
-				}
-			}
-			time++;
-		}
-	}
-
-	/**
 	 * Opens the computed tracking solution image in ImageJ (if it was computed
 	 * already). Does nothing otherwise.
 	 */
 	public void showSolutionInImageJ() {
 		if ( imgSolution != null ) ImageJFunctions.show( imgSolution, "Solution" );
-	}
-
-	/**
-	 * @param segVar
-	 * @param curColorId
-	 */
-	private void drawLineageWithId( final int time, final SegmentNode segVar, final int curColorId ) {
-		final IntervalView< IntType > slice = Views.hyperSlice( imgSolution, 2, time );
-
-		if ( pgSolution.getAssignment( segVar ) == 1 ) {
-			final int color = curColorId;
-
-//			for ( final DisappearanceHypothesis disapp : segVar.getOutAssignments().getDisappearances() ) {
-//				if ( problemSolution.getAssignment( disapp ) == 1 ) {
-//					color = 5;
-//				}
-//			}
-
-			final IterableRegion< ? > region = segVar.getSegment().getRegion();
-			final int c = color;
-			try {
-				Regions.sample( region, slice ).forEach( t -> t.set( c ) );
-			} catch ( final ArrayIndexOutOfBoundsException aiaob ) {
-				System.err.print( "." );
-			}
-
-			for ( final MovementHypothesis move : segVar.getOutAssignments().getMoves() ) {
-				if ( pgSolution.getAssignment( move ) == 1 ) {
-					drawLineageWithId( time + 1, move.getDest(), curColorId );
-				}
-			}
-			for ( final DivisionHypothesis div : segVar.getOutAssignments().getDivisions() ) {
-				if ( pgSolution.getAssignment( div ) == 1 ) {
-					drawLineageWithId( time + 1, div.getDest1(), curColorId );
-					drawLineageWithId( time + 1, div.getDest2(), curColorId );
-				}
-			}
-		}
 	}
 
 	/**
@@ -622,5 +530,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		for ( final SolutionChangedListener scl : solChangedListeners ) {
 			scl.solutionChanged( pgSolution );
 		}
+	}
+
+	/**
+	 * @return the mfg
+	 */
+	public MappedFactorGraph getMappedFactorGraph() {
+		return mfg;
 	}
 }
