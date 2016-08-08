@@ -1,6 +1,10 @@
 package com.indago.app.selectsegment;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+
+import com.indago.data.segmentation.LabelData;
 
 import net.trackmate.graph.GraphChangeListener;
 import net.trackmate.graph.GraphIdBimap;
@@ -14,13 +18,31 @@ public class SegmentGraph
 
 	private final GraphIdBimap< SegmentVertex, SubsetEdge > idmap;
 
+	final Map< LabelData, SegmentVertex > mapVertices;
+
 	public SegmentGraph() {
-		super( new Factory(), new HashSet< >(), new HashSet< >() );
+		this( new Factory() );
+	}
+
+	private SegmentGraph( final Factory factory ) {
+		super( factory, new HashSet<>(), new HashSet<>() );
+		factory.setGraph( this );
 		idmap = new GraphIdBimap<>( new HashBimap<>( SegmentVertex.class ), new HashBimap<>( SubsetEdge.class ) );
+		mapVertices = new HashMap<>();
 	}
 
 	public GraphIdBimap< SegmentVertex, SubsetEdge > getGraphIdBimap() {
 		return idmap;
+	}
+
+	public SegmentVertex getVertexForLabel( final LabelData label ) {
+		return mapVertices.get( label );
+	}
+
+	@Override
+	public void remove( final SegmentVertex vertex ) {
+		super.remove( vertex );
+		mapVertices.remove( vertex.getLabelData() );
 	}
 
 	@Override
@@ -49,9 +71,16 @@ public class SegmentGraph
 
 	private static class Factory implements AbstractObjectGraph.Factory< SegmentVertex, SubsetEdge > {
 
+		private SegmentGraph graph;
+
+		public void setGraph( final SegmentGraph graph )
+		{
+			this.graph = graph;
+		}
+
 		@Override
 		public SegmentVertex createVertex() {
-			return new SegmentVertex();
+			return new SegmentVertex( graph );
 		}
 
 		@Override

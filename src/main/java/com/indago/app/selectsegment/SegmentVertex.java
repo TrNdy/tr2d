@@ -8,13 +8,20 @@ import net.trackmate.spatial.HasTimepoint;
 
 public class SegmentVertex extends AbstractObjectVertex< SegmentVertex, SubsetEdge > implements HasTimepoint, HasLabel {
 
+	private final SegmentGraph graph;
+
 	private LabelData labelData;
 
 	private int timepoint;
 
+	SegmentVertex( final SegmentGraph graph ) {
+		this.graph = graph;
+	}
+
 	public SegmentVertex init( final LabelData labelData ) {
 		this.labelData = labelData;
 		this.timepoint = -1;
+		graph.mapVertices.put( labelData, this );
 		return this;
 	}
 

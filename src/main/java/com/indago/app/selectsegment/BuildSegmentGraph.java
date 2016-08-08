@@ -479,9 +479,8 @@ public class BuildSegmentGraph
 		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( graph, true );
 
 		// create vertices for all segments
-		final Map< LabelData, SegmentVertex > mapVertices = new HashMap<>();
 		for ( final LabelData segment : labelingPlus.getLabeling().getMapping().getLabels() )
-			mapVertices.put( segment, graph.addVertex().init( segment ) );
+			graph.addVertex().init( segment );
 
 		final CheckedPairs pairs = new CheckedPairs( graph.getGraphIdBimap() );
 		// Build partial order graph
@@ -490,11 +489,11 @@ public class BuildSegmentGraph
 
 			// connect regarding subset relation (while removing transitive edges)
 			for ( final LabelData subset : conflictingSegments ) {
-				final SegmentVertex subv = mapVertices.get( subset );
+				final SegmentVertex subv = graph.getVertexForLabel( subset );
 				for ( final LabelData superset : conflictingSegments ) {
 					if ( subset.equals( superset ) )
 						continue;
-					final SegmentVertex superv = mapVertices.get( superset );
+					final SegmentVertex superv = graph.getVertexForLabel( superset );
 
 					// Was this (ordered) pair of vertices already checked?
 					// If yes, abort.
