@@ -6,10 +6,8 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JComponent;
@@ -87,6 +85,7 @@ public class BuildSegmentGraph
 		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
 
 		final Selection< SegmentVertex, SubsetEdge > selectionModel = new Selection<>( modelGraph, idmap );
+		final Selection< SegmentVertex, SubsetEdge > segmentsUnderMouse = new Selection<>( modelGraph, idmap );
 		final HighlightModel< SegmentVertex, SubsetEdge > highlightModel = new HighlightModel<>( idmap );
 		final FocusModel< SegmentVertex, SubsetEdge > focusModel = new FocusModel<>( idmap );
 		final NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler = new NavigationHandler<>( trackSchemeGroupHandle );
@@ -149,15 +148,18 @@ public class BuildSegmentGraph
 		final SelectedSegmentsColorTable selectColorTable = new SelectedSegmentsColorTable( labelingPlus, conv, selectionModel );
 		final HighlightedSegmentsColorTable highlightColorTable = new HighlightedSegmentsColorTable( labelingPlus, conv, highlightModel );
 		final FocusedSegmentsColorTable focusColorTable = new FocusedSegmentsColorTable( labelingPlus, conv, focusModel );
+		final SelectedSegmentsColorTable segmentsUnderMouseColorTable = new SelectedSegmentsColorTable( labelingPlus, conv, segmentsUnderMouse );
 
 		conv.addColorTable( selectColorTable );
 		conv.addColorTable( highlightColorTable );
 		conv.addColorTable( focusColorTable );
+		conv.addColorTable( segmentsUnderMouseColorTable );
 
 		final ArrayList< SegmentsColorTable > virtualChannels = new ArrayList<>();
 		virtualChannels.add( selectColorTable );
 		virtualChannels.add( highlightColorTable );
 		virtualChannels.add( focusColorTable );
+		virtualChannels.add( segmentsUnderMouseColorTable );
 
 		final List< BdvVirtualChannelSource > vchanSources = BdvFunctions.show(
 				Converters.convert(
@@ -166,7 +168,7 @@ public class BuildSegmentGraph
 						new ARGBType() ),
 				virtualChannels,
 				"segments",
-				Bdv.options().inputTriggerConfig( inputConf ).is2D() );
+				Bdv.options().inputTriggerConfig( inputConf ).is2D().screenScales( new double[]{ 1 } ) );
 		final Bdv bdv = vchanSources.get( 0 );
 
 		for ( int i = 0; i < virtualChannels.size(); ++i ) {
@@ -177,15 +179,21 @@ public class BuildSegmentGraph
 		final BdvVirtualChannelSource selectionSource = vchanSources.get( 0 );
 		final BdvVirtualChannelSource highlightSource = vchanSources.get( 1 );
 		final BdvVirtualChannelSource focusSource = vchanSources.get( 2 );
+		final BdvVirtualChannelSource segmentsUnderMouseSource = vchanSources.get( 3 );
 
-		selectionSource.setDisplayRange( 0, 2 );
+		selectionSource.setDisplayRange( 0, 10 );
 		selectionSource.setColor( new ARGBType( 0x00FF00 ) );
+//		selectionSource.setActive( false );
 
 		highlightSource.setDisplayRange( 0, 1 );
 		highlightSource.setColor( new ARGBType( 0xFF00FF ) );
+		highlightSource.setActive( false );
 
 		focusSource.setDisplayRange( 0, 1 );
 		focusSource.setColor( new ARGBType( 0x0000FF ) );
+
+		segmentsUnderMouseSource.setDisplayRange( 0, 10 );
+		segmentsUnderMouseSource.setColor( new ARGBType( 0xFFFF00 ) );
 
 		final ViewerPanel viewer = bdv.getBdvHandle().getViewerPanel();
 		InitializeViewerState.initTransform( viewer );
@@ -204,7 +212,7 @@ public class BuildSegmentGraph
 		raw.setDisplayRange( 0, 1000 );
 
 		// add "browse segments" behaviour to bdv
-		new SegmentBrowser( bdv, labelingPlus, inputConf );
+		new SegmentBrowser( bdv, labelingPlus, modelGraph, segmentsUnderMouse, inputConf );
 	}
 
 	static abstract class SegmentsColorTable implements ColorTable, VirtualChannel {
