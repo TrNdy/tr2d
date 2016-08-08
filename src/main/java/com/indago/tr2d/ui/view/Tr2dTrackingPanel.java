@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 
+import com.indago.tr2d.ui.model.Tr2dSolDiffModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dFlowOverlay;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
@@ -27,6 +28,8 @@ import net.miginfocom.swing.MigLayout;
  * @author jug
  */
 public class Tr2dTrackingPanel extends JPanel implements ActionListener {
+
+	private static final long serialVersionUID = -500536787731292765L;
 
 	private final Tr2dTrackingModel model;
 
@@ -69,7 +72,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	}
 
 	private Component buildCostEditorPanel() {
-		final JPanel panel = new Tr2dCostEditorPanel( model );
+		final JPanel panel = new Tr2dCostEditorPanel( model, new Tr2dSolDiffModel( model ) );
 		return panel;
 	}
 

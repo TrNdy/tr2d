@@ -37,6 +37,7 @@ import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
+import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 import com.indago.util.TicToc;
 
@@ -97,6 +98,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private final List< BdvOverlay > overlays = new ArrayList< >();
 	private final List< BdvSource > bdvOverlaySources = new ArrayList< >();
 
+	private final List< SolutionChangedListener > solChangedListeners;
+
 	/**
 	 * @param model
 	 */
@@ -112,6 +115,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 		dataFolder = model.getProjectFolder().getFolder( Tr2dProjectFolder.TRACKING_FOLDER );
 		dataFolder.mkdirs();
+
+		solChangedListeners = new ArrayList<>();
 
 		this.segmentCosts = segmentCosts;
 		this.appearanceCosts = appearanceCosts;
@@ -223,6 +228,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
     		solveFactorGraph();
     		drawSolution();
     		saveSolution();
+			fireSolutionChangedEvent();
 		}
 	}
 
@@ -605,6 +611,16 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 					outDiv.setCost( cost );
 				}
 			}
+		}
+	}
+
+	public void addSolutionChangedListener( final SolutionChangedListener scl ) {
+		solChangedListeners.add( scl );
+	}
+
+	public void fireSolutionChangedEvent() {
+		for ( final SolutionChangedListener scl : solChangedListeners ) {
+			scl.solutionChanged( pgSolution );
 		}
 	}
 }

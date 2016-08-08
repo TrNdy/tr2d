@@ -3,6 +3,8 @@
  */
 package com.indago.tr2d.ui.view;
 
+import java.awt.BorderLayout;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -15,8 +17,11 @@ import javax.swing.JTextField;
 
 import com.indago.costs.CostFactory;
 import com.indago.costs.CostParams;
+import com.indago.tr2d.ui.model.Tr2dSolDiffModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 
+import bdv.util.Bdv;
+import bdv.util.BdvHandlePanel;
 import net.miginfocom.swing.MigLayout;
 
 
@@ -28,17 +33,19 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 2601748326346367034L;
 
 	private final Tr2dTrackingModel model;
+	private final Tr2dSolDiffModel diffModel;
 
 	private JButton bLoadCosts;
 	private JButton bSaveCosts;
-
 	private JButton bRetrack;
+
 
 	/**
 	 * @param model
 	 */
-	public Tr2dCostEditorPanel( final Tr2dTrackingModel model ) {
+	public Tr2dCostEditorPanel( final Tr2dTrackingModel model, final Tr2dSolDiffModel diffModel ) {
 		this.model = model;
+		this.diffModel = diffModel;
 		buildGui();
 	}
 
@@ -47,7 +54,6 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 		this.setLayout( layout );
 
 		final MigLayout lControls = new MigLayout( "", "[][grow]", "" );
-		this.setLayout( lControls );
 		final JPanel panelControls = new JPanel( lControls );
 		bLoadCosts = new JButton( "load" );
 		bLoadCosts.addActionListener( this );
@@ -60,7 +66,14 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 		panelControls.add( bRetrack, "span, growx, wrap" );
 		this.add( panelControls, "growy" );
 
-		final JPanel panelCenter = new JPanel();
+		final JPanel panelCenter = new JPanel( new BorderLayout() );
+		diffModel.bdvSetHandlePanel(
+				new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
+						.options()
+						.is2D()
+						.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) ) );
+		diffModel.populateBdv();
+		panelCenter.add( diffModel.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 		this.add( panelCenter, "growx, growy" );
 
 		final JPanel panelCosts = new JPanel();
@@ -114,6 +127,7 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
 		if ( e.getSource().equals( bRetrack ) ) {
+			// TODO update costs without the need for regeneration of everything...
 //			model.updateCosts();
 //			model.prepareFG();
 			model.reset();
