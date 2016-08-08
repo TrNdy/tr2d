@@ -2,9 +2,12 @@ package com.indago.app.selectsegment;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
@@ -25,7 +28,10 @@ import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.ui.TransformListener;
 import net.imglib2.view.Views;
+import net.trackmate.collection.util.CollectionUtils;
+import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
 import net.trackmate.revised.bdv.AbstractBehaviours;
+import net.trackmate.revised.ui.selection.HighlightModel;
 import net.trackmate.revised.ui.selection.Selection;
 
 public class SegmentBrowser
@@ -38,6 +44,14 @@ public class SegmentBrowser
 
 	private final Selection< SegmentVertex, SubsetEdge > segmentsUnderMouse;
 
+	private final HighlightModel< SegmentVertex, SubsetEdge > highlightModel;
+
+	private final Selection< SegmentVertex, SubsetEdge > selectionModel;
+
+	private final List< SegmentVertex > segmentsOrdered;
+
+	private SegmentVertex currentSegment;
+
 	private final SegmentGraph segmentGraph;
 
 	public SegmentBrowser(
@@ -45,13 +59,20 @@ public class SegmentBrowser
 			final LabelingPlus labelingPlus,
 			final SegmentGraph segmentGraph,
 			final Selection< SegmentVertex, SubsetEdge > segmentsUnderMouse,
+			final HighlightModel< SegmentVertex, SubsetEdge > highlightModel,
+			final Selection< SegmentVertex, SubsetEdge > selectionModel,
 			final InputTriggerConfig inputConf )
 	{
 		this.bdv = bdv;
 		this.segmentGraph = segmentGraph;
+		this.selectionModel = selectionModel;
 		this.bdvListener = new BdvListener( bdv );
 		this.labelingPlus = labelingPlus;
 		this.segmentsUnderMouse = segmentsUnderMouse;
+		this.highlightModel = highlightModel;
+
+		segmentsOrdered = CollectionUtils.createRefList( segmentGraph.vertices() );
+		currentSegment = null;
 
 		bdv.getBdvHandle().getViewerPanel().getDisplay().addMouseMotionListener( new MouseMotionListener() {
 
@@ -73,15 +94,55 @@ public class SegmentBrowser
 				new ScrollBehaviour() {
 					@Override
 					public void scroll( final double wheelRotation, final boolean isHorizontal, final int x, final int y ) {
-						findSegments( x, y );
+						if ( !isHorizontal )
+							browseSegments( x, y, wheelRotation > 0 );
 					}
 				},
 				"browse segments",
 				"scroll" );
+		behaviours.behaviour(
+				new ClickBehaviour() {
+					@Override
+					public void click( final int arg0, final int arg1 ) {
+						toggleSelectionOfCurrentSegment();
+					}
+				},
+				"select current segment",
+				"SPACE" );
 	}
 
-	public void findSegments( final int x, final int y )
-	{
+	public synchronized void toggleSelectionOfCurrentSegment() {
+		if ( currentSegment != null )
+		{
+			selectionModel.pauseListeners();
+			if ( selectionModel.isSelected( currentSegment ) ) {
+				selectionModel.setSelected( currentSegment, false );
+			} else {
+				final List< SegmentVertex > conflicting = new ArrayList<>();
+				new BreadthFirstIterator<>( currentSegment, segmentGraph ).forEachRemaining( v -> conflicting.add( v ) );
+				new InverseBreadthFirstIterator<>( currentSegment, segmentGraph ).forEachRemaining( v -> conflicting.add( v ) );
+				for ( final SegmentVertex v : conflicting )
+					selectionModel.setSelected( v, false );
+				selectionModel.setSelected( currentSegment, true );
+			}
+			selectionModel.resumeListeners();
+		}
+	}
+
+
+	public synchronized void browseSegments( final int x, final int y, final boolean forward ) {
+		if ( currentSegment != null ) {
+			int i = segmentsOrdered.indexOf( currentSegment );
+			if ( forward )
+				i = Math.min( segmentsOrdered.size() - 1, i + 1 );
+			else
+				i = Math.max( 0, i - 1 );
+			currentSegment = segmentsOrdered.get( i );
+			highlightModel.highlightVertex( currentSegment );
+		}
+	}
+
+	public synchronized void findSegments( final int x, final int y ) {
 		final ImgLabeling< LabelData, IntType > labeling = labelingPlus.getLabeling();
 
 		final AffineTransform2D transform = new AffineTransform2D();
@@ -93,7 +154,7 @@ public class SegmentBrowser
 								Views.extendValue(
 										labeling,
 										labeling.firstElement().createVariable() ),
-								new NearestNeighborInterpolatorFactory< >() ),
+								new NearestNeighborInterpolatorFactory<>() ),
 						transform ).randomAccess();
 
 		a.setPosition( new int[] { x, y } );
@@ -102,13 +163,25 @@ public class SegmentBrowser
 		for ( final SegmentVertex v : segmentsUnderMouse.getSelectedVertices() )
 			previouslySelectedLabels.add( v.getLabelData() );
 
-		if ( !a.get().equals( previouslySelectedLabels ) )
-		{
+		if ( !a.get().equals( previouslySelectedLabels ) ) {
 			segmentsUnderMouse.pauseListeners();
 			segmentsUnderMouse.clearSelection();
 			for ( final LabelData label : a.get() )
 				segmentsUnderMouse.setSelected( segmentGraph.getVertexForLabel( label ), true );
 			segmentsUnderMouse.resumeListeners();
+
+			segmentsOrdered.clear();
+			segmentsOrdered.addAll( segmentsUnderMouse.getSelectedVertices() );
+			if ( segmentsOrdered.isEmpty() ) {
+				currentSegment = null;
+			} else {
+				segmentsOrdered.sort(
+						( s1, s2 ) -> ( int ) ( s1.getLabelData().getSegment().getArea() - s2.getLabelData().getSegment().getArea() ) );
+//				if ( !segmentsOrdered.contains( currentSegment ) )
+					currentSegment = segmentsOrdered.get( 0 );
+			}
+
+			highlightModel.highlightVertex( currentSegment );
 		}
 	}
 }

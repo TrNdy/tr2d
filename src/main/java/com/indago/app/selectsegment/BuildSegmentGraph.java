@@ -187,7 +187,7 @@ public class BuildSegmentGraph
 
 		highlightSource.setDisplayRange( 0, 1 );
 		highlightSource.setColor( new ARGBType( 0xFF00FF ) );
-		highlightSource.setActive( false );
+//		highlightSource.setActive( false );
 
 		focusSource.setDisplayRange( 0, 1 );
 		focusSource.setColor( new ARGBType( 0x0000FF ) );
@@ -212,7 +212,7 @@ public class BuildSegmentGraph
 		raw.setDisplayRange( 0, 1000 );
 
 		// add "browse segments" behaviour to bdv
-		new SegmentBrowser( bdv, labelingPlus, modelGraph, segmentsUnderMouse, inputConf );
+		new SegmentBrowser( bdv, labelingPlus, modelGraph, segmentsUnderMouse, highlightModel, selectionModel, inputConf );
 	}
 
 	static abstract class SegmentsColorTable implements ColorTable, VirtualChannel {
