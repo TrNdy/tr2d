@@ -6,8 +6,6 @@ package com.indago.tr2d.ui.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
-
 import com.indago.fg.Assignment;
 import com.indago.pg.IndicatorNode;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
@@ -57,11 +55,12 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 
 	public void populateBdv() {
 		final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
-//		System.err.println( "\n\n\n\n\n\n\n\n\nbdvTime = " + bdvTime + "\n\n\n\n\n\n\n\n\n\n\n" );
+
 		bdvRemoveAll();
 		imgs.clear();
 
 		bdvAdd( trackingModel.getTr2dModel().getRawData(), "RAW" );
+		bdvHandlePanel.getViewerPanel().setTimepoint( bdvTime );
 
 		newPgAssignment = trackingModel.getSolution();
 
@@ -76,14 +75,6 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 		imgs.add( imgSolutionNew );
 
 		bdvAdd( new Tr2dTrackingOverlay( trackingModel ), "overlay_tracking" );
-
-		SwingUtilities.invokeLater( new Runnable() {
-			@Override
-			public void run() {
-				bdvHandlePanel.getViewerPanel().getState().setCurrentTimepoint( bdvTime );
-				bdvHandlePanel.getViewerPanel().repaint();
-			}
-		});
 	}
 
 	/**

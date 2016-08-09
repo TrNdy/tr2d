@@ -238,12 +238,14 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			@Override
 			public void run() {
 				self.run( forceResolve );
-//				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
+
+				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
 				bdvRemoveAll();
 				bdvAdd( getTr2dModel().getRawData(), "RAW" );
+				bdvHandlePanel.getViewerPanel().setTimepoint( bdvTime );
+
 				if ( imgSolution != null )
 					bdvAdd( imgSolution, "solution", 0, 5, new ARGBType( 0x00FF00 ), true );
-//				bdvHandlePanel.getViewerPanel().getState().setCurrentTimepoint( bdvTime );
 			}
 
 		};
