@@ -204,7 +204,9 @@ public class UniversalFileChooser {
 			final String title,
 			final FileFilter fileFilter ) {
 		final JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory( new java.io.File( path ) );
+		if ( path != null ) {
+			chooser.setCurrentDirectory( new java.io.File( path ) );
+		}
 		chooser.setDialogTitle( title );
 		if ( fileFilter != null ) {
 			chooser.setFileFilter( fileFilter );
@@ -262,7 +264,9 @@ public class UniversalFileChooser {
 			final String title,
 			final FileFilter fileFilter ) {
 		final JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory( new java.io.File( path ) );
+		if ( path != null ) {
+			chooser.setCurrentDirectory( new java.io.File( path ) );
+		}
 		chooser.setDialogTitle( title );
 		if ( fileFilter != null ) {
 			chooser.setFileFilter( fileFilter );

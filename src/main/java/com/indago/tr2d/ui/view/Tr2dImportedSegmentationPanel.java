@@ -91,7 +91,7 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 				model.importSegmentation( file );
 				listSegmentations.setSelectedIndex( listSegmentations.getModel().getSize() - 1 );
 			} catch ( ImgIOException | IOException e1 ) {
-				e1.printStackTrace();
+				System.out.println( "File selection canceled." );
 			}
 		} else if ( e.getSource().equals( remove ) ) {
 			model.removeSegmentations( listSegmentations.getSelectedIndices() );
