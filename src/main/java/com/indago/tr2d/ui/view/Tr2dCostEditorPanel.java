@@ -50,8 +50,7 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 	}
 
 	private void buildGui() {
-		final MigLayout layout = new MigLayout( "", "[][grow][]", "" );
-		this.setLayout( layout );
+		this.setLayout( new BorderLayout() );
 
 		final MigLayout lControls = new MigLayout( "", "[][grow]", "" );
 		final JPanel panelControls = new JPanel( lControls );
@@ -64,7 +63,7 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 		panelControls.add( bLoadCosts, "" );
 		panelControls.add( bSaveCosts, "wrap" );
 		panelControls.add( bRetrack, "span, growx, wrap" );
-		this.add( panelControls, "growy" );
+		this.add( panelControls, BorderLayout.WEST );
 
 		final JPanel panelCenter = new JPanel( new BorderLayout() );
 		diffModel.bdvSetHandlePanel(
@@ -74,15 +73,14 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 						.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) ) );
 		diffModel.populateBdv();
 		panelCenter.add( diffModel.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
-		this.add( panelCenter, "growx, growy" );
+		this.add( panelCenter, BorderLayout.CENTER );
 
 		final JPanel panelCosts = new JPanel();
 		fillCostEditPanel( panelCosts );
 		final JScrollPane sp = new JScrollPane( panelCosts );
 		sp.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
-//		sp.setBorder( BorderFactory.createEmptyBorder() );
 		sp.setViewportBorder( null );
-		this.add( sp, "growy" );
+		this.add( sp, BorderLayout.EAST );
 	}
 
 	private void fillCostEditPanel( final JPanel panel ) {
