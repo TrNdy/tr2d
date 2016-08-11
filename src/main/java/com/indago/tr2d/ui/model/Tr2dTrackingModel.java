@@ -153,8 +153,18 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * (Re-)fetches all hypotheses and marks this tracking model as 'reset'.
 	 */
 	public void reset() {
+		// purge segmentation data
 		dataFolder.getFile( FILENAME_TRACKING ).getFile().delete();
+		try {
+			dataFolder.getFolder( FOLDER_LABELING_FRAMES ).deleteContent();
+		} catch ( final IOException e ) {
+			if ( dataFolder.getFolder( FOLDER_LABELING_FRAMES ).exists() ) {
+				System.err.println( "Labeling frames could not be deleted." );
+			}
+		}
+		// recollect segmentation data
 		processSegmentationInputs( true );
+		// purge problem graph
 		tr2dTraProblem = null;
 	}
 

@@ -38,7 +38,7 @@ public class LabelingTimeLapse {
 	private final Filter maxGrowthPerStep;
 	private final boolean darkToBright = false;
 
-	private final List< LabelingBuilder > frameLabelingBuilders;
+	private List< LabelingBuilder > frameLabelingBuilders;
 	private final Map< LabelingBuilder, ConflictGraph > mapToConflictGraphs = new HashMap< >();
 
 	private boolean processedOrLoaded;
@@ -53,7 +53,7 @@ public class LabelingTimeLapse {
 		maxComponentSize = ( int ) ( model.getModel().getRawData().dimension( 0 ) * model.getModel().getRawData().dimension( 1 ) - 1 );
 		maxGrowthPerStep = new MaxGrowthPerStep( maxComponentSize );
 
-		this.frameLabelingBuilders = new ArrayList< >();
+		frameLabelingBuilders = new ArrayList<>();
 		processedOrLoaded = false;
 	}
 
@@ -65,6 +65,7 @@ public class LabelingTimeLapse {
 		try {
 			if ( getSegmentHypothesesImages().size() == 0 ) { return false; }
 
+			frameLabelingBuilders = new ArrayList<>();
 			final RandomAccessibleInterval< IntType > firstSumImg = getSegmentHypothesesImages().get( 0 );
 
 			for ( int frameId = 0; frameId < firstSumImg.dimension( 2 ); frameId++ ) {
