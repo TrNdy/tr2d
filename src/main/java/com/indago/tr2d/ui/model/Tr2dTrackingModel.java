@@ -241,7 +241,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * (Re)runs the trackins problem in a thread of it's own.
 	 * Additionally also takes care of the BDV.
 	 */
-	public void runInThread( final boolean forceResolve ) {
+	public Thread runInThread( final boolean forceResolve ) {
 		final Tr2dTrackingModel self = this;
 		final Runnable runnable = new Runnable() {
 
@@ -259,7 +259,9 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			}
 
 		};
-		new Thread( runnable ).start();
+		final Thread t = new Thread( runnable );
+		t.start();
+		return t;
 	}
 
 	/**

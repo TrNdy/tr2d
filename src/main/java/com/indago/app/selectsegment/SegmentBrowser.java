@@ -104,11 +104,15 @@ public class SegmentBrowser
 				new ClickBehaviour() {
 					@Override
 					public void click( final int arg0, final int arg1 ) {
-						toggleSelectionOfCurrentSegment();
+						if ( currentSegment == null ) {
+							selectionModel.clearSelection();
+						} else {
+							toggleSelectionOfCurrentSegment();
+						}
 					}
 				},
 				"select current segment",
-				"SPACE" );
+				"button1" );
 	}
 
 	public synchronized void toggleSelectionOfCurrentSegment() {

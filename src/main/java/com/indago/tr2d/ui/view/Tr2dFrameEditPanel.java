@@ -28,7 +28,10 @@ import javax.swing.SwingUtilities;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
+import com.indago.app.selectsegment.ColorTable;
+import com.indago.app.selectsegment.ColorTableConverter;
 import com.indago.app.selectsegment.InverseBreadthFirstIterator;
+import com.indago.app.selectsegment.SegmentBrowser;
 import com.indago.app.selectsegment.SegmentGraph;
 import com.indago.app.selectsegment.SegmentVertex;
 import com.indago.app.selectsegment.SubsetEdge;
@@ -40,16 +43,22 @@ import com.indago.fg.Assignment;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
+import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 
 import bdv.BehaviourTransformEventHandler;
 import bdv.util.Bdv;
+import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOverlay;
 import bdv.util.BdvSource;
+import bdv.util.BdvVirtualChannelSource;
+import bdv.util.PlaceHolderOverlayInfo;
+import bdv.util.VirtualChannels.VirtualChannel;
 import bdv.viewer.InputActionBindings;
 import bdv.viewer.TriggerBehaviourBindings;
+import bdv.viewer.ViewerPanel;
 import gnu.trove.impl.Constants;
 import gnu.trove.set.hash.TLongHashSet;
 import net.imglib2.RandomAccessibleInterval;
@@ -93,7 +102,7 @@ import net.trackmate.revised.ui.selection.SelectionListener;
 /**
  * @author jug
  */
-public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWithOverlaysOwner {
+public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWithOverlaysOwner, SolutionChangedListener {
 
 	private static final long serialVersionUID = -9051482691122695949L;
 
@@ -182,6 +191,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	public Tr2dFrameEditPanel( final Tr2dTrackingModel model ) {
 		super( new BorderLayout() );
 		this.model = model;
+
+		this.model.addSolutionChangedListener( this );
 
 		manager = new GroupManager();
 		trackSchemeGroupHandle = manager.createGroupHandle();
@@ -376,9 +387,14 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 * @param labelingPlus
 	 */
 	private void display( final SegmentGraph modelGraph, final LabelingPlus labelingPlus ) {
+
+		final GroupManager manager = new GroupManager();
+		final GroupHandle trackSchemeGroupHandle = manager.createGroupHandle();
+
 		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
 
 		selectionModel = new Selection<>( modelGraph, idmap );
+		final Selection< SegmentVertex, SubsetEdge > segmentsUnderMouse = new Selection<>( modelGraph, idmap );
 		highlightModel = new HighlightModel<>( idmap );
 		focusModel = new FocusModel<>( idmap );
 		if ( navigationHandler != null )
@@ -433,6 +449,63 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		this.bdvRemoveAll();
 		this.bdvRemoveAllOverlays();
 
+		// --- new stuff start ---
+
+		final ColorTableConverter conv = new ColorTableConverter( labelingPlus );
+
+		final SelectedSegmentsColorTable selectColorTable = new SelectedSegmentsColorTable( labelingPlus, conv, selectionModel );
+		final HighlightedSegmentsColorTable highlightColorTable = new HighlightedSegmentsColorTable( labelingPlus, conv, highlightModel );
+		final FocusedSegmentsColorTable focusColorTable = new FocusedSegmentsColorTable( labelingPlus, conv, focusModel );
+		final SelectedSegmentsColorTable segmentsUnderMouseColorTable = new SelectedSegmentsColorTable( labelingPlus, conv, segmentsUnderMouse );
+
+		conv.addColorTable( selectColorTable );
+		conv.addColorTable( highlightColorTable );
+		conv.addColorTable( focusColorTable );
+		conv.addColorTable( segmentsUnderMouseColorTable );
+
+		final ArrayList< SegmentsColorTable > virtualChannels = new ArrayList<>();
+		virtualChannels.add( selectColorTable );
+		virtualChannels.add( highlightColorTable );
+		virtualChannels.add( focusColorTable );
+		virtualChannels.add( segmentsUnderMouseColorTable );
+
+		final List< BdvVirtualChannelSource > vchanSources = BdvFunctions.show(
+				Converters.convert(
+						labelingPlus.getLabeling().getIndexImg(),
+						conv,
+						new ARGBType() ),
+				virtualChannels,
+				"segments",
+				Bdv.options().inputTriggerConfig( inputConf ).is2D().addTo( bdvGetHandlePanel() ) ); // .screenScales( new double[] { 1 } )
+		final Bdv bdv = vchanSources.get( 0 );
+
+
+		for ( int i = 0; i < virtualChannels.size(); ++i ) {
+			virtualChannels.get( i ).setPlaceHolderOverlayInfo( vchanSources.get( i ).getPlaceHolderOverlayInfo() );
+			virtualChannels.get( i ).setViewerPanel( bdv.getBdvHandle().getViewerPanel() );
+		}
+
+		final BdvVirtualChannelSource selectionSource = vchanSources.get( 0 );
+		final BdvVirtualChannelSource highlightSource = vchanSources.get( 1 );
+		final BdvVirtualChannelSource focusSource = vchanSources.get( 2 );
+		final BdvVirtualChannelSource segmentsUnderMouseSource = vchanSources.get( 3 );
+
+		selectionSource.setDisplayRange( 0, 10 );
+		selectionSource.setColor( new ARGBType( 0x00FF00 ) );
+//		selectionSource.setActive( false );
+
+		highlightSource.setDisplayRange( 0, 2 );
+		highlightSource.setColor( new ARGBType( 0xFF00FF ) );
+//		highlightSource.setActive( false );
+
+		focusSource.setDisplayRange( 0, 2 );
+		focusSource.setColor( new ARGBType( 0x0000FF ) );
+
+		segmentsUnderMouseSource.setDisplayRange( 0, 10 );
+		segmentsUnderMouseSource.setColor( new ARGBType( 0xFFFF00 ) );
+
+		// --- new stuff end ---
+
 		final RandomAccessibleInterval< DoubleType > rawData = model.getTr2dModel().getRawData();
 		final int t = Integer.parseInt( this.txtCurFrame.getText() ) - 1;
 		this.bdvAdd( Views.hyperSlice( rawData, 2, t ), "RAW" );
@@ -458,6 +531,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		highlightModel.addHighlightListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
 		selectionModel.addSelectionListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
 		focusModel.addFocusListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
+
+		// add "browse segments" behaviour to bdv
+		new SegmentBrowser( bdv, labelingPlus, modelGraph, segmentsUnderMouse, highlightModel, selectionModel, inputConf );
+
 	}
 
 	/**
@@ -785,5 +862,194 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
     			}
     		}
 		}
+	}
+
+	// --- new stuff -- need refactoring ---
+
+	static abstract class SegmentsColorTable implements ColorTable, VirtualChannel {
+
+		protected final LabelingPlus labelingPlus;
+
+		protected final ColorTableConverter converter;
+
+		protected PlaceHolderOverlayInfo info;
+
+		protected ViewerPanel viewer;
+
+		protected int[] lut;
+
+		public SegmentsColorTable(
+				final LabelingPlus labelingPlus,
+				final ColorTableConverter converter ) {
+			this.labelingPlus = labelingPlus;
+			this.converter = converter;
+		}
+
+		void setPlaceHolderOverlayInfo( final PlaceHolderOverlayInfo info ) {
+			this.info = info;
+		}
+
+		void setViewerPanel( final ViewerPanel viewer ) {
+			this.viewer = viewer;
+		}
+
+		@Override
+		public synchronized int[] getLut() {
+			if ( info != null && info.isVisible() )
+				return lut;
+			else
+				return null;
+		}
+
+		@Override
+		public synchronized void updateVisibility() {
+			update();
+		}
+
+		@Override
+		public synchronized void updateSetupParameters() {
+			update();
+		}
+
+		protected void update() {
+			final int numSets = labelingPlus.getLabeling().getMapping().numSets();
+			if ( lut == null || lut.length < numSets )
+				lut = new int[ numSets ];
+			Arrays.fill( lut, 0 );
+			fillLut();
+			converter.update();
+			if ( viewer != null )
+				viewer.requestRepaint();
+		}
+
+		protected void convertLutToColors() {
+			if ( info == null )
+				return;
+
+			final double max = info.getDisplayRangeMax();
+			final double min = info.getDisplayRangeMin();
+			final double scale = 1.0 / ( max - min );
+			final int value = info.getColor().get();
+			final int A = ARGBType.alpha( value );
+			final double scaleR = ARGBType.red( value ) * scale;
+			final double scaleG = ARGBType.green( value ) * scale;
+			final double scaleB = ARGBType.blue( value ) * scale;
+			final int black = ARGBType.rgba( 0, 0, 0, A );
+			for ( int i = 0; i < lut.length; ++i ) {
+				final double v = lut[ i ] - min;
+				if ( v < 0 ) {
+					lut[ i ] = black;
+				} else {
+					final int r0 = ( int ) ( scaleR * v + 0.5 );
+					final int g0 = ( int ) ( scaleG * v + 0.5 );
+					final int b0 = ( int ) ( scaleB * v + 0.5 );
+					final int r = Math.min( 255, r0 );
+					final int g = Math.min( 255, g0 );
+					final int b = Math.min( 255, b0 );
+					lut[ i ] = ARGBType.rgba( r, g, b, A );
+				}
+			}
+		}
+
+		protected abstract void fillLut();
+	}
+
+	static class SelectedSegmentsColorTable extends SegmentsColorTable implements SelectionListener {
+
+		private final Selection< SegmentVertex, SubsetEdge > selectionModel;
+
+		public SelectedSegmentsColorTable(
+				final LabelingPlus labelingPlus,
+				final ColorTableConverter converter,
+				final Selection< SegmentVertex, SubsetEdge > selectionModel ) {
+			super( labelingPlus, converter );
+			this.selectionModel = selectionModel;
+			selectionModel.addSelectionListener( this );
+			update();
+		}
+
+		@Override
+		public synchronized void selectionChanged() {
+			update();
+		}
+
+		@Override
+		protected void fillLut() {
+			final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
+			for ( final SegmentVertex v : selectionModel.getSelectedVertices() )
+				for ( final int i : v.getLabelData().getFragmentIndices() )
+					++lut[ fragments.get( i ).getLabelingMappingIndex() ];
+			convertLutToColors();
+		}
+	}
+
+	static class HighlightedSegmentsColorTable extends SegmentsColorTable implements HighlightListener {
+
+		private final HighlightModel< SegmentVertex, SubsetEdge > highlightModel;
+
+		public HighlightedSegmentsColorTable(
+				final LabelingPlus labelingPlus,
+				final ColorTableConverter converter,
+				final HighlightModel< SegmentVertex, SubsetEdge > highlightModel ) {
+			super( labelingPlus, converter );
+			this.highlightModel = highlightModel;
+			highlightModel.addHighlightListener( this );
+			update();
+		}
+
+		@Override
+		public synchronized void highlightChanged() {
+			update();
+		}
+
+		@Override
+		protected void fillLut() {
+			final SegmentVertex v = highlightModel.getHighlightedVertex( null );
+			if ( v != null ) {
+				final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
+				for ( final int i : v.getLabelData().getFragmentIndices() )
+					++lut[ fragments.get( i ).getLabelingMappingIndex() ];
+				convertLutToColors();
+			}
+		}
+	}
+
+	static class FocusedSegmentsColorTable extends SegmentsColorTable implements FocusListener {
+
+		private final FocusModel< SegmentVertex, SubsetEdge > focusModel;
+
+		public FocusedSegmentsColorTable(
+				final LabelingPlus labelingPlus,
+				final ColorTableConverter converter,
+				final FocusModel< SegmentVertex, SubsetEdge > focusModel ) {
+			super( labelingPlus, converter );
+			this.focusModel = focusModel;
+			focusModel.addFocusListener( this );
+			update();
+		}
+
+		@Override
+		public synchronized void focusChanged() {
+			update();
+		}
+
+		@Override
+		protected void fillLut() {
+			final SegmentVertex v = focusModel.getFocusedVertex( null );
+			if ( v != null ) {
+				final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
+				for ( final int i : v.getLabelData().getFragmentIndices() )
+					++lut[ fragments.get( i ).getLabelingMappingIndex() ];
+				convertLutToColors();
+			}
+		}
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.listener.SolutionChangedListener#solutionChanged(com.indago.fg.Assignment)
+	 */
+	@Override
+	public void solutionChanged( final Assignment< IndicatorNode > newAssignment ) {
+		selectionFromCurrentSolution();
 	}
 }
