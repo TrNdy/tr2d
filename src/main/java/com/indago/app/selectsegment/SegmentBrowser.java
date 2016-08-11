@@ -54,6 +54,8 @@ public class SegmentBrowser
 
 	private final SegmentGraph segmentGraph;
 
+	private final MouseMotionListener mml;
+
 	public SegmentBrowser(
 			final Bdv bdv,
 			final LabelingPlus labelingPlus,
@@ -74,7 +76,7 @@ public class SegmentBrowser
 		segmentsOrdered = CollectionUtils.createRefList( segmentGraph.vertices() );
 		currentSegment = null;
 
-		bdv.getBdvHandle().getViewerPanel().getDisplay().addMouseMotionListener( new MouseMotionListener() {
+		this.mml = new MouseMotionListener() {
 
 			@Override
 			public void mouseDragged( final MouseEvent e ) {
@@ -86,7 +88,8 @@ public class SegmentBrowser
 				final int y = e.getY();
 				findSegments( x, y );
 			}
-		} );
+		};
+		bdv.getBdvHandle().getViewerPanel().getDisplay().addMouseMotionListener( this.mml );
 
 		final TriggerBehaviourBindings bindings = bdv.getBdvHandle().getTriggerbindings();
 		final AbstractBehaviours behaviours = new AbstractBehaviours( bindings, "segments", inputConf, new String[] { "tr2d" } );
@@ -99,7 +102,7 @@ public class SegmentBrowser
 					}
 				},
 				"browse segments",
-				"scroll" );
+				"shift scroll" );
 		behaviours.behaviour(
 				new ClickBehaviour() {
 					@Override
@@ -186,6 +189,18 @@ public class SegmentBrowser
 			}
 
 			highlightModel.highlightVertex( currentSegment );
+		}
+	}
+
+	/**
+	 * Removes itself from the bdv it was created for. (The one given during
+	 * construction...)
+	 */
+	public void unregister() {
+		try {
+			bdv.getBdvHandle().getViewerPanel().getDisplay().removeMouseMotionListener( this.mml );
+		} catch ( final NullPointerException npe ) {
+			System.err.println( "NPE in SegmentBrowser::unregister" );
 		}
 	}
 }

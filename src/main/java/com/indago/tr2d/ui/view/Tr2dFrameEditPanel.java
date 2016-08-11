@@ -152,6 +152,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	private JButton bSelectionFromSolution;
 
+	private SegmentBrowser segmentBrowser;
+
 	// === INNER CLASSES ETC. ==========================================================
 
 	static class CheckedPairs {
@@ -446,10 +448,39 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		// === BDV ===
 
+		if ( segmentBrowser != null ) {
+			segmentBrowser.unregister();
+		}
 		this.bdvRemoveAll();
 		this.bdvRemoveAllOverlays();
 
-		// --- new stuff start ---
+		final RandomAccessibleInterval< DoubleType > rawData = model.getTr2dModel().getRawData();
+		final int t = Integer.parseInt( this.txtCurFrame.getText() ) - 1;
+		this.bdvAdd( Views.hyperSlice( rawData, 2, t ), "RAW" );
+
+		RandomAccessibleInterval< UnsignedShortType > overlay = Converters.convert(
+				labelingPlus.getLabeling().getIndexImg(),
+				new SelectedSegmentsConverter( labelingPlus, selectionModel ),
+				new UnsignedShortType() );
+		this.bdvAdd( overlay, "selected segments", 0, 2, new ARGBType( 0x00FF00 ), true );
+
+		overlay = Converters.convert(
+				labelingPlus.getLabeling().getIndexImg(),
+				new HighlightedSegmentsConverter( labelingPlus, highlightModel ),
+				new UnsignedShortType() );
+		this.bdvAdd( overlay, "highlighted segment", 0, 1, new ARGBType( 0xFF00FF ), true );
+
+		overlay = Converters.convert(
+				labelingPlus.getLabeling().getIndexImg(),
+				new FocusedSegmentsConverter( labelingPlus, focusModel ),
+				new UnsignedShortType() );
+		this.bdvAdd( overlay, "focused segment", 0, 1, new ARGBType( 0x0000FF ), true );
+
+		highlightModel.addHighlightListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
+		selectionModel.addSelectionListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
+		focusModel.addFocusListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
+
+		// --- segment selection in BDV start ---
 
 		final ColorTableConverter conv = new ColorTableConverter( labelingPlus );
 
@@ -479,10 +510,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				Bdv.options().inputTriggerConfig( inputConf ).is2D().addTo( bdvGetHandlePanel() ) ); // .screenScales( new double[] { 1 } )
 		final Bdv bdv = vchanSources.get( 0 );
 
-
 		for ( int i = 0; i < virtualChannels.size(); ++i ) {
 			virtualChannels.get( i ).setPlaceHolderOverlayInfo( vchanSources.get( i ).getPlaceHolderOverlayInfo() );
 			virtualChannels.get( i ).setViewerPanel( bdv.getBdvHandle().getViewerPanel() );
+			bdvSources.add( vchanSources.get( i ) ); // so they can be removed by bdvRemoveAll()
 		}
 
 		final BdvVirtualChannelSource selectionSource = vchanSources.get( 0 );
@@ -494,47 +525,20 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		selectionSource.setColor( new ARGBType( 0x00FF00 ) );
 //		selectionSource.setActive( false );
 
-		highlightSource.setDisplayRange( 0, 2 );
+		highlightSource.setDisplayRange( 0, 1 );
 		highlightSource.setColor( new ARGBType( 0xFF00FF ) );
 //		highlightSource.setActive( false );
 
-		focusSource.setDisplayRange( 0, 2 );
+		focusSource.setDisplayRange( 0, 1 );
 		focusSource.setColor( new ARGBType( 0x0000FF ) );
 
 		segmentsUnderMouseSource.setDisplayRange( 0, 10 );
 		segmentsUnderMouseSource.setColor( new ARGBType( 0xFFFF00 ) );
 
-		// --- new stuff end ---
-
-		final RandomAccessibleInterval< DoubleType > rawData = model.getTr2dModel().getRawData();
-		final int t = Integer.parseInt( this.txtCurFrame.getText() ) - 1;
-		this.bdvAdd( Views.hyperSlice( rawData, 2, t ), "RAW" );
-
-		RandomAccessibleInterval< UnsignedShortType > overlay = Converters.convert(
-				labelingPlus.getLabeling().getIndexImg(),
-				new SelectedSegmentsConverter( labelingPlus, selectionModel ),
-				new UnsignedShortType() );
-		this.bdvAdd( overlay, "selected segments", 0, 2, new ARGBType( 0x00FF00 ), true );
-
-		overlay = Converters.convert(
-				labelingPlus.getLabeling().getIndexImg(),
-				new HighlightedSegmentsConverter( labelingPlus, highlightModel ),
-				new UnsignedShortType() );
-		this.bdvAdd( overlay, "highlighted segment", 0, 1, new ARGBType( 0xFF00FF ), true );
-
-		overlay = Converters.convert(
-				labelingPlus.getLabeling().getIndexImg(),
-				new FocusedSegmentsConverter( labelingPlus, focusModel ),
-				new UnsignedShortType() );
-		this.bdvAdd( overlay, "focused segment", 0, 1, new ARGBType( 0x0000FF ), true );
-
-		highlightModel.addHighlightListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
-		selectionModel.addSelectionListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
-		focusModel.addFocusListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
-
 		// add "browse segments" behaviour to bdv
-		new SegmentBrowser( bdv, labelingPlus, modelGraph, segmentsUnderMouse, highlightModel, selectionModel, inputConf );
+		segmentBrowser = new SegmentBrowser( bdv, labelingPlus, modelGraph, segmentsUnderMouse, highlightModel, selectionModel, inputConf );
 
+		// --- segment selection in BDV end ---
 	}
 
 	/**
