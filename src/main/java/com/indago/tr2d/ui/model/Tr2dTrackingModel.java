@@ -100,7 +100,6 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public Tr2dTrackingModel(
 			final Tr2dModel model,
-			final Tr2dSegmentationCollectionModel modelSeg,
 			final CostFactory< LabelingSegment > segmentCosts,
 			final CostFactory< LabelingSegment > appearanceCosts,
 			final CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts,
@@ -125,7 +124,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		getCostFactories().add( this.moveCosts );
 		getCostFactories().add( this.divisionCosts );
 
-		this.tr2dSegModel = modelSeg;
+		this.tr2dSegModel = model.getSegmentationModel();
 
 		final File fImgSol = dataFolder.addFile( FILENAME_TRACKING ).getFile();
 		if ( fImgSol.canRead() ) {
@@ -242,12 +241,14 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * Additionally also takes care of the BDV.
 	 */
 	public Thread runInThread( final boolean forceResolve ) {
-		final Tr2dTrackingModel self = this;
+//		final Tr2dTrackingModel self = this;
 		final Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
-				self.run( forceResolve );
+				//TODO apply awesomeness everywhere
+				Tr2dTrackingModel.this.run( forceResolve );
+//				self.run( forceResolve );
 
 				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
 				bdvRemoveAll();

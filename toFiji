@@ -1,1 +1,1 @@
-mvn -Dimagej.app.directory=/Applications/Fiji.app/ -Ddelete.other.versions=true -Denforcer.skip=true clean install
+mvn -Dimagej.app.directory=/Applications/Fiji.app/ -Ddelete.other.versions=true -Denforcer.skip=true -Djavadoc.skip=true clean install

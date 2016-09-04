@@ -16,8 +16,6 @@ import com.indago.util.ImglibUtil;
 
 import ij.ImagePlus;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.ImagePlusAdapter;
-import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
 
@@ -31,6 +29,7 @@ public class Tr2dModel {
 	private final DoubleType min = new DoubleType();
 	private final DoubleType max = new DoubleType();
 
+	// TODO think about better separation of concerns
 	private InputTriggerConfig inputTriggerConfig;
 
 	private final ProjectFolder projectFolder;
@@ -47,14 +46,14 @@ public class Tr2dModel {
 	public Tr2dModel( final ProjectFolder projectFolder, final ImagePlus imgPlus ) {
 		this.imgPlus = imgPlus;
 		this.projectFolder = projectFolder;
-		final Img< DoubleType > temp = ImagePlusAdapter.wrapNumeric( imgPlus );
+
 		imgRaw = DoubleTypeImgLoader.wrapEnsureType( imgPlus );
 		ImglibUtil.computeMinMax( Views.iterable( imgRaw ), min, max );
 
 		segModel = new Tr2dSegmentationCollectionModel( this );
 		flowModel = new Tr2dFlowModel( this );
 		trackingModel =
-				new Tr2dTrackingModel( this, getSegmentationModel(), new HernanSegmentCostFactory( imgRaw ), new HernanAppearanceCostFactory( imgRaw ), new HernanMovementCostFactory( imgRaw ), new HernanDivisionCostFactory( imgRaw ), new HernanDisappearanceCostFactory( imgRaw ) );
+				new Tr2dTrackingModel( this, new HernanSegmentCostFactory( imgRaw ), new HernanAppearanceCostFactory( imgRaw ), new HernanMovementCostFactory( imgRaw ), new HernanDivisionCostFactory( imgRaw ), new HernanDisappearanceCostFactory( imgRaw ) );
 	}
 
 	/**

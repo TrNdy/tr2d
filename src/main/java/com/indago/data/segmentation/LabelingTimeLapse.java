@@ -49,6 +49,7 @@ public class LabelingTimeLapse {
 	public LabelingTimeLapse( final Tr2dSegmentationCollectionModel model ) {
 		this.model = model;
 
+		// this should be a parameter
 		minComponentSize = 25;
 		maxComponentSize = ( int ) ( model.getModel().getRawData().dimension( 0 ) * model.getModel().getRawData().dimension( 1 ) - 1 );
 		maxGrowthPerStep = new MaxGrowthPerStep( maxComponentSize );

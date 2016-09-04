@@ -618,8 +618,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
 
 			for ( final SegmentVertex v : selectionModel.getSelectedVertices() )
-				for ( final int i : v.getLabelData().getFragmentIndices() )
-					++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
+				if ( v.getLabelData() != null ) {
+					for ( final int i : v.getLabelData().getFragmentIndices() ) {
+						++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
+					}
+				}
 		}
 	}
 
