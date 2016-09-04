@@ -24,6 +24,8 @@ import org.apache.commons.cli.ParseException;
 import org.scijava.Context;
 import org.scijava.app.StatusService;
 import org.scijava.io.IOService;
+import org.scijava.log.LogService;
+import org.scijava.log.slf4j.SLF4JLogService;
 
 import com.apple.eawt.Application;
 import com.indago.io.ImageSaver;
@@ -75,15 +77,17 @@ public class Tr2dApplication {
 	private static int maxTime = Integer.MAX_VALUE;
 	private static int initOptRange = Integer.MAX_VALUE;
 
+	//TODO make non-static
 	public static OpService ops = null;
+
+	//TODO make non-static
+	public static SLF4JLogService log = null;
 
 	public static void main( final String[] args ) {
 
 		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 
 		if ( isStandalone ) { // main NOT called via Tr2dPlugin
-			System.out.println( "STANDALONE" );
-
 			final ImageJ temp = IJ.getInstance();
 			if ( temp == null ) {
 				new ImageJ();
@@ -95,11 +99,25 @@ public class Tr2dApplication {
 					IOService.class, DatasetIOService.class, LocationService.class,
 					DatasetService.class, ImgUtilityService.class, StatusService.class,
 					TranslatorService.class, QTJavaService.class, TiffService.class,
-					CodecService.class, JAIIIOService.class );
+					CodecService.class, JAIIIOService.class, LogService.class, SLF4JLogService.class );
 			ImageSaver.context = context;
 			ops = context.getService( OpService.class );
+			log = context.getService( SLF4JLogService.class );
+
+//			log.setLevel( LogService.NONE );
+//			log.setLevel( "com.indago.Tr2dA	pplication", SLF4JLogService.INFO );
+
+			System.out.println( "STANDALONE" );
+			log.info( "STANDALONE!" );
+			log.debug( "debug test" );
+			log.error( "debug test" );
+			log.warn( "warn test" );
 		} else {
-			System.out.println( "COMMAND -- ops=" + ops.toString() );
+//			System.out.println( "COMMAND -- ops=" + ops.toString() );
+			log.info( "tr2d started as command plugin -- ops=" + ops.toString() );
+			log.warn( "warn test" );
+			log.debug( "debug test" );
+//			log.error( "error test" );
 		}
 
 		checkGurobiAvailability();

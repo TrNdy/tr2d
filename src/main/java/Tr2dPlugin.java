@@ -2,6 +2,7 @@ import javax.swing.JOptionPane;
 
 import org.scijava.command.Command;
 import org.scijava.command.ContextCommand;
+import org.scijava.log.slf4j.SLF4JLogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -16,20 +17,27 @@ import net.imagej.ops.OpService;
  * @author Florian Jug
  */
 
-@Plugin( type = ContextCommand.class, headless = true, menuPath = "Plugins>Tracking>Tr2d 0.1 (alpha)" )
+@Plugin( type = ContextCommand.class, headless = false, menuPath = "Plugins>Tracking>Tr2d 0.1 (alpha)" )
 public class Tr2dPlugin implements Command {
 
 	@Parameter
-	private OpService ops;
+	private OpService opService;
+
+	@Parameter
+	private SLF4JLogService logService;
 
 	/**
 	 * @see java.lang.Runnable#run()
 	 */
 	@Override
 	public void run() {
+		System.setProperty( "scijava.log.level", "error" );
+		System.setProperty( "scijava.log.level:com.indago", "none" );
+
 		Tr2dApplication.isStandalone = false;
-		Tr2dApplication.ops = ops;
-		ImageSaver.context = ops.context();
+		Tr2dApplication.ops = opService;
+		Tr2dApplication.log = logService;
+		ImageSaver.context = opService.context();
 
 		try {
 			Tr2dApplication.main( null );
