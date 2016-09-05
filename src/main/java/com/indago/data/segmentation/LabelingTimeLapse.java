@@ -15,6 +15,7 @@ import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree.Fil
 import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree.MaxGrowthPerStep;
 import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
+import com.indago.log.Log;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 
 import net.imglib2.Dimensions;
@@ -166,7 +167,7 @@ public class LabelingTimeLapse {
 					final LabelingPlus labelingPlus = new XmlIoLabelingPlus().load( fLabeling );
 					frameLabelingBuilders.add( new LabelingBuilder( labelingPlus ) );
 				} catch ( final IOException e ) {
-					System.err.println( String.format( "ERROR: Labeling could not be loaded! (%s)", fLabeling.toString() ) );
+					Log.error( String.format( "Labeling could not be loaded! (%s)", fLabeling.toString() ) );
 //					e.printStackTrace();
 				}
 			}
@@ -193,7 +194,7 @@ public class LabelingTimeLapse {
 			try {
 				new XmlIoLabelingPlus().save( lb, abspath );
 			} catch ( final IOException e ) {
-				System.err.println( String.format( "ERROR: could not store labeling_frame%04d.* to project folder!", i ) );
+				Log.error( String.format( "Could not store labeling_frame%04d.* to project folder!", i ) );
 //				e.printStackTrace();
 			}
 			i++;

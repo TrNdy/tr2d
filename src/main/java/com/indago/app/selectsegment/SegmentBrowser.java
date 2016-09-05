@@ -13,6 +13,7 @@ import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingPlus;
+import com.indago.log.Log;
 
 import bdv.util.Bdv;
 import bdv.viewer.TimePointListener;
@@ -200,7 +201,7 @@ public class SegmentBrowser
 		try {
 			bdv.getBdvHandle().getViewerPanel().getDisplay().removeMouseMotionListener( this.mml );
 		} catch ( final NullPointerException npe ) {
-			System.err.println( "NPE in SegmentBrowser::unregister" );
+			Log.error( "NullPointerException in SegmentBrowser::unregister" );
 		}
 	}
 }

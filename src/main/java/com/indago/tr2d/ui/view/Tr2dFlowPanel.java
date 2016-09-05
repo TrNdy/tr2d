@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 
+import com.indago.log.Log;
 import com.indago.tr2d.ui.model.Tr2dFlowModel;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dFlowOverlay;
 
@@ -113,7 +114,7 @@ public class Tr2dFlowPanel extends JPanel implements ActionListener {
 				model.bdvAdd( new Tr2dFlowOverlay( model ), "overlay_flow" );
 
 			} catch ( final NumberFormatException nfe ) {
-				System.err.println( "NumberFormatException@tr2dFlowPanel: " + nfe.getMessage() );
+				Log.error( "NumberFormatException@tr2dFlowPanel: " + nfe.getMessage() );
 			}
 		} else
 		if ( e.getSource().equals( btnRemoveFlow ) ) {

@@ -73,7 +73,7 @@ public class Tr2dWekaSegmentationModel implements BdvOwner {
 			this.projectFolder = parentFolder.addFolder( "weka" );
 		} catch ( final IOException e ) {
 			this.projectFolder = null;
-			System.err.println( "ERROR: Subfolder for weka segmentation hypotheses could not be created." );
+			Log.error( "Subfolder for weka segmentation hypotheses could not be created." );
 			e.printStackTrace();
 		}
 
@@ -87,7 +87,7 @@ public class Tr2dWekaSegmentationModel implements BdvOwner {
 					try {
 						listThresholds.add( Double.parseDouble( value ) );
 					} catch ( final NumberFormatException e ) {
-						System.err.println( "Could not parse threshold value: " + value );
+						Log.error( "Could not parse threshold value: " + value );
 					} catch ( final Exception e ) {
 					}
 				}
@@ -187,7 +187,7 @@ public class Tr2dWekaSegmentationModel implements BdvOwner {
 
 			final File cf = new File( absolutePath );
 			if ( !cf.exists() || !cf.canRead() )
-				System.err.println( String.format( "Given classifier file cannot be read (%s)", absolutePath ) );
+				Log.error( String.format( "Given classifier file cannot be read (%s)", absolutePath ) );
 			loadClassifier( cf );
 
     		// classify frames

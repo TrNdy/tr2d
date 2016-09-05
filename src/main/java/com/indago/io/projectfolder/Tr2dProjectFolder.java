@@ -9,6 +9,7 @@ import java.nio.file.Files;
 
 import com.indago.app.hernan.Tr2dApplication;
 import com.indago.io.ProjectFolder;
+import com.indago.log.Log;
 
 /**
  * @author jug
@@ -50,7 +51,7 @@ public class Tr2dProjectFolder extends ProjectFolder {
 			deleteContent();
 			Files.copy( new File( pathToRawDataFile ).toPath(), getFile( RAW_DATA ).getFile().toPath() );
 		} catch ( final IOException e ) {
-			System.err.println( String.format( "ERROR: Project folder (%s) could not be set up.", super.getAbsolutePath() ) );
+			Log.error( String.format( "Project folder (%s) could not be set up.", super.getAbsolutePath() ) );
 			e.printStackTrace();
 			Tr2dApplication.quit( 3 );
 		}

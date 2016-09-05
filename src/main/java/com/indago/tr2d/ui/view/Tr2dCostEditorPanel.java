@@ -109,7 +109,7 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 							params.set( index, Double.parseDouble( txtValue.getText() ) );
 							Log.trace( "SET " + name + " TO " + params.get( index ) );
 						} catch ( final NumberFormatException nfe ) {
-							System.err.println( "NOPE! :)" );
+							Log.error( "NOPE! :)" );
 						}
 					}
 				} );

@@ -133,7 +133,7 @@ public class Tr2dApplication {
 		try {
 			FrameProperties.load( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
 		} catch ( final IOException e ) {
-			System.err.println( "\nWARNING: Frame properties not found. Will use default values." );
+			Log.warn( "Frame properties not found. Will use default values." );
 			guiFrame.setBounds( FrameProperties.getCenteredRectangle( 1200, 1024 ) );
 		}
 
@@ -156,7 +156,7 @@ public class Tr2dApplication {
 					try {
 						FrameProperties.save( projectFolder.getFile( Tr2dProjectFolder.FRAME_PROPERTIES ).getFile(), guiFrame );
 					} catch ( final Exception e ) {
-						System.err.println( "ERROR: Could not save frame properties in project folder!" );
+						Log.error( "Could not save frame properties in project folder!" );
 						e.printStackTrace();
 					}
 					Tr2dApplication.quit( 0 );
@@ -215,8 +215,7 @@ public class Tr2dApplication {
 						Tr2dApplication.quit( 1 );
 					}
 				} catch ( final IOException e ) {
-					System.err.println(
-							String.format( "ERROR: Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
+					Log.error( String.format( "Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
 					e.printStackTrace();
 					Tr2dApplication.quit( 1 );
 				}
@@ -244,8 +243,7 @@ public class Tr2dApplication {
 				try {
 					projectFolder = new Tr2dProjectFolder( projectFolderBasePath );
 				} catch ( final IOException e ) {
-					System.err.println(
-							String.format( "ERROR: Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
+					Log.error( String.format( "ERROR: Project folder (%s) could not be initialized.", projectFolderBasePath.getAbsolutePath() ) );
 					e.printStackTrace();
 					Tr2dApplication.quit( 2 );
 				}

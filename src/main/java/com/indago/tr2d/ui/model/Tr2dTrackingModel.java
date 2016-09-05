@@ -159,7 +159,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			dataFolder.getFolder( FOLDER_LABELING_FRAMES ).deleteContent();
 		} catch ( final IOException e ) {
 			if ( dataFolder.getFolder( FOLDER_LABELING_FRAMES ).exists() ) {
-				System.err.println( "Labeling frames could not be deleted." );
+				Log.error( "Labeling frames could not be deleted." );
 			}
 		}
 		// recollect segmentation data
@@ -275,7 +275,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		} catch ( final IOException e ) {
 			e.printStackTrace();
 		} catch ( final NullPointerException npe ) {
-			System.err.println( "ERROR: PGraph could not be stored to disk!" );
+			Log.error( "ERROR: PGraph could not be stored to disk!" );
 		}
 	}
 
@@ -304,7 +304,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		if ( forceHypothesesRefetch || labelingFrames.needProcessing() ) {
 			if ( !labelingFrames.processFrames() ) {
 				final String msg = "Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!";
-				System.err.println( msg );
+				Log.error( msg );
 				JOptionPane.showMessageDialog( Tr2dApplication.getGuiFrame(), msg, "No segmentation found...", JOptionPane.ERROR_MESSAGE );
 				return false;
 			}
