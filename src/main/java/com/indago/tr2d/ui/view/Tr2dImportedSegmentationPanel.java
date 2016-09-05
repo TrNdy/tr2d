@@ -19,6 +19,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.indago.io.ProjectFile;
+import com.indago.log.Log;
 import com.indago.tr2d.ui.model.Tr2dImportedSegmentationModel;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
 
@@ -91,7 +92,7 @@ public class Tr2dImportedSegmentationPanel extends JPanel implements ActionListe
 				model.importSegmentation( file );
 				listSegmentations.setSelectedIndex( listSegmentations.getModel().getSize() - 1 );
 			} catch ( ImgIOException | IOException e1 ) {
-				System.out.println( "File selection canceled." );
+				Log.info( "File selection canceled." );
 			}
 		} else if ( e.getSource().equals( remove ) ) {
 			model.removeSegmentations( listSegmentations.getSelectedIndices() );

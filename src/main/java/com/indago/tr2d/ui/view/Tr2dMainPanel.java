@@ -28,6 +28,7 @@ import javax.swing.event.ChangeListener;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
+import com.indago.log.Log;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.MessageConsole;
 
@@ -133,7 +134,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		try
 		{
 
-			System.out.println( "Try to fetch yaml from " + ClassLoader.getSystemResource( "tr2d.yaml" ) );
+			Log.info( "Try to fetch yaml from " + ClassLoader.getSystemResource( "tr2d.yaml" ) );
 			URL yamlURL = ClassLoader.getSystemResource( "tr2d.yaml" );
 			if ( yamlURL == null ) {
 				yamlURL = getClass().getClassLoader().getResource( "tr2d.yaml" );

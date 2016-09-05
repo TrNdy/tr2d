@@ -20,6 +20,7 @@ import com.indago.io.DataMover;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.ProjectFolder;
+import com.indago.log.Log;
 import com.indago.tr2d.ui.view.bdv.BdvOwner;
 import com.indago.util.converter.IntTypeThresholdConverter;
 import com.univocity.parsers.csv.CsvParser;
@@ -182,7 +183,7 @@ public class Tr2dWekaSegmentationModel implements BdvOwner {
 		int i = 0;
 		for ( final String absolutePath : listClassifierFilenames ) {
 			i++;
-			System.out.println( String.format("Classifier %d of %d -- %s", i, listClassifierFilenames.size(), absolutePath) );
+			Log.trace( String.format( "Classifier %d of %d -- %s", i, listClassifierFilenames.size(), absolutePath ) );
 
 			final File cf = new File( absolutePath );
 			if ( !cf.exists() || !cf.canRead() )

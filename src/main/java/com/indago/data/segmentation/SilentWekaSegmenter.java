@@ -6,6 +6,8 @@ package com.indago.data.segmentation;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.indago.log.Log;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.Prefs;
@@ -37,14 +39,15 @@ public class SilentWekaSegmenter< T extends NumericType< T > > {
 		// Try to load Weka model (classifier and train header)
 		if ( false == wekaSegmentation.loadClassifier( directory + filename ) ) {
 			IJ.error( "Error when loading Weka classifier from file: " + directory + filename );
-			System.out.println( "Error: classifier could not be loaded from '" + directory + filename + "'." );
+			Log.error( "Classifier could not be loaded from '" + directory + filename + "'." );
 			return false;
 		}
 
-		System.out.println( "Read header from " + directory + filename + " (number of attributes = " + wekaSegmentation.getTrainHeader().numAttributes() + ")" );
+		Log.info(
+				"Read header from " + directory + filename + " (number of attributes = " + wekaSegmentation.getTrainHeader().numAttributes() + ")" );
 
 		if ( wekaSegmentation.getTrainHeader().numAttributes() < 1 ) {
-			IJ.error( "Error", "No attributes were found on the model header loaded from " + directory + filename );
+			Log.error( "No attributes were found on the model header loaded from " + directory + filename );
 			return false;
 		}
 
@@ -85,7 +88,7 @@ public class SilentWekaSegmenter< T extends NumericType< T > > {
 		final int numThreads = Math.min( raiList.size(), numProcessors );
 		final int numFurtherThreads = ( int ) Math.ceil( ( double ) ( numProcessors - numThreads ) / raiList.size() ) + 1;
 
-		System.out.println( "Processing " + raiList.size() + " image files in " + numThreads + " thread(s)...." );
+		Log.info( "Processing " + raiList.size() + " image files in " + numThreads + " thread(s)...." );
 
 		final Thread[] threads = new Thread[ numThreads ];
 
@@ -109,7 +112,7 @@ public class SilentWekaSegmenter< T extends NumericType< T > > {
 				for ( int i = numThread; i < raiList.size(); i += numThreads ) {
 
 					final ImagePlus forWekaImagePlus = ImageJFunctions.wrap( raiList.get( i ), "Img_num_" + i ).duplicate();
-					System.out.println( "Processing image " + ( i + 1 ) + " in thread " + ( numThread + 1 ) );
+					Log.info( "Processing image " + ( i + 1 ) + " in thread " + ( numThread + 1 ) );
 
 					final ImagePlus segmentation = wekaSegmentation.applyClassifier( forWekaImagePlus, numFurtherThreads, probabilityMaps );
 
@@ -123,7 +126,7 @@ public class SilentWekaSegmenter< T extends NumericType< T > > {
 										new DoubleType() );
 						raiListOutputs.set( i, rai );
 					} else {
-						System.out.println( "WARNING!!! One of the input images could not be classified!!!" );
+						Log.warn( "One of the input images could not be classified!!!" );
 					}
 
 					segmentation.close();

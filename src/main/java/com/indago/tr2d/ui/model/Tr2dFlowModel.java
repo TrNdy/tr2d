@@ -157,10 +157,6 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 				dy = polar[ 0 ] * Math.cos( polar[ 1 ] );
 			}
 
-			//		if ( t == 2 ) {
-			//			System.out.println( String.format( "t,x,y: %d,%d%d: polar=(%f,%f); cart=(%f,%f);", t, x, y, polar[ 0 ], polar[ 1 ], dx, dy ) );
-			//		}
-
 			return new ValuePair<>( dx, dy );
 		}
 	}

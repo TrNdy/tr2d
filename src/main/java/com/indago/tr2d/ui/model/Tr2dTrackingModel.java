@@ -26,6 +26,7 @@ import com.indago.ilp.SolveGurobi;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.ProjectFolder;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
+import com.indago.log.Log;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.AssignmentNodes;
@@ -329,7 +330,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 						disappearanceCosts );
 
 		for ( int frameId = 0; frameId < labelingFrames.getNumFrames(); frameId++ ) {
-			System.out.println(
+			Log.info(
 					String.format( "Working on frame %d of %d...", frameId + 1, labelingFrames.getNumFrames() ) );
 
 			// =============================
@@ -353,7 +354,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		}
 		tr2dTraProblem.addDummyDisappearance();
 
-		System.out.println( "Tracking graph was built sucessfully!" );
+		Log.info( "Tracking graph was built sucessfully!" );
 	}
 
 	/**
@@ -521,7 +522,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 					final double cost_flow = moveCosts.getCost(
 							new ValuePair<>( new ValuePair< LabelingSegment, LabelingSegment >( labelingSegment, outMove
 									.getDest().getSegment() ), flow_vec ) );
-					System.out.println( "Movement cost: " + cost_flow + "; " + moveCosts.getParameters().get( 0 ) );
+					//Log.trace( "Movement cost: " + cost_flow + "; " + moveCosts.getParameters().get( 0 ) );
 					outMove.setCost( cost_flow );
 				}
 

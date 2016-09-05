@@ -84,14 +84,8 @@ public class Parametric
 	@Override
 	protected void finalize() throws Throwable
 	{
-//		if ( !isFinalized ) {
-//			isFinalized = true;
-//			System.out.println( ">>>>>>>>>>>>>>> Going to delete ptr_this=" + ptr_this );
-			destructor( ptr_this );
-			super.finalize();
-//		} else {
-//			System.out.println( ">>>>>>>>>>>>>>> SECOND ATTEMPT TO FINALIZE ON ptr_this=" + ptr_this );
-//		}
+		destructor( ptr_this );
+		super.finalize();
 	}
 
 	private static native long constructor( final int nodeNumMax, final int edgeNumMax );

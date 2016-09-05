@@ -66,7 +66,7 @@ public class NarHelper {
 				// for developement purpose, we need to load the native libraries as a file itself
 				final String path = urlString.substring( 5, urlString.length() - propertiesPath.length() );
 				libPath = path + "/" + libName + "-" + aol + "-jni/lib/" + aol + "/jni/" + libPrefix + libName + libSuffix;
-				//System.out.println(libPath);
+				//Log.info(libPath);
 
 			} else if ( urlString.startsWith( "jar:file:" ) ) {
 

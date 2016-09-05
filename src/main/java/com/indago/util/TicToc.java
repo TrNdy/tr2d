@@ -3,6 +3,7 @@
  */
 package com.indago.util;
 
+import com.indago.log.Log;
 
 /**
  * @author jug
@@ -21,7 +22,7 @@ public class TicToc {
 
 	public long tic( final String message ) {
 		final long ret = tic();
-		System.out.println( String.format( "t0=%d - %s", ret / 1000000, message ) );
+		Log.info( String.format( "t0=%d - %s", ret / 1000000, message ) );
 		return ret;
 	}
 
@@ -34,7 +35,7 @@ public class TicToc {
 	public long toc( final String message ) {
 		final long ret = toc();
 		final long ms = ret / 1000000;
-		System.out.println( String.format( "dt=%d - %s", ms, message ) );
+		Log.info( String.format( "dt=%d - %s", ms, message ) );
 		return ret;
 	}
 

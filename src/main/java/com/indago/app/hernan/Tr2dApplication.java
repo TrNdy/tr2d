@@ -30,6 +30,7 @@ import org.scijava.log.slf4j.SLF4JLogService;
 import com.apple.eawt.Application;
 import com.indago.io.ImageSaver;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
+import com.indago.log.Log;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.FrameProperties;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
@@ -80,9 +81,6 @@ public class Tr2dApplication {
 	//TODO make non-static
 	public static OpService ops = null;
 
-	//TODO make non-static
-	public static SLF4JLogService log = null;
-
 	public static void main( final String[] args ) {
 
 		System.setProperty( "apple.laf.useScreenMenuBar", "true" );
@@ -102,22 +100,17 @@ public class Tr2dApplication {
 					CodecService.class, JAIIIOService.class, LogService.class, SLF4JLogService.class );
 			ImageSaver.context = context;
 			ops = context.getService( OpService.class );
-			log = context.getService( SLF4JLogService.class );
+			Log.initialize( context.getService( SLF4JLogService.class ) );
 
-//			log.setLevel( LogService.NONE );
-//			log.setLevel( "com.indago.Tr2dA	pplication", SLF4JLogService.INFO );
-
-			System.out.println( "STANDALONE" );
-			log.info( "STANDALONE!" );
-			log.debug( "debug test" );
-			log.error( "debug test" );
-			log.warn( "warn test" );
+			Log.info( "STANDALONE!" );
+			Log.debug( "debug test" );
+			Log.warn( "warn test" );
+			Log.error( "error test" );
 		} else {
-//			System.out.println( "COMMAND -- ops=" + ops.toString() );
-			log.info( "tr2d started as command plugin -- ops=" + ops.toString() );
-			log.warn( "warn test" );
-			log.debug( "debug test" );
-//			log.error( "error test" );
+			Log.info( "tr2d started as command plugin -- ops=" + ops.toString() );
+			Log.debug( "debug test" );
+			Log.warn( "warn test" );
+			Log.error( "error test" );
 		}
 
 		checkGurobiAvailability();
@@ -218,7 +211,7 @@ public class Tr2dApplication {
 					if ( !inputStack.canRead() || !inputStack.exists() ) {
 						final String msg = "Invalid project folder -- missing RAW data or read protected!";
 						JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-						System.out.println( "ERROR: " + msg );
+						Log.error( msg );
 						Tr2dApplication.quit( 1 );
 					}
 				} catch ( final IOException e ) {
@@ -294,16 +287,16 @@ public class Tr2dApplication {
 				image = new ImageIcon( Tr2dApplication.class.getClassLoader().getResource(
 						"resources/IconMpiCbg128.png" ) ).getImage();
 			} catch ( final Exception e2 ) {
-				System.out.println( ">>> Error: app icon not found..." );
+				Log.error( "app icon not found..." );
 			}
 		}
 
 		if ( image != null ) {
 			if ( OSValidator.isMac() ) {
-				System.out.println( "On a Mac! --> trying to set icons..." );
+				Log.info( "On a Mac! --> trying to set icons..." );
 				Application.getApplication().setDockIconImage( image );
 			} else {
-				System.out.println( "Not a Mac! --> trying to set icons..." );
+				Log.info( "Not a Mac! --> trying to set icons..." );
 				guiFrame.setIconImage( image );
 			}
 		}
@@ -315,7 +308,7 @@ public class Tr2dApplication {
 	 */
 	private static void checkGurobiAvailability() {
 		final String jlp = System.getProperty( "java.library.path" );
-//		System.out.println( jlp );
+//		Log.info( jlp );
 		try {
 			try {
 				new GRBEnv();
@@ -338,7 +331,7 @@ public class Tr2dApplication {
 						"Gurobi Error?",
 						JOptionPane.ERROR_MESSAGE );
 				ulr.printStackTrace();
-				System.out.println( "\n>>>>> Java library path: " + jlp + "\n" );
+				Log.info( ">>>>> Java library path: " + jlp );
 				Tr2dApplication.quit( 99 );
 			}
 		} catch ( final NoClassDefFoundError err ) {
@@ -420,19 +413,19 @@ public class Tr2dApplication {
 			if ( !projectFolderBasePath.exists() ) {
 				final String msg = "Given project folder does not exist!";
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				System.out.println( "ERROR: " + msg );
+				Log.error( msg );
 				Tr2dApplication.quit( 1 );
 			}
 			if ( !projectFolderBasePath.isDirectory() ) {
 				final String msg = "Given project folder is not a folder!";
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				System.out.println( "ERROR: " + msg );
+				Log.error( msg );
 				Tr2dApplication.quit( 2 );
 			}
 			if ( !projectFolderBasePath.canWrite() ) {
 				final String msg = "Given project folder cannot be written to!";
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				System.out.println( "ERROR: " + msg );
+				Log.error( msg );
 				Tr2dApplication.quit( 3 );
 			}
 		}
@@ -443,13 +436,13 @@ public class Tr2dApplication {
 			if ( !inputStack.isFile() ) {
 				final String msg = "Given input tiff stack could not be found!";
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				System.out.println( "ERROR: " + msg );
+				Log.error( msg );
 				Tr2dApplication.quit( 5 );
 			}
 			if ( !inputStack.canRead() ) {
 				final String msg = "Given input tiff stack is not readable!";
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-				System.out.println( "ERROR: " + msg );
+				Log.error( msg );
 				Tr2dApplication.quit( 6 );
 			}
 		} else if ( projectFolderBasePath != null ) { // if a project folder was given load data from there!
@@ -459,12 +452,11 @@ public class Tr2dApplication {
 				if ( !inputStack.canRead() ) {
 					final String msg = String.format( "No raw tiff stack found in given project folder (%s)!", projectFolderBasePath );
 					JOptionPane.showMessageDialog( guiFrame, msg, "Argument Error", JOptionPane.ERROR_MESSAGE );
-					System.out.println( "ERROR: " + msg );
+					Log.error( msg );
 					Tr2dApplication.quit( 7 );
 				}
 			} catch ( final IOException e ) {
-				System.err.println(
-						String.format( "ERROR: Project folder (%s) could not used to load data from.", projectFolderBasePath.getAbsolutePath() ) );
+				Log.error( String.format( "Project folder (%s) could not used to load data from.", projectFolderBasePath.getAbsolutePath() ) );
 				e.printStackTrace();
 				Tr2dApplication.quit( 8 );
 			}
@@ -476,7 +468,7 @@ public class Tr2dApplication {
 			if ( !inputStack.canRead() ) {
 				final String msg = String.format( "User properties file not readable (%s). Continue without...", fileUserProps.getAbsolutePath() );
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Warning", JOptionPane.WARNING_MESSAGE );
-				System.out.println( "WARNING: " + msg );
+				Log.warn( msg );
 			}
 		}
 
@@ -485,7 +477,7 @@ public class Tr2dApplication {
 			if ( minTime < 0 ) {
 				final String msg = "Argument 'tmin' cannot be smaller than 0... using tmin=0...";
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Warning", JOptionPane.WARNING_MESSAGE );
-				System.out.println( "WARNING: " + msg );
+				Log.warn( msg );
 			}
 		}
 		if ( cmd.hasOption( "tmax" ) ) {
@@ -494,7 +486,7 @@ public class Tr2dApplication {
 				maxTime = minTime + 1;
 				final String msg = String.format( "Argument 'tmax' cannot be smaller than 'tmin'... using tmax=%d...", maxTime );
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Warning", JOptionPane.WARNING_MESSAGE );
-				System.out.println( "WARNING: " + msg );
+				Log.warn( msg );
 			}
 		}
 
@@ -505,7 +497,7 @@ public class Tr2dApplication {
 				final String msg =
 						String.format( "Argument 'orange' (initial optimization range in frames) too large... using %d instead...", initOptRange );
 				JOptionPane.showMessageDialog( guiFrame, msg, "Argument Warning", JOptionPane.WARNING_MESSAGE );
-				System.out.println( "WARNING: " + msg );
+				Log.warn( msg );
 			}
 		}
 	}

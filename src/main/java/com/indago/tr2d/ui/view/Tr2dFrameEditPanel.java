@@ -40,6 +40,7 @@ import com.indago.data.segmentation.LabelingFragment;
 import com.indago.data.segmentation.LabelingPlus;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.fg.Assignment;
+import com.indago.log.Log;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
@@ -767,7 +768,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			System.out.println( "Avoiding: " + segVar.toString() );
+			Log.info( "Avoiding: " + segVar.toString() );
 			segProblem.avoid( segVar );
 		}
 	}
@@ -780,7 +781,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			System.out.println( "Forcing: " + segVar.toString() );
+			Log.info( "Forcing: " + segVar.toString() );
 			segProblem.force( segVar );
 		}
 	}

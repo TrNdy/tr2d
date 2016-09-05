@@ -4,6 +4,7 @@
 package com.indago.data.segmentation;
 
 import com.indago.fkt.Function1D;
+import com.indago.log.Log;
 
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
@@ -32,7 +33,7 @@ public class ParaMaxFlow< T extends RealType< T > > {
 	/**
 	 * Instatiates an instance of <code>Parametric</code>, and builds a graph
 	 * structure corresponding to the given image.
-	 * 
+	 *
 	 * @param rai
 	 *            the image for which the graph in <code>Parametric</code> will
 	 *            be built. This <code>Img</code> must be 1d, 2d, or 3d.
@@ -65,7 +66,7 @@ public class ParaMaxFlow< T extends RealType< T > > {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param rai
 	 * @param is3d
 	 * @param unaryCostFactor
@@ -196,7 +197,7 @@ public class ParaMaxFlow< T extends RealType< T > > {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param fktUnary
 	 * @param fktPairwiseX
 	 * @param fktPairwiseY
@@ -321,7 +322,7 @@ public class ParaMaxFlow< T extends RealType< T > > {
 
 	public long solve( final double lambdaMin, final double lambdaMax ) {
 		final long solutions = parametric.Solve( lambdaMin, lambdaMax );
-		System.out.println( " >>>>> ParaMaxFlow solutions found: " + solutions + " <<<<<" );
+		Log.info( " >>>>> ParaMaxFlow solutions found: " + solutions + " <<<<<" );
 		regionsImg = createRegionsImg();
 		return solutions;
 	}

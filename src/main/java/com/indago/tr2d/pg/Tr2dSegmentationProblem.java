@@ -44,7 +44,6 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		this.conflictGraph = conflictGraph;
 
 		segments = new ArrayList< SegmentNode >();
-//		System.out.println( "==(t,#)==>>>> " + time + ", " + labelingSegments.size() );
 		createSegmentVars( labelingSegments );
 	}
 

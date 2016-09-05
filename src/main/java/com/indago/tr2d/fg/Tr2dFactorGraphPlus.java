@@ -10,6 +10,7 @@ import java.util.List;
 import com.indago.data.segmentation.Segment;
 import com.indago.data.segmentation.fg.FactorGraphPlus;
 import com.indago.data.segmentation.fg.SegmentHypothesisVariable;
+import com.indago.log.Log;
 import com.indago.old_fg.FactorGraph;
 import com.indago.old_fg.domain.BooleanFunctionDomain;
 import com.indago.old_fg.factor.BooleanFactor;
@@ -183,7 +184,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 
 			numRightContinuationConstraints++;
 		}
-		System.out.println(
+		Log.trace(
 				String.format(
 						"\n\t\tRight Continuation Constraints added: %d",
 						numRightContinuationConstraints ) );
@@ -218,7 +219,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 
 			numLeftContinuationConstraints++;
 		}
-		System.out.println(
+		Log.trace(
 				String.format(
 						"\n\t\tLeft Continuation Constraints added: %d",
 						numLeftContinuationConstraints ) );

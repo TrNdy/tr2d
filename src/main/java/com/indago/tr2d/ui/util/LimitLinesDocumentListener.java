@@ -6,6 +6,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 
+import org.jfree.util.Log;
+
 /*
  *  A class to control the maximum number of lines to be stored in a Document
  *
@@ -125,7 +127,7 @@ public class LimitLinesDocumentListener implements DocumentListener
 		}
 		catch(final BadLocationException ble)
 		{
-			System.out.println(ble);
+			Log.error( ble );
 		}
 	}
 
@@ -147,7 +149,7 @@ public class LimitLinesDocumentListener implements DocumentListener
 		}
 		catch(final BadLocationException ble)
 		{
-			System.out.println(ble);
+			Log.error( ble );
 		}
 	}
 }

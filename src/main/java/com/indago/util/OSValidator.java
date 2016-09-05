@@ -3,6 +3,8 @@
  */
 package com.indago.util;
 
+import com.indago.log.Log;
+
 /**
  * @author jug
  *
@@ -13,18 +15,18 @@ public class OSValidator {
 
     public static void main(final String[] args) {
 
-		System.out.println( OS );
+		Log.info( OS );
 
 		if ( isWindows() ) {
-			System.out.println( "This is Windows" );
+			Log.info( "This is Windows" );
 		} else if ( isMac() ) {
-			System.out.println( "This is Mac" );
+			Log.info( "This is Mac" );
 		} else if ( isUnix() ) {
-			System.out.println( "This is Unix or Linux" );
+			Log.info( "This is Unix or Linux" );
 		} else if ( isSolaris() ) {
-			System.out.println( "This is Solaris" );
+			Log.info( "This is Solaris" );
 		} else {
-			System.out.println( "Your OS is not support!!" );
+			Log.info( "Your OS is not support!!" );
 		}
     }
 
