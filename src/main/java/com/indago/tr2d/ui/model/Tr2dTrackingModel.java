@@ -275,7 +275,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		} catch ( final IOException e ) {
 			e.printStackTrace();
 		} catch ( final NullPointerException npe ) {
-			Log.error( "ERROR: PGraph could not be stored to disk!" );
+			Log.error( "PGraph could not be stored to disk!" );
 		}
 	}
 

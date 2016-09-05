@@ -5,7 +5,6 @@ package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,8 +28,8 @@ import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
 import com.indago.log.Log;
+import com.indago.log.MessageConsole;
 import com.indago.tr2d.ui.model.Tr2dModel;
-import com.indago.tr2d.ui.util.MessageConsole;
 
 import bdv.util.AbstractActions;
 import bdv.util.Bdv;
@@ -110,16 +109,15 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 		final JPanel logPanel = new JPanel( new BorderLayout() );
 		final JTextPane logText = new JTextPane();
-		final JScrollPane scroll = new JScrollPane( logText );
-		scroll.setPreferredSize( new Dimension( 400, 3000 ) );
-		logPanel.add( scroll, BorderLayout.CENTER );
+		logPanel.add( logText, BorderLayout.CENTER );
+		final JScrollPane scroll = new JScrollPane( logPanel );
 		log = new MessageConsole( logText, true );
 		log.redirectOut();
 		log.redirectErr( Color.RED, null );
 		log.setMessageLines( 10000 );
 
-		splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, tabs, logPanel );
-		splitPane.setResizeWeight( .8 ); // 1.0 == extra space given to left (top) component alone!
+		splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, tabs, scroll );
+		splitPane.setResizeWeight( .5 ); // 1.0 == extra space given to left (top) component alone!
 		splitPane.setOneTouchExpandable( true );
 
 		this.add( splitPane, BorderLayout.CENTER );

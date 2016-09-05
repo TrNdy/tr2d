@@ -8,7 +8,6 @@ import org.scijava.plugin.Plugin;
 
 import com.indago.app.hernan.Tr2dApplication;
 import com.indago.io.ImageSaver;
-import com.indago.log.Log;
 
 import net.imagej.ops.OpService;
 
@@ -37,7 +36,6 @@ public class Tr2dPlugin implements Command {
 
 		Tr2dApplication.isStandalone = false;
 		Tr2dApplication.ops = opService;
-		Log.initialize( logService );
 		ImageSaver.context = opService.context();
 
 		try {

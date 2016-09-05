@@ -107,6 +107,8 @@ public class Tr2dApplication {
 			Log.warn( "warn test" );
 			Log.error( "error test" );
 		} else {
+			Log.initialize( ops.getContext().getService( SLF4JLogService.class ) );
+
 			Log.info( "tr2d started as command plugin -- ops=" + ops.toString() );
 			Log.debug( "debug test" );
 			Log.warn( "warn test" );
