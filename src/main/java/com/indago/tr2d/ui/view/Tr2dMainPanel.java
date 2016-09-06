@@ -105,6 +105,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabs.add( "flow", tabFlow );
 		tabs.add( "tracking", tabTracking );
 
+		// --- LOGGING PANEL (from IndagoLoggingWrapper dependency) -------------------------------
 		logPanel = new LoggingPanel();
 		final JScrollPane scroll = new JScrollPane( logPanel );
 		logPanel.redirectStderr();
