@@ -97,10 +97,10 @@ public class Tr2dApplication {
 					IOService.class, DatasetIOService.class, LocationService.class,
 					DatasetService.class, ImgUtilityService.class, StatusService.class,
 					TranslatorService.class, QTJavaService.class, TiffService.class,
-					CodecService.class, JAIIIOService.class, LogService.class, SLF4JLogService.class );
+					CodecService.class, JAIIIOService.class, LogService.class );
 			ImageSaver.context = context;
 			ops = context.getService( OpService.class );
-			Log.initialize( context.getService( SLF4JLogService.class ) );
+			Log.initialize( context.getService( LogService.class ) );
 
 			Log.info( "STANDALONE!" );
 			Log.debug( "debug test" );

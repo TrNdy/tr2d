@@ -4,7 +4,6 @@
 package com.indago.tr2d.ui.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,7 +18,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -28,7 +26,7 @@ import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
 import com.indago.log.Log;
-import com.indago.log.MessageConsole;
+import com.indago.log.LoggingPanel;
 import com.indago.tr2d.ui.model.Tr2dModel;
 
 import bdv.util.AbstractActions;
@@ -57,9 +55,9 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 	private BdvHandlePanel bdvData;
 
-	private MessageConsole log;
-
 	private JSplitPane splitPane;
+
+	private LoggingPanel logPanel;
 
 	/**
 	 * @param imgPlus
@@ -107,14 +105,10 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabs.add( "flow", tabFlow );
 		tabs.add( "tracking", tabTracking );
 
-		final JPanel logPanel = new JPanel( new BorderLayout() );
-		final JTextPane logText = new JTextPane();
-		logPanel.add( logText, BorderLayout.CENTER );
+		logPanel = new LoggingPanel();
 		final JScrollPane scroll = new JScrollPane( logPanel );
-		log = new MessageConsole( logText, true );
-		log.redirectOut();
-		log.redirectErr( Color.RED, null );
-		log.setMessageLines( 10000 );
+		logPanel.redirectStderr();
+		logPanel.redirectStdout();
 
 		splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, tabs, scroll );
 		splitPane.setResizeWeight( .5 ); // 1.0 == extra space given to left (top) component alone!
