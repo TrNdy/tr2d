@@ -6,11 +6,11 @@ import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingPlus;
 import com.indago.data.segmentation.XmlIoLabelingPlus;
 import com.indago.data.segmentation.visualization.ColorStream;
-import com.indago.log.Log;
 
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
@@ -77,7 +77,7 @@ public class SelectSegments {
 
 	public void findSegments( final int x, final int y )
 	{
-		Log.trace( "findSegments (" + x + ", " + y + "):" );
+		Tr2dApplication.log.trace( "findSegments (" + x + ", " + y + "):" );
 
 		final ImgLabeling< LabelData, IntType > labeling = labelingPlus.getLabeling();
 
@@ -95,7 +95,7 @@ public class SelectSegments {
 
 		a.setPosition( new int[] { x, y } );
 		for ( final LabelData label : a.get() )
-			Log.trace( "   " + label.getSegment() );
+			Tr2dApplication.log.trace( "   " + label.getSegment() );
 	}
 
 	public static void main( final String[] args ) throws IOException {

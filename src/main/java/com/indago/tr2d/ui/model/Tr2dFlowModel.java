@@ -19,7 +19,6 @@ import com.indago.io.ImageSaver;
 import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
-import com.indago.log.Log;
 import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 
 import bdv.util.BdvHandlePanel;
@@ -86,7 +85,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		fileScaledFlow = projectFolder.addFile( "flow_scaled.tif" );
 
 		if ( !fileFlow.canRead() ) {
-			Log.info( "Flow subfolder does not contain a file 'flow.tif'." );
+			Tr2dApplication.log.info( "Flow subfolder does not contain a file 'flow.tif'." );
 		} else {
 			try {
 				imgs.add( FloatTypeImgLoader.loadTiff( fileFlow.getFile() ) );
@@ -320,7 +319,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 			is = new FileInputStream( propsFile );
 			props.load( is );
 		} catch ( final Exception e ) {
-			Log.warn( "No GUI props found for Tr2dFlowModel." );
+			Tr2dApplication.log.warn( "No GUI props found for Tr2dFlowModel." );
 		}
 
 		scaleFactor = Double.parseDouble( props.getProperty( SCALE, "" + scaleFactor ) );

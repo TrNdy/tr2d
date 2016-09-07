@@ -28,6 +28,7 @@ import javax.swing.SwingUtilities;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.app.selectsegment.ColorTable;
 import com.indago.app.selectsegment.ColorTableConverter;
 import com.indago.app.selectsegment.InverseBreadthFirstIterator;
@@ -40,7 +41,6 @@ import com.indago.data.segmentation.LabelingFragment;
 import com.indago.data.segmentation.LabelingPlus;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.fg.Assignment;
-import com.indago.log.Log;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
@@ -768,7 +768,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			Log.info( "Avoiding: " + segVar.toString() );
+			Tr2dApplication.log.info( "Avoiding: " + segVar.toString() );
 			segProblem.avoid( segVar );
 		}
 	}
@@ -781,7 +781,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			Log.info( "Forcing: " + segVar.toString() );
+			Tr2dApplication.log.info( "Forcing: " + segVar.toString() );
 			segProblem.force( segVar );
 		}
 	}

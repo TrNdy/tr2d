@@ -13,8 +13,7 @@ import java.util.Vector;
 
 import javax.swing.ListModel;
 
-import org.jfree.util.Log;
-
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
@@ -59,7 +58,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 			this.projectFolder.loadFiles();
 		} catch ( final IOException e ) {
 			this.projectFolder = null;
-			Log.error( "Subfolder for imported segmentation hypotheses could not be created." );
+			Tr2dApplication.log.error( "Subfolder for imported segmentation hypotheses could not be created." );
 			e.printStackTrace();
 		}
 
@@ -132,7 +131,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 		linkedListModel.remove( pf );
 
 		if ( !pf.getFile().delete() ) {
-			Log.error( String.format( "Imported segmentation file %s could not be deleted from project folder.", pf ) );
+			Tr2dApplication.log.error( String.format( "Imported segmentation file %s could not be deleted from project folder.", pf ) );
 		}
 	}
 

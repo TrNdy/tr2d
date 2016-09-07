@@ -25,7 +25,7 @@ import javax.swing.event.ChangeListener;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
-import com.indago.log.Log;
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.log.LoggingPanel;
 import com.indago.tr2d.ui.model.Tr2dModel;
 
@@ -107,9 +107,11 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 		// --- LOGGING PANEL (from IndagoLoggingWrapper dependency) -------------------------------
 		logPanel = new LoggingPanel();
+		logPanel.registerToReceiveFrom( "TRACE", Tr2dApplication.log );
+
 		final JScrollPane scroll = new JScrollPane( logPanel );
-		logPanel.redirectStderr();
-		logPanel.redirectStdout();
+//		logPanel.redirectStderr();
+//		logPanel.redirectStdout();
 
 		splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, tabs, scroll );
 		splitPane.setResizeWeight( .5 ); // 1.0 == extra space given to left (top) component alone!
@@ -127,7 +129,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		try
 		{
 
-			Log.info( "Try to fetch yaml from " + ClassLoader.getSystemResource( "tr2d.yaml" ) );
+			Tr2dApplication.log.info( "Try to fetch yaml from " + ClassLoader.getSystemResource( "tr2d.yaml" ) );
 			URL yamlURL = ClassLoader.getSystemResource( "tr2d.yaml" );
 			if ( yamlURL == null ) {
 				yamlURL = getClass().getClassLoader().getResource( "tr2d.yaml" );

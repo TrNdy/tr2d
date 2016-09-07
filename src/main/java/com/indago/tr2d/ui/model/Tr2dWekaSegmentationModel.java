@@ -20,7 +20,6 @@ import com.indago.io.DataMover;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.ProjectFolder;
-import com.indago.log.Log;
 import com.indago.tr2d.ui.view.bdv.BdvOwner;
 import com.indago.util.converter.IntTypeThresholdConverter;
 import com.univocity.parsers.csv.CsvParser;
@@ -73,7 +72,7 @@ public class Tr2dWekaSegmentationModel implements BdvOwner {
 			this.projectFolder = parentFolder.addFolder( "weka" );
 		} catch ( final IOException e ) {
 			this.projectFolder = null;
-			Log.error( "Subfolder for weka segmentation hypotheses could not be created." );
+			Tr2dApplication.log.error( "Subfolder for weka segmentation hypotheses could not be created." );
 			e.printStackTrace();
 		}
 
@@ -87,7 +86,7 @@ public class Tr2dWekaSegmentationModel implements BdvOwner {
 					try {
 						listThresholds.add( Double.parseDouble( value ) );
 					} catch ( final NumberFormatException e ) {
-						Log.error( "Could not parse threshold value: " + value );
+						Tr2dApplication.log.error( "Could not parse threshold value: " + value );
 					} catch ( final Exception e ) {
 					}
 				}
@@ -183,11 +182,11 @@ public class Tr2dWekaSegmentationModel implements BdvOwner {
 		int i = 0;
 		for ( final String absolutePath : listClassifierFilenames ) {
 			i++;
-			Log.trace( String.format( "Classifier %d of %d -- %s", i, listClassifierFilenames.size(), absolutePath ) );
+			Tr2dApplication.log.trace( String.format( "Classifier %d of %d -- %s", i, listClassifierFilenames.size(), absolutePath ) );
 
 			final File cf = new File( absolutePath );
 			if ( !cf.exists() || !cf.canRead() )
-				Log.error( String.format( "Given classifier file cannot be read (%s)", absolutePath ) );
+				Tr2dApplication.log.error( String.format( "Given classifier file cannot be read (%s)", absolutePath ) );
 			loadClassifier( cf );
 
     		// classify frames

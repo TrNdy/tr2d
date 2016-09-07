@@ -11,9 +11,9 @@ import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingPlus;
-import com.indago.log.Log;
 
 import bdv.util.Bdv;
 import bdv.viewer.TimePointListener;
@@ -201,7 +201,7 @@ public class SegmentBrowser
 		try {
 			bdv.getBdvHandle().getViewerPanel().getDisplay().removeMouseMotionListener( this.mml );
 		} catch ( final NullPointerException npe ) {
-			Log.error( "NullPointerException in SegmentBrowser::unregister" );
+			Tr2dApplication.log.error( "NullPointerException in SegmentBrowser::unregister" );
 		}
 	}
 }

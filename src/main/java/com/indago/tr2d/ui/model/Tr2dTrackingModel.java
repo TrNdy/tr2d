@@ -26,7 +26,6 @@ import com.indago.ilp.SolveGurobi;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.ProjectFolder;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
-import com.indago.log.Log;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.AssignmentNodes;
@@ -159,7 +158,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			dataFolder.getFolder( FOLDER_LABELING_FRAMES ).deleteContent();
 		} catch ( final IOException e ) {
 			if ( dataFolder.getFolder( FOLDER_LABELING_FRAMES ).exists() ) {
-				Log.error( "Labeling frames could not be deleted." );
+				Tr2dApplication.log.error( "Labeling frames could not be deleted." );
 			}
 		}
 		// recollect segmentation data
@@ -275,7 +274,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		} catch ( final IOException e ) {
 			e.printStackTrace();
 		} catch ( final NullPointerException npe ) {
-			Log.error( "PGraph could not be stored to disk!" );
+			Tr2dApplication.log.error( "PGraph could not be stored to disk!" );
 		}
 	}
 
@@ -304,7 +303,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		if ( forceHypothesesRefetch || labelingFrames.needProcessing() ) {
 			if ( !labelingFrames.processFrames() ) {
 				final String msg = "Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!";
-				Log.error( msg );
+				Tr2dApplication.log.error( msg );
 				JOptionPane.showMessageDialog( Tr2dApplication.getGuiFrame(), msg, "No segmentation found...", JOptionPane.ERROR_MESSAGE );
 				return false;
 			}
@@ -330,7 +329,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 						disappearanceCosts );
 
 		for ( int frameId = 0; frameId < labelingFrames.getNumFrames(); frameId++ ) {
-			Log.info(
+			Tr2dApplication.log.info(
 					String.format( "Working on frame %d of %d...", frameId + 1, labelingFrames.getNumFrames() ) );
 
 			// =============================
@@ -354,7 +353,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		}
 		tr2dTraProblem.addDummyDisappearance();
 
-		Log.info( "Tracking graph was built sucessfully!" );
+		Tr2dApplication.log.info( "Tracking graph was built sucessfully!" );
 	}
 
 	/**
@@ -522,7 +521,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 					final double cost_flow = moveCosts.getCost(
 							new ValuePair<>( new ValuePair< LabelingSegment, LabelingSegment >( labelingSegment, outMove
 									.getDest().getSegment() ), flow_vec ) );
-					//Log.trace( "Movement cost: " + cost_flow + "; " + moveCosts.getParameters().get( 0 ) );
+					//Tr2dApplication.log.trace( "Movement cost: " + cost_flow + "; " + moveCosts.getParameters().get( 0 ) );
 					outMove.setCost( cost_flow );
 				}
 

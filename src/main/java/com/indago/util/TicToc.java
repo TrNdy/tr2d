@@ -3,7 +3,7 @@
  */
 package com.indago.util;
 
-import com.indago.log.Log;
+import com.indago.app.hernan.Tr2dApplication;
 
 /**
  * @author jug
@@ -22,7 +22,7 @@ public class TicToc {
 
 	public long tic( final String message ) {
 		final long ret = tic();
-		Log.info( String.format( "t0=%d - %s", ret / 1000000, message ) );
+		Tr2dApplication.log.info( String.format( "t0=%d - %s", ret / 1000000, message ) );
 		return ret;
 	}
 
@@ -35,7 +35,7 @@ public class TicToc {
 	public long toc( final String message ) {
 		final long ret = toc();
 		final long ms = ret / 1000000;
-		Log.info( String.format( "dt=%d - %s", ms, message ) );
+		Tr2dApplication.log.info( String.format( "dt=%d - %s", ms, message ) );
 		return ret;
 	}
 

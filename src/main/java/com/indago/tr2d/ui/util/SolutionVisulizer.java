@@ -3,8 +3,7 @@
  */
 package com.indago.tr2d.ui.util;
 
-import org.jfree.util.Log;
-
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.fg.Assignment;
 import com.indago.fg.MappedFactorGraph;
 import com.indago.io.DataMover;
@@ -89,7 +88,7 @@ public class SolutionVisulizer {
 			try {
 				Regions.sample( region, slice ).forEach( t -> t.set( c ) );
 			} catch ( final ArrayIndexOutOfBoundsException aiaob ) {
-				Log.debug( "sol vis bounds exception" );
+				Tr2dApplication.log.debug( "sol vis bounds exception" );
 			}
 
 			for ( final MovementHypothesis move : segVar.getOutAssignments().getMoves() ) {

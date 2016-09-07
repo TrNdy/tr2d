@@ -3,7 +3,7 @@
  */
 package com.indago.util;
 
-import com.indago.log.Log;
+import com.indago.app.hernan.Tr2dApplication;
 
 /**
  * @author jug
@@ -15,18 +15,18 @@ public class OSValidator {
 
     public static void main(final String[] args) {
 
-		Log.info( OS );
+		Tr2dApplication.log.info( OS );
 
 		if ( isWindows() ) {
-			Log.info( "This is Windows" );
+			Tr2dApplication.log.info( "This is Windows" );
 		} else if ( isMac() ) {
-			Log.info( "This is Mac" );
+			Tr2dApplication.log.info( "This is Mac" );
 		} else if ( isUnix() ) {
-			Log.info( "This is Unix or Linux" );
+			Tr2dApplication.log.info( "This is Unix or Linux" );
 		} else if ( isSolaris() ) {
-			Log.info( "This is Solaris" );
+			Tr2dApplication.log.info( "This is Solaris" );
 		} else {
-			Log.info( "Your OS is not support!!" );
+			Tr2dApplication.log.info( "Your OS is not support!!" );
 		}
     }
 

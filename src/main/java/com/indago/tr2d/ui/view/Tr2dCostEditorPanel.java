@@ -15,9 +15,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+import com.indago.app.hernan.Tr2dApplication;
 import com.indago.costs.CostFactory;
 import com.indago.costs.CostParams;
-import com.indago.log.Log;
 import com.indago.tr2d.ui.model.Tr2dSolDiffModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 
@@ -107,9 +107,9 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 					public void actionPerformed( final ActionEvent e ) {
 						try {
 							params.set( index, Double.parseDouble( txtValue.getText() ) );
-							Log.trace( "SET " + name + " TO " + params.get( index ) );
+							Tr2dApplication.log.trace( "SET " + name + " TO " + params.get( index ) );
 						} catch ( final NumberFormatException nfe ) {
-							Log.error( "NOPE! :)" );
+							Tr2dApplication.log.error( "NOPE! :)" );
 						}
 					}
 				} );
@@ -144,9 +144,9 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 					allParams[i++] = params[j];
 				}
 			}
-			Log.trace( "Params: " );
+			Tr2dApplication.log.trace( "Params: " );
 			for ( final double value : allParams ) {
-				Log.trace( String.format( "%.2f; ", value ) );
+				Tr2dApplication.log.trace( String.format( "%.2f; ", value ) );
 			}
 		}
 	}
