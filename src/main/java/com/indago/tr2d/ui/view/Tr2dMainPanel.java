@@ -25,6 +25,7 @@ import javax.swing.event.ChangeListener;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 
+import com.indago.IndagoLog;
 import com.indago.app.hernan.Tr2dApplication;
 import com.indago.log.LoggingPanel;
 import com.indago.tr2d.ui.model.Tr2dModel;
@@ -107,7 +108,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 		// --- LOGGING PANEL (from IndagoLoggingWrapper dependency) -------------------------------
 		logPanel = new LoggingPanel();
-		logPanel.registerToReceiveFrom( "TRACE", Tr2dApplication.log );
+		logPanel.registerToReceiveFrom( "TRACE", Tr2dApplication.log, IndagoLog.log );
 
 		final JScrollPane scroll = new JScrollPane( logPanel );
 //		logPanel.redirectStderr();

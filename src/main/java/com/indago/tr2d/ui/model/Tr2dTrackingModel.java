@@ -22,6 +22,7 @@ import com.indago.fg.FactorGraphFactory;
 import com.indago.fg.MappedFactorGraph;
 import com.indago.fg.UnaryCostConstraintGraph;
 import com.indago.fg.Variable;
+import com.indago.ilp.DefaultLoggingGurobiCallback;
 import com.indago.ilp.SolveGurobi;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.ProjectFolder;
@@ -377,7 +378,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		fgSolution = null;
 		try {
 			SolveGurobi.GRB_PRESOLVE = 0;
-			fgSolution = SolveGurobi.staticSolve( fg );
+			fgSolution = SolveGurobi.staticSolve( fg, new DefaultLoggingGurobiCallback( Tr2dApplication.log ) );
 			pgSolution = assMapper.map( fgSolution );
 		} catch ( final GRBException e ) {
 			// TODO Auto-generated catch block
