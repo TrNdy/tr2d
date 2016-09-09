@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.apple.eawt.Application;
 import com.indago.io.ImageSaver;
 import com.indago.io.projectfolder.Tr2dProjectFolder;
+import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.FrameProperties;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
@@ -79,6 +80,7 @@ public class Tr2dApplication {
 	private static int initOptRange = Integer.MAX_VALUE;
 
 	public static OpService ops = null;
+	public static Tr2dSegmentationPluginService segPlugins = null;
 
 	private static LogService global_log;
 	public static Logger log;
@@ -99,9 +101,11 @@ public class Tr2dApplication {
 					IOService.class, DatasetIOService.class, LocationService.class,
 					DatasetService.class, ImgUtilityService.class, StatusService.class,
 					TranslatorService.class, QTJavaService.class, TiffService.class,
-					CodecService.class, JAIIIOService.class, LogService.class );
+					CodecService.class, JAIIIOService.class, LogService.class,
+					Tr2dSegmentationPluginService.class );
 			ImageSaver.context = context;
 			ops = context.getService( OpService.class );
+			segPlugins = context.getService( Tr2dSegmentationPluginService.class );
 
 			// GET THE GLOBAL LOGGER
 			// ---------------------
@@ -120,6 +124,11 @@ public class Tr2dApplication {
 			// GET THE APP SPECIFIC LOGGER
 			// ---------------------------
 			log = LoggerFactory.getLogger( "app" );
+
+			// Check that all is set as it should...
+			if ( segPlugins == null ) {
+				log.error( "Tr2dPlugin failed to set the Tr2dSegmentationPluginService!" );
+			}
 		}
 
 		checkGurobiAvailability();

@@ -297,4 +297,11 @@ public class Tr2dWekaSegmentationModel implements BdvOwner {
 		if ( idx == -1 ) return null;
 		return bdvGetSources().get( idx );
 	}
+
+	/**
+	 * @return
+	 */
+	public ProjectFolder getProjectFolder() {
+		return this.projectFolder;
+	}
 }

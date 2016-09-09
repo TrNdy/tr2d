@@ -8,6 +8,7 @@ import org.scijava.plugin.Plugin;
 
 import com.indago.app.hernan.Tr2dApplication;
 import com.indago.io.ImageSaver;
+import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
 
 import net.imagej.ops.OpService;
 
@@ -36,6 +37,8 @@ public class Tr2dPlugin implements Command {
 
 		Tr2dApplication.isStandalone = false;
 		Tr2dApplication.ops = opService;
+		Tr2dApplication.segPlugins = opService.context().getService( Tr2dSegmentationPluginService.class );
+
 		ImageSaver.context = opService.context();
 
 		try {

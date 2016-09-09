@@ -8,6 +8,8 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import com.indago.app.hernan.Tr2dApplication;
+import com.indago.tr2d.plugins.seg.Tr2dSegmentationPlugin;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 
 
@@ -33,10 +35,17 @@ public class Tr2dSegmentationCollectionPanel extends JPanel {
 
 	private void buildGui() {
 		tabs = new JTabbedPane();
-		final JPanel tabFile = new Tr2dImportedSegmentationPanel( model.getImportedSegmentationModel() );
-		final JPanel tabWeka = new Tr2dWekaSegmentationPanel( model.getWekaModel() );
-		tabs.add( "imported segments", tabFile );
-		tabs.add( "weka segmentation", tabWeka );
+
+		for ( final String name : Tr2dApplication.segPlugins.getPluginNames() ) {
+			final Tr2dSegmentationPlugin segPlugin = Tr2dApplication.segPlugins.createPlugin( name, model.getModel() );
+			model.addPlugin( segPlugin );
+			tabs.add( segPlugin.getUiName(), segPlugin.getInteractionPanel() );
+		}
+
+//		final JPanel tabFile = new Tr2dImportedSegmentationPanel( model.getImportedSegmentationModel() );
+//		final JPanel tabWeka = new Tr2dWekaSegmentationPanel( model.getWekaModel() );
+//		tabs.add( "imported segments", tabFile );
+//		tabs.add( "weka segmentation", tabWeka );
 		add( tabs, BorderLayout.CENTER );
 	}
 
