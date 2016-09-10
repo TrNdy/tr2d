@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.indago.app.hernan.Tr2dApplication;
 import com.indago.data.segmentation.Segment;
 import com.indago.data.segmentation.fg.FactorGraphPlus;
 import com.indago.data.segmentation.fg.SegmentHypothesisVariable;
@@ -20,6 +19,7 @@ import com.indago.old_fg.function.Function;
 import com.indago.old_fg.function.WeightedIndexSumConstraint.Relation;
 import com.indago.old_fg.variable.BooleanVariable;
 import com.indago.old_fg.variable.Variable;
+import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.fg.factor.AppearanceFactor;
 import com.indago.tr2d.fg.factor.DisappearanceFactor;
 import com.indago.tr2d.fg.factor.DivisionFactor;
@@ -184,7 +184,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 
 			numRightContinuationConstraints++;
 		}
-		Tr2dApplication.log.trace(
+		Tr2dLog.log.trace(
 				String.format(
 						"\n\t\tRight Continuation Constraints added: %d",
 						numRightContinuationConstraints ) );
@@ -219,7 +219,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 
 			numLeftContinuationConstraints++;
 		}
-		Tr2dApplication.log.trace(
+		Tr2dLog.log.trace(
 				String.format(
 						"\n\t\tLeft Continuation Constraints added: %d",
 						numLeftContinuationConstraints ) );

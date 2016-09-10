@@ -5,13 +5,13 @@ package com.indago.tr2d.ui.model;
 
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
-import com.indago.app.hernan.costs.HernanAppearanceCostFactory;
-import com.indago.app.hernan.costs.HernanDisappearanceCostFactory;
-import com.indago.app.hernan.costs.HernanDivisionCostFactory;
-import com.indago.app.hernan.costs.HernanMovementCostFactory;
-import com.indago.app.hernan.costs.HernanSegmentCostFactory;
 import com.indago.io.DoubleTypeImgLoader;
 import com.indago.io.ProjectFolder;
+import com.indago.tr2d.costs.HernanAppearanceCostFactory;
+import com.indago.tr2d.costs.HernanDisappearanceCostFactory;
+import com.indago.tr2d.costs.HernanDivisionCostFactory;
+import com.indago.tr2d.costs.HernanMovementCostFactory;
+import com.indago.tr2d.costs.HernanSegmentCostFactory;
 import com.indago.util.ImglibUtil;
 
 import ij.ImagePlus;

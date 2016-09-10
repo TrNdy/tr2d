@@ -28,25 +28,25 @@ import javax.swing.SwingUtilities;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
-import com.indago.app.hernan.Tr2dApplication;
-import com.indago.app.selectsegment.ColorTable;
-import com.indago.app.selectsegment.ColorTableConverter;
-import com.indago.app.selectsegment.InverseBreadthFirstIterator;
-import com.indago.app.selectsegment.SegmentBrowser;
-import com.indago.app.selectsegment.SegmentGraph;
-import com.indago.app.selectsegment.SegmentVertex;
-import com.indago.app.selectsegment.SubsetEdge;
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingFragment;
 import com.indago.data.segmentation.LabelingPlus;
 import com.indago.data.segmentation.LabelingSegment;
+import com.indago.demos.selectsegment.ColorTable;
+import com.indago.demos.selectsegment.ColorTableConverter;
+import com.indago.demos.selectsegment.InverseBreadthFirstIterator;
+import com.indago.demos.selectsegment.SegmentBrowser;
+import com.indago.demos.selectsegment.SegmentGraph;
+import com.indago.demos.selectsegment.SegmentVertex;
+import com.indago.demos.selectsegment.SubsetEdge;
 import com.indago.fg.Assignment;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.segments.SegmentNode;
+import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
-import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
+import com.indago.ui.bdv.BdvWithOverlaysOwner;
 
 import bdv.BehaviourTransformEventHandler;
 import bdv.util.Bdv;
@@ -768,7 +768,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			Tr2dApplication.log.info( "Avoiding: " + segVar.toString() );
+			Tr2dLog.log.info( "Avoiding: " + segVar.toString() );
 			segProblem.avoid( segVar );
 		}
 	}
@@ -781,7 +781,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			Tr2dApplication.log.info( "Forcing: " + segVar.toString() );
+			Tr2dLog.log.info( "Forcing: " + segVar.toString() );
 			segProblem.force( segVar );
 		}
 	}
@@ -802,7 +802,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetHandlePanel()
 	 */
 	@Override
 	public BdvHandlePanel bdvGetHandlePanel() {
@@ -810,7 +810,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvSetHandlePanel(bdv.util.BdvHandlePanel)
+	 * @see com.indago.ui.bdv.BdvOwner#bdvSetHandlePanel(bdv.util.BdvHandlePanel)
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
@@ -818,7 +818,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSources()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetSources() {
@@ -826,7 +826,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
 	 */
 	@Override
 	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
@@ -836,7 +836,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
+	 * @see com.indago.ui.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetOverlaySources() {
@@ -844,7 +844,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
+	 * @see com.indago.ui.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
 	 */
 	@Override
 	public List< BdvOverlay > bdvGetOverlays() {

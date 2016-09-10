@@ -10,12 +10,9 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import com.indago.app.hernan.Tr2dApplication;
-import com.indago.app.hernan.costs.HernanCostConstants;
 import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.data.segmentation.LabelingTimeLapse;
 import com.indago.fg.Assignment;
 import com.indago.fg.AssignmentMapper;
 import com.indago.fg.FactorGraphFactory;
@@ -26,7 +23,6 @@ import com.indago.ilp.DefaultLoggingGurobiCallback;
 import com.indago.ilp.SolveGurobi;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.ProjectFolder;
-import com.indago.io.projectfolder.Tr2dProjectFolder;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.AssignmentNodes;
@@ -34,11 +30,16 @@ import com.indago.pg.assignments.DisappearanceHypothesis;
 import com.indago.pg.assignments.DivisionHypothesis;
 import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
+import com.indago.tr2d.Tr2dContext;
+import com.indago.tr2d.Tr2dLog;
+import com.indago.tr2d.costs.HernanCostConstants;
+import com.indago.tr2d.data.LabelingTimeLapse;
+import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.util.SolutionVisulizer;
-import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
+import com.indago.ui.bdv.BdvWithOverlaysOwner;
 import com.indago.util.TicToc;
 
 import bdv.util.BdvHandlePanel;
@@ -159,7 +160,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			dataFolder.getFolder( FOLDER_LABELING_FRAMES ).deleteContent();
 		} catch ( final IOException e ) {
 			if ( dataFolder.getFolder( FOLDER_LABELING_FRAMES ).exists() ) {
-				Tr2dApplication.log.error( "Labeling frames could not be deleted." );
+				Tr2dLog.log.error( "Labeling frames could not be deleted." );
 			}
 		}
 		// recollect segmentation data
@@ -275,7 +276,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		} catch ( final IOException e ) {
 			e.printStackTrace();
 		} catch ( final NullPointerException npe ) {
-			Tr2dApplication.log.error( "PGraph could not be stored to disk!" );
+			Tr2dLog.log.error( "PGraph could not be stored to disk!" );
 		}
 	}
 
@@ -304,8 +305,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		if ( forceHypothesesRefetch || labelingFrames.needProcessing() ) {
 			if ( !labelingFrames.processFrames() ) {
 				final String msg = "Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!";
-				Tr2dApplication.log.error( msg );
-				JOptionPane.showMessageDialog( Tr2dApplication.getGuiFrame(), msg, "No segmentation found...", JOptionPane.ERROR_MESSAGE );
+				Tr2dLog.log.error( msg );
+				JOptionPane.showMessageDialog( Tr2dContext.guiFrame, msg, "No segmentation found...", JOptionPane.ERROR_MESSAGE );
 				return false;
 			}
 			labelingFrames.saveTo( hypothesesFolder );
@@ -330,7 +331,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 						disappearanceCosts );
 
 		for ( int frameId = 0; frameId < labelingFrames.getNumFrames(); frameId++ ) {
-			Tr2dApplication.log.info(
+			Tr2dLog.log.info(
 					String.format( "Working on frame %d of %d...", frameId + 1, labelingFrames.getNumFrames() ) );
 
 			// =============================
@@ -354,7 +355,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		}
 		tr2dTraProblem.addDummyDisappearance();
 
-		Tr2dApplication.log.info( "Tracking graph was built sucessfully!" );
+		Tr2dLog.log.info( "Tracking graph was built sucessfully!" );
 	}
 
 	/**
@@ -378,7 +379,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		fgSolution = null;
 		try {
 			SolveGurobi.GRB_PRESOLVE = 0;
-			fgSolution = SolveGurobi.staticSolve( fg, new DefaultLoggingGurobiCallback( Tr2dApplication.log ) );
+			fgSolution = SolveGurobi.staticSolve( fg, new DefaultLoggingGurobiCallback( Tr2dLog.gurobilog ) );
 			pgSolution = assMapper.map( fgSolution );
 		} catch ( final GRBException e ) {
 			// TODO Auto-generated catch block
@@ -402,7 +403,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#setBdvHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#setBdvHandlePanel()
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
@@ -410,7 +411,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetHandlePanel()
 	 */
 	@Override
 	public BdvHandlePanel bdvGetHandlePanel() {
@@ -418,7 +419,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSources()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetSources() {
@@ -426,7 +427,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
 	 */
 	@Override
 	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
@@ -436,7 +437,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
+	 * @see com.indago.ui.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
 	 */
 	@Override
 	public List< BdvOverlay > bdvGetOverlays() {
@@ -444,7 +445,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
+	 * @see com.indago.ui.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetOverlaySources() {
@@ -522,7 +523,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 					final double cost_flow = moveCosts.getCost(
 							new ValuePair<>( new ValuePair< LabelingSegment, LabelingSegment >( labelingSegment, outMove
 									.getDest().getSegment() ), flow_vec ) );
-					//Tr2dApplication.log.trace( "Movement cost: " + cost_flow + "; " + moveCosts.getParameters().get( 0 ) );
+					//Tr2dLog.log.trace( "Movement cost: " + cost_flow + "; " + moveCosts.getParameters().get( 0 ) );
 					outMove.setCost( cost_flow );
 				}
 

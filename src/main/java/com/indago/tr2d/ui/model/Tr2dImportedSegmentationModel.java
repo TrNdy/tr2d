@@ -13,11 +13,11 @@ import java.util.Vector;
 
 import javax.swing.ListModel;
 
-import com.indago.app.hernan.Tr2dApplication;
 import com.indago.io.IntTypeImgLoader;
 import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
-import com.indago.tr2d.ui.view.bdv.BdvOwner;
+import com.indago.tr2d.Tr2dLog;
+import com.indago.ui.bdv.BdvOwner;
 import com.jgoodies.common.collect.LinkedListModel;
 
 import bdv.util.BdvHandlePanel;
@@ -58,7 +58,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 			this.projectFolder.loadFiles();
 		} catch ( final IOException e ) {
 			this.projectFolder = null;
-			Tr2dApplication.log.error( "Subfolder for imported segmentation hypotheses could not be created." );
+			Tr2dLog.log.error( "Subfolder for imported segmentation hypotheses could not be created." );
 			e.printStackTrace();
 		}
 
@@ -131,7 +131,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 		linkedListModel.remove( pf );
 
 		if ( !pf.getFile().delete() ) {
-			Tr2dApplication.log.error( String.format( "Imported segmentation file %s could not be deleted from project folder.", pf ) );
+			Tr2dLog.log.error( String.format( "Imported segmentation file %s could not be deleted from project folder.", pf ) );
 		}
 	}
 
@@ -153,7 +153,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#setBdvHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#setBdvHandlePanel()
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
@@ -161,7 +161,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetHandlePanel()
 	 */
 	@Override
 	public BdvHandlePanel bdvGetHandlePanel() {
@@ -169,7 +169,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSources()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetSources() {
@@ -177,7 +177,7 @@ public class Tr2dImportedSegmentationModel implements BdvOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
 	 */
 	@Override
 	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {

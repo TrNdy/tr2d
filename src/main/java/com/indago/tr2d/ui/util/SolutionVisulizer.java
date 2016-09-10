@@ -3,7 +3,6 @@
  */
 package com.indago.tr2d.ui.util;
 
-import com.indago.app.hernan.Tr2dApplication;
 import com.indago.fg.Assignment;
 import com.indago.fg.MappedFactorGraph;
 import com.indago.io.DataMover;
@@ -12,6 +11,7 @@ import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.DivisionHypothesis;
 import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
+import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 
@@ -88,7 +88,7 @@ public class SolutionVisulizer {
 			try {
 				Regions.sample( region, slice ).forEach( t -> t.set( c ) );
 			} catch ( final ArrayIndexOutOfBoundsException aiaob ) {
-				Tr2dApplication.log.debug( "sol vis bounds exception" );
+				Tr2dLog.log.debug( "sol vis bounds exception" );
 			}
 
 			for ( final MovementHypothesis move : segVar.getOutAssignments().getMoves() ) {

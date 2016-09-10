@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.indago.io.ProjectFolder;
-import com.indago.io.projectfolder.Tr2dProjectFolder;
+import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.plugins.seg.Tr2dSegmentationPlugin;
 
 import net.imglib2.RandomAccessibleInterval;

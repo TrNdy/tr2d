@@ -10,8 +10,8 @@ import com.indago.fg.Assignment;
 import com.indago.pg.IndicatorNode;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.util.SolutionVisulizer;
-import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
+import com.indago.ui.bdv.BdvWithOverlaysOwner;
 
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOverlay;
@@ -85,7 +85,7 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#setBdvHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#setBdvHandlePanel()
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
@@ -93,7 +93,7 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetHandlePanel()
 	 */
 	@Override
 	public BdvHandlePanel bdvGetHandlePanel() {
@@ -101,7 +101,7 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSources()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetSources() {
@@ -109,7 +109,7 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
 	 */
 	@Override
 	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
@@ -119,7 +119,7 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
+	 * @see com.indago.ui.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
 	 */
 	@Override
 	public List< BdvOverlay > bdvGetOverlays() {
@@ -127,7 +127,7 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
+	 * @see com.indago.ui.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetOverlaySources() {

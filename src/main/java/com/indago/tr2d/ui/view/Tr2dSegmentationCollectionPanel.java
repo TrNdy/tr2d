@@ -8,7 +8,7 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-import com.indago.app.hernan.Tr2dApplication;
+import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.plugins.seg.Tr2dSegmentationPlugin;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 
@@ -36,8 +36,8 @@ public class Tr2dSegmentationCollectionPanel extends JPanel {
 	private void buildGui() {
 		tabs = new JTabbedPane();
 
-		for ( final String name : Tr2dApplication.segPlugins.getPluginNames() ) {
-			final Tr2dSegmentationPlugin segPlugin = Tr2dApplication.segPlugins.createPlugin( name, model.getModel() );
+		for ( final String name : Tr2dContext.segPlugins.getPluginNames() ) {
+			final Tr2dSegmentationPlugin segPlugin = Tr2dContext.segPlugins.createPlugin( name, model.getModel() );
 			model.addPlugin( segPlugin );
 			tabs.add( segPlugin.getUiName(), segPlugin.getInteractionPanel() );
 		}

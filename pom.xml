@@ -21,7 +21,7 @@
 	<description>Tracking 2D [tr2d]</description>
 
 	<dependencies>
-		<dependency>
+ 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
 		</dependency>
@@ -44,16 +44,6 @@
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-algorithm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>Trainable_Segmentation</artifactId>
-			<!-- <version>3.1.2</version> -->
-		</dependency>
- 		<dependency> <!-- needed dependency for trainable weka (dunno why this is not resolved automatically)  -->
-			<groupId>sc.fiji</groupId>
-			<artifactId>imagescience</artifactId>
-			<version>3.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.indago</groupId>
@@ -104,7 +94,7 @@
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-ops</artifactId>
-			<version>0.31.1-SNAPSHOT</version>
+			<version>0.31.1-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.apple</groupId>
@@ -119,7 +109,43 @@
 			<systemPath>${basedir}/lib/gurobi.jar</systemPath>
 		</dependency>
 	</dependencies>
-
+	
+<!-- 	<build>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>${project.build.sourceDirectory}</directory>
+			</resource>
+		</resources>
+		<testResources>
+			<testResource>
+				<directory>${basedir}/src/test/resources</directory>
+			</testResource>
+			<testResource>
+				<directory>${project.build.testSourceDirectory}</directory>
+			</testResource>
+		</testResources>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<mainClass>Tr2dApplication</mainClass>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+ -->
+ 
 	<developers>
 		<developer>
 			<id>jug</id>

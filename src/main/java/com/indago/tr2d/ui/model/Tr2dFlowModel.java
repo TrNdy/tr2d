@@ -12,14 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import com.indago.app.hernan.Tr2dApplication;
 import com.indago.flow.MSEBlockFlow;
 import com.indago.io.FloatTypeImgLoader;
 import com.indago.io.ImageSaver;
 import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
-import com.indago.io.projectfolder.Tr2dProjectFolder;
-import com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner;
+import com.indago.tr2d.Tr2dContext;
+import com.indago.tr2d.Tr2dLog;
+import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
+import com.indago.ui.bdv.BdvWithOverlaysOwner;
 
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOverlay;
@@ -85,7 +86,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		fileScaledFlow = projectFolder.addFile( "flow_scaled.tif" );
 
 		if ( !fileFlow.canRead() ) {
-			Tr2dApplication.log.info( "Flow subfolder does not contain a file 'flow.tif'." );
+			Tr2dLog.log.info( "Flow subfolder does not contain a file 'flow.tif'." );
 		} else {
 			try {
 				imgs.add( FloatTypeImgLoader.loadTiff( fileFlow.getFile() ) );
@@ -161,7 +162,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#setBdvHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#setBdvHandlePanel()
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
@@ -169,7 +170,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetHandlePanel()
 	 */
 	@Override
 	public BdvHandlePanel bdvGetHandlePanel() {
@@ -177,7 +178,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSources()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetSources() {
@@ -185,7 +186,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
+	 * @see com.indago.ui.bdv.BdvOwner#bdvGetSourceFor(net.imglib2.RandomAccessibleInterval)
 	 */
 	@Override
 	public < T extends RealType< T > & NativeType< T > > BdvSource bdvGetSourceFor( final RandomAccessibleInterval< T > img ) {
@@ -204,7 +205,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
+	 * @see com.indago.ui.bdv.BdvWithOverlaysOwner#bdvGetOverlays()
 	 */
 	@Override
 	public List< BdvOverlay > bdvGetOverlays() {
@@ -212,7 +213,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.tr2d.ui.view.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
+	 * @see com.indago.ui.bdv.BdvWithOverlaysOwner#bdvGetOverlaySources()
 	 */
 	@Override
 	public List< BdvSource > bdvGetOverlaySources() {
@@ -232,7 +233,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		final Img< FloatType > img = ImageJFunctions.convertFloat( model.getImgPlus() );
 
 		final Img< FloatType > imgScaled =
-				Tr2dApplication.ops
+				Tr2dContext.ops
 						.transform()
 						.scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NearestNeighborInterpolatorFactory<>() );
 
@@ -251,7 +252,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 
 			//inverse scaling
 			final Img< FloatType > flow =
-					Tr2dApplication.ops.transform().scale(
+					Tr2dContext.ops.transform().scale(
 							scaledFlow,
 							new double[] { 1. / scaleFactor, 1. / scaleFactor, 1, 1 },
 							new NearestNeighborInterpolatorFactory<>() );
@@ -319,7 +320,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 			is = new FileInputStream( propsFile );
 			props.load( is );
 		} catch ( final Exception e ) {
-			Tr2dApplication.log.warn( "No GUI props found for Tr2dFlowModel." );
+			Tr2dLog.log.warn( "No GUI props found for Tr2dFlowModel." );
 		}
 
 		scaleFactor = Double.parseDouble( props.getProperty( SCALE, "" + scaleFactor ) );
