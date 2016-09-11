@@ -37,7 +37,8 @@ public class Tr2dSegmentationCollectionPanel extends JPanel {
 		tabs = new JTabbedPane();
 
 		for ( final String name : Tr2dContext.segPlugins.getPluginNames() ) {
-			final Tr2dSegmentationPlugin segPlugin = Tr2dContext.segPlugins.createPlugin( name, model.getModel() );
+			final Tr2dSegmentationPlugin segPlugin =
+					Tr2dContext.segPlugins.createPlugin( name, model.getModel(), model.getModel().getMainPanel().getLogPanel() );
 			model.addPlugin( segPlugin );
 			tabs.add( segPlugin.getUiName(), segPlugin.getInteractionPanel() );
 		}

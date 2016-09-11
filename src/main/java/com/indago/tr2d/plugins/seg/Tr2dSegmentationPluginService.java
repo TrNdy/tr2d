@@ -7,6 +7,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.plugin.PluginInfo;
 import org.scijava.service.Service;
 
+import com.indago.log.LoggingPanel;
 import com.indago.tr2d.ui.model.Tr2dModel;
 
 import net.imagej.ImageJService;
@@ -27,7 +28,7 @@ public class Tr2dSegmentationPluginService extends AbstractPTService< Tr2dSegmen
 	}
 
 	/** Creates an animal of the given name. */
-	public Tr2dSegmentationPlugin createPlugin( final String name, final Tr2dModel model ) {
+	public Tr2dSegmentationPlugin createPlugin( final String name, final Tr2dModel model, final LoggingPanel logPanel ) {
 		// First, we get the animal plugin with the given name.
 		final PluginInfo< Tr2dSegmentationPlugin > info = plugins.get( name );
 
@@ -35,6 +36,7 @@ public class Tr2dSegmentationPluginService extends AbstractPTService< Tr2dSegmen
 
 		// Next, we use the plugin service to create an animal of that kind.
 		final Tr2dSegmentationPlugin segPlugin = getPluginService().createInstance( info );
+		logPanel.addAcceptedLogger( segPlugin.getLogger() );
 		segPlugin.setTr2dModel( model );
 
 		return segPlugin;

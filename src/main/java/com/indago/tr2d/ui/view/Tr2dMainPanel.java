@@ -92,7 +92,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		// === TAB SEGMENTATION ===================================================================
 		tabSegmentation = new Tr2dSegmentationCollectionPanel( model.getSegmentationModel() );
 
-		// === TAB FLOW ===================================================================
+		// === TAB FLOW ===========================================================================
 		tabFlow = new Tr2dFlowPanel( model.getFlowModel() );
 
 		// === TAB TRACKING========================================================================
@@ -114,7 +114,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 //		logPanel.redirectStderr();
 //		logPanel.redirectStdout();
 
-		splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, tabs, scroll );
+		splitPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, tabs, scroll );
 		splitPane.setResizeWeight( .5 ); // 1.0 == extra space given to left (top) component alone!
 		splitPane.setOneTouchExpandable( true );
 
@@ -179,5 +179,12 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 	public void collapseLog() {
 		splitPane.setDividerLocation( 1.0 );
+	}
+
+	/**
+	 * @return the logPanel
+	 */
+	public LoggingPanel getLogPanel() {
+		return logPanel;
 	}
 }

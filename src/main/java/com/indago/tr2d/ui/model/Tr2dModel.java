@@ -12,6 +12,7 @@ import com.indago.tr2d.costs.HernanDisappearanceCostFactory;
 import com.indago.tr2d.costs.HernanDivisionCostFactory;
 import com.indago.tr2d.costs.HernanMovementCostFactory;
 import com.indago.tr2d.costs.HernanSegmentCostFactory;
+import com.indago.tr2d.ui.view.Tr2dMainPanel;
 import com.indago.util.ImglibUtil;
 
 import ij.ImagePlus;
@@ -39,6 +40,11 @@ public class Tr2dModel {
 	private final Tr2dTrackingModel trackingModel;
 
 	/**
+	 * The one way to get to the UI if you only have a model.
+	 */
+	private Tr2dMainPanel mainUiPanel;
+
+	/**
 	 *
 	 * @param projectFolderBasePath
 	 * @param imgPlus
@@ -46,6 +52,7 @@ public class Tr2dModel {
 	public Tr2dModel( final ProjectFolder projectFolder, final ImagePlus imgPlus ) {
 		this.imgPlus = imgPlus;
 		this.projectFolder = projectFolder;
+		this.mainUiPanel = null;
 
 		imgRaw = DoubleTypeImgLoader.wrapEnsureType( imgPlus );
 		ImglibUtil.computeMinMax( Views.iterable( imgRaw ), min, max );
@@ -54,6 +61,15 @@ public class Tr2dModel {
 		flowModel = new Tr2dFlowModel( this );
 		trackingModel =
 				new Tr2dTrackingModel( this, new HernanSegmentCostFactory( imgRaw ), new HernanAppearanceCostFactory( imgRaw ), new HernanMovementCostFactory( imgRaw ), new HernanDivisionCostFactory( imgRaw ), new HernanDisappearanceCostFactory( imgRaw ) );
+	}
+
+	/**
+	 * Sets the ref to the main UI panel of Tr2d.
+	 * 
+	 * @param mainPanel
+	 */
+	public void setRefToMainPanel( final Tr2dMainPanel mainPanel ) {
+		this.mainUiPanel = mainPanel;
 	}
 
 	/**
@@ -134,6 +150,13 @@ public class Tr2dModel {
 	 */
 	public InputTriggerConfig getDefaultInputTriggerConfig() {
 		return this.inputTriggerConfig;
+	}
+
+	/**
+	 * @return
+	 */
+	public Tr2dMainPanel getMainPanel() {
+		return this.mainUiPanel;
 	}
 
 }
