@@ -58,13 +58,15 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 	private JSplitPane splitPane;
 
-	private LoggingPanel logPanel;
+	private final LoggingPanel logPanel;
 
 	/**
 	 * @param imgPlus
 	 */
 	public Tr2dMainPanel( final Frame frame, final Tr2dModel model ) {
 		super( new BorderLayout( 5, 5 ) );
+		logPanel = new LoggingPanel();
+		model.setRefToMainPanel( this );
 
 		setBorder( BorderFactory.createEmptyBorder( 10, 15, 5, 15 ) );
 		this.frame = frame;
@@ -107,7 +109,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabs.add( "tracking", tabTracking );
 
 		// --- LOGGING PANEL (from IndagoLoggingWrapper dependency) -------------------------------
-		logPanel = new LoggingPanel();
 		logPanel.registerToReceiveFrom( "TRACE", Tr2dLog.log, Tr2dLog.gurobilog, IndagoLog.log );
 
 		final JScrollPane scroll = new JScrollPane( logPanel );
