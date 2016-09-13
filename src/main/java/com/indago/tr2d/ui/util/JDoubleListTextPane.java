@@ -14,11 +14,18 @@ import javax.swing.JTextPane;
  */
 public class JDoubleListTextPane extends JTextPane {
 
-	private final List< Double > listOfDoubles;
+	private List< Double > listOfDoubles;
 
 	public JDoubleListTextPane( final List< Double > listOfDoubles ) {
 		this.listOfDoubles = listOfDoubles;
 		this.setText( this.toString() );
+	}
+
+	/**
+	 *
+	 */
+	public JDoubleListTextPane() {
+		this( new ArrayList< Double >() );
 	}
 
 	@Override
@@ -47,5 +54,13 @@ public class JDoubleListTextPane extends JTextPane {
 			ret.add( Double.parseDouble( col ) );
 		}
 		return ret;
+	}
+
+	/**
+	 * @param listOfDoubles
+	 */
+	public void setList( final List< Double > listOfDoubles ) {
+		this.listOfDoubles = listOfDoubles;
+		this.setText( this.toString() );
 	}
 }
