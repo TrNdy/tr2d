@@ -857,7 +857,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 */
 	public void selectionFromCurrentSolution() {
 		if (model.getTrackingProblem() != null) { // there must be a current solution... :)
-			selectionModel.clearSelection();
+			if ( selectionModel != null ) selectionModel.clearSelection();
     		final Tr2dSegmentationProblem frameSegmentationModel = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 
     		final Assignment< IndicatorNode > pgSolution = model.getSolution();
