@@ -47,7 +47,6 @@ import bdv.util.BdvOverlay;
 import bdv.util.BdvSource;
 import gurobi.GRBException;
 import ij.IJ;
-import io.scif.img.ImgIOException;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
@@ -130,11 +129,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 		final File fImgSol = dataFolder.addFile( FILENAME_TRACKING ).getFile();
 		if ( fImgSol.canRead() ) {
-			try {
-				imgSolution = IntTypeImgLoader.loadTiffEnsureType( fImgSol );
-			} catch ( final ImgIOException e ) {
-				e.printStackTrace();
-			}
+			imgSolution = IntTypeImgLoader.loadTiffEnsureType( fImgSol );
 		}
 		imgs = new ArrayList< >();
 		imgs.add( imgSolution );

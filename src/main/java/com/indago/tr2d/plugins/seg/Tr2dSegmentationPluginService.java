@@ -1,4 +1,5 @@
 package com.indago.tr2d.plugins.seg;
+
 import java.util.HashMap;
 import java.util.Set;
 
