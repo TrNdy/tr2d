@@ -30,7 +30,6 @@ import com.indago.log.LoggingPanel;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.ui.model.Tr2dModel;
 
-import bdv.util.AbstractActions;
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
@@ -143,21 +142,19 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 			SwingUtilities.replaceUIActionMap( this, bindings.getConcatenatedActionMap() );
 			SwingUtilities.replaceUIInputMap( this, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, bindings.getConcatenatedInputMap() );
 
-			final AbstractActions a = new AbstractActions( bindings, "tabs", conf, new String[] { "tr2d" } );
-
-			a.runnableAction(
-					() -> tabs.setSelectedIndex( Math.min( tabs.getSelectedIndex() + 1, tabs.getTabCount() - 1 ) ),
-					"next tab",
-					"COLON" );
-			a.runnableAction(
-					() -> tabs.setSelectedIndex( Math.max( tabs.getSelectedIndex() - 1, 0 ) ),
-					"previous tab",
-					"COMMA" );
+//			final AbstractActions a = new AbstractActions( bindings, "tabs", conf, new String[] { "tr2d" } );
+//
+//			a.runnableAction(
+//					() -> tabs.setSelectedIndex( Math.min( tabs.getSelectedIndex() + 1, tabs.getTabCount() - 1 ) ),
+//					"next tab",
+//					"COLON" );
+//			a.runnableAction(
+//					() -> tabs.setSelectedIndex( Math.max( tabs.getSelectedIndex() - 1, 0 ) ),
+//					"previous tab",
+//					"COMMA" );
 
 			return conf;
-		}
-		catch ( IllegalArgumentException | IOException e )
-		{
+		} catch ( IllegalArgumentException | IOException e ) {
 			e.printStackTrace();
 		}
 

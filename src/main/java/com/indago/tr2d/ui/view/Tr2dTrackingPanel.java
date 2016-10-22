@@ -9,7 +9,6 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -35,7 +34,6 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	private final Tr2dTrackingModel model;
 
 	private JTabbedPane tabs;
-	private JButton bEditFrame;
 	private JButton bRun;
 	private JButton bRestart;
 
@@ -83,16 +81,9 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		final JPanel controls = new JPanel( new MigLayout() );
 		final JPanel viewer = new JPanel( new BorderLayout() );
 
-		final MigLayout layout = new MigLayout();
-		final JPanel panelEdit = new JPanel( layout );
-		panelEdit.setBorder( BorderFactory.createTitledBorder( "editing" ) );
-		bEditFrame = new JButton( "frame" );
-		bEditFrame.addActionListener( this );
-		panelEdit.add( bEditFrame );
-
-		bRun = new JButton( "track" );
+		bRun = new JButton( "retrack" );
 		bRun.addActionListener( this );
-		bRestart = new JButton( "restart" );
+		bRestart = new JButton( "fetch & track" );
 		bRestart.addActionListener( this );
 
 		model.bdvSetHandlePanel(
@@ -101,7 +92,6 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 						.is2D()
 						.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) ) );
 
-		controls.add( panelEdit, "wrap" );
 		controls.add( bRun, "growx, wrap" );
 		controls.add( bRestart, "growx, wrap" );
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
@@ -122,10 +112,6 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		} else if ( e.getSource().equals( bRestart ) ) {
 			model.reset();
 			model.runInThread( true );
-		} else if ( e.getSource().equals( bEditFrame ) ) {
-			frameEditPanel.setFrameToShow( model.bdvGetHandlePanel().getBdvHandle().getViewerPanel().getState().getCurrentTimepoint() );
-			frameEditPanel.selectionFromCurrentSolution();
-			tabs.setSelectedComponent( frameEditPanel );
 		}
 	}
 }

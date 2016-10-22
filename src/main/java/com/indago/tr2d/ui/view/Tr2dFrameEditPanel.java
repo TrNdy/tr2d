@@ -618,12 +618,14 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 			final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
 
-			for ( final SegmentVertex v : selectionModel.getSelectedVertices() )
+			for ( final SegmentVertex v : selectionModel.getSelectedVertices() ) {
+				if ( v == null ) continue;
 				if ( v.getLabelData() != null ) {
 					for ( final int i : v.getLabelData().getFragmentIndices() ) {
 						++intensities[ fragments.get( i ).getLabelingMappingIndex() ];
 					}
 				}
+			}
 		}
 	}
 
@@ -984,9 +986,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		@Override
 		protected void fillLut() {
 			final ArrayList< LabelingFragment > fragments = labelingPlus.getFragments();
-			for ( final SegmentVertex v : selectionModel.getSelectedVertices() )
+			for ( final SegmentVertex v : selectionModel.getSelectedVertices() ) {
+				if ( v == null ) continue;
 				for ( final int i : v.getLabelData().getFragmentIndices() )
 					++lut[ fragments.get( i ).getLabelingMappingIndex() ];
+			}
 			convertLutToColors();
 		}
 	}
