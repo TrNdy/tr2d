@@ -88,7 +88,7 @@ public class DefaultScaleView<T> extends
 	@Override
 	public void initialize() {
 
-		System.out.println( "WAHAHHASUWGEZWFD" );
+		System.out.println( "Use tr2d specif DefaultScaleView... still needed?" );
 
 		interpolateOp = (UnaryFunctionOp) Functions.unary(ops(),
 			Ops.Transform.InterpolateView.class, RealRandomAccessible.class,
