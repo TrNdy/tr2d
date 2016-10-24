@@ -28,10 +28,14 @@ import bdv.util.BdvSource;
 import ij.IJ;
 import ij.ImagePlus;
 import io.scif.img.ImgIOException;
+import net.imagej.ops.OpService;
 import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.interpolation.InterpolatorFactory;
+import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
@@ -232,14 +236,16 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		//scaling
 		final Img< FloatType > img = ImageJFunctions.convertFloat( model.getImgPlus() );
 
-		final Img< FloatType > imgScaled =
-				Tr2dContext.ops
-						.transform()
-						.scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NearestNeighborInterpolatorFactory<>() );
+		final RandomAccessibleInterval< FloatType > imgScaled =
+				scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NLinearInterpolatorFactory<>(), Tr2dContext.ops );
+
+//		final ImagePlus scaledImagePlus = ImageJFunctions.show( imgScaled );
 
 		ImageSaver.saveAsTiff( fileScaledInput.getAbsolutePath(), imgScaled );
 
-		final ImagePlus scaledImagePlus = IJ.openImage( fileScaledInput.getAbsolutePath() );
+		//final ImagePlus scaledImagePlus = new ImgOpener().openImgs( fileScaledInput.getAbsolutePath() )
+		//ImageJFunctions.show( img )
+		final ImagePlus scaledImagePlus = ImageJFunctions.wrap( imgScaled, "scaled raw image" ).duplicate();
 		flowMagic.computeAndStoreFlow(
 				scaledImagePlus,
 				getScaleFactor(),
@@ -251,19 +257,38 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 			final Img< FloatType > scaledFlow = FloatTypeImgLoader.loadTiffEnsureType( fileScaledFlow.getFile() );
 
 			//inverse scaling
-			final Img< FloatType > flow =
-					Tr2dContext.ops.transform().scale(
+			final RandomAccessibleInterval< FloatType > flow =
+					scale(
 							scaledFlow,
 							new double[] { 1. / scaleFactor, 1. / scaleFactor, 1, 1 },
-							new NearestNeighborInterpolatorFactory<>() );
+							new NearestNeighborInterpolatorFactory<>(),
+							Tr2dContext.ops );
 
 			final ImagePlus ip = ImageJFunctions.wrap( flow, "flow" );
 			IJ.save( ip.duplicate(), fileFlow.getAbsolutePath() );
+//			ImageSaver.saveAsTiff( fileFlow.getAbsolutePath(), flow );
 			imgs.clear();
 			imgs.add( flow );
 		} catch ( final ImgIOException e ) {
 			e.printStackTrace();
 		}
+	}
+
+	// this can be removed as soo as the actual stupido bug was fixed which will happen in oct. 2016
+	/** Executes the "scale" operation on the given arguments. */
+	@SuppressWarnings( "unchecked" )
+	public < T extends RealType< T > > RandomAccessibleInterval< T > scale(
+			final RandomAccessibleInterval< T > in,
+			final double[] scaleFactors,
+			final InterpolatorFactory< T, RandomAccessible< T > > interpolator,
+			final OpService ops ) {
+
+		return ( RandomAccessibleInterval< T > ) ops.run(
+				DefaultScaleView.class,
+				in,
+				scaleFactors,
+				interpolator );
+
 	}
 
 	/**
