@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
+import org.scijava.ui.behaviour.util.Behaviours;
+import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingPlus;
@@ -14,7 +16,6 @@ import com.indago.tr2d.Tr2dLog;
 
 import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
-import bdv.viewer.TriggerBehaviourBindings;
 import net.imglib2.RandomAccess;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
@@ -26,7 +27,6 @@ import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.view.Views;
-import net.trackmate.revised.bdv.AbstractBehaviours;
 
 public class SelectSegments {
 
@@ -62,7 +62,7 @@ public class SelectSegments {
 		bdvListener = new BdvListener( bdv );
 
 		final TriggerBehaviourBindings bindings = bdv.getBdvHandle().getTriggerbindings();
-		final AbstractBehaviours behaviours = new AbstractBehaviours( bindings, "segments", config, new String[] { "tr2d" } );
+		final Behaviours behaviours = new Behaviours( bindings, "segments", config, new String[] { "tr2d" } );
 		behaviours.behaviour(
 				new ScrollBehaviour() {
 					@Override

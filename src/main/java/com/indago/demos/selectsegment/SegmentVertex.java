@@ -1,10 +1,11 @@
 package com.indago.demos.selectsegment;
 
+import org.mastodon.graph.object.AbstractObjectVertex;
+import org.mastodon.revised.model.HasLabel;
+import org.mastodon.spatial.HasTimepoint;
+
 import com.indago.data.segmentation.LabelData;
 
-import net.trackmate.graph.object.AbstractObjectVertex;
-import net.trackmate.revised.model.HasLabel;
-import net.trackmate.spatial.HasTimepoint;
 
 public class SegmentVertex extends AbstractObjectVertex< SegmentVertex, SubsetEdge > implements HasTimepoint, HasLabel {
 

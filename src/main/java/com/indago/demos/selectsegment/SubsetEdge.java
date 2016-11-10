@@ -1,6 +1,6 @@
 package com.indago.demos.selectsegment;
 
-import net.trackmate.graph.object.AbstractObjectEdge;
+import org.mastodon.graph.object.AbstractObjectEdge;
 
 /**
  * An edge between two {@link SegmentVertex SegmentVertices}, meaning that

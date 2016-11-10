@@ -7,9 +7,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections15.CollectionUtils;
+import org.mastodon.revised.ui.selection.HighlightModel;
+import org.mastodon.revised.ui.selection.Selection;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingPlus;
@@ -17,7 +21,6 @@ import com.indago.tr2d.Tr2dLog;
 
 import bdv.util.Bdv;
 import bdv.viewer.TimePointListener;
-import bdv.viewer.TriggerBehaviourBindings;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.RandomAccess;
 import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
@@ -29,11 +32,6 @@ import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.ui.TransformListener;
 import net.imglib2.view.Views;
-import net.trackmate.collection.util.CollectionUtils;
-import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
-import net.trackmate.revised.bdv.AbstractBehaviours;
-import net.trackmate.revised.ui.selection.HighlightModel;
-import net.trackmate.revised.ui.selection.Selection;
 
 public class SegmentBrowser
 {

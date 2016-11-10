@@ -4,13 +4,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import com.indago.data.segmentation.LabelData;
+import org.mastodon.graph.GraphChangeListener;
+import org.mastodon.graph.GraphIdBimap;
+import org.mastodon.graph.ListenableReadOnlyGraph;
+import org.mastodon.graph.object.AbstractObjectGraph;
 
-import net.trackmate.graph.GraphChangeListener;
-import net.trackmate.graph.GraphIdBimap;
-import net.trackmate.graph.GraphListener;
-import net.trackmate.graph.ListenableReadOnlyGraph;
-import net.trackmate.graph.object.AbstractObjectGraph;
+import com.indago.data.segmentation.LabelData;
 
 public class SegmentGraph
 		extends AbstractObjectGraph< SegmentVertex, SubsetEdge >
