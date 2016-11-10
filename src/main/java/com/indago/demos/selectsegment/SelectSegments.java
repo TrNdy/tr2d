@@ -62,7 +62,7 @@ public class SelectSegments {
 		bdvListener = new BdvListener( bdv );
 
 		final TriggerBehaviourBindings bindings = bdv.getBdvHandle().getTriggerbindings();
-		final Behaviours behaviours = new Behaviours( bindings, "segments", config, new String[] { "tr2d" } );
+		final Behaviours behaviours = new Behaviours( config, new String[] { "tr2d" } );
 		behaviours.behaviour(
 				new ScrollBehaviour() {
 					@Override
@@ -72,7 +72,7 @@ public class SelectSegments {
 				},
 				"browse segments",
 				"scroll" );
-
+		behaviours.install( bindings, "segments" );
 	}
 
 	public void findSegments( final int x, final int y )

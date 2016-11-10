@@ -1,11 +1,12 @@
 package com.indago.demos.selectsegment;
 
+import org.mastodon.RefPool;
+
 import gnu.trove.impl.Constants;
 import gnu.trove.map.TIntObjectArrayMap;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-import net.trackmate.RefPool;
 
 // TODO: this should probably move into TrackMate3
 public class HashBimap< O > implements RefPool< O > {

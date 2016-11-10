@@ -7,12 +7,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.collections15.CollectionUtils;
+import org.mastodon.collection.RefCollections;
+import org.mastodon.graph.algorithm.traversal.BreadthFirstIterator;
 import org.mastodon.revised.ui.selection.HighlightModel;
 import org.mastodon.revised.ui.selection.Selection;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.ScrollBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import com.indago.data.segmentation.LabelData;
@@ -72,7 +74,7 @@ public class SegmentBrowser
 		this.segmentsUnderMouse = segmentsUnderMouse;
 		this.highlightModel = highlightModel;
 
-		segmentsOrdered = CollectionUtils.createRefList( segmentGraph.vertices() );
+		segmentsOrdered = RefCollections.createRefList( segmentGraph.vertices() );
 		currentSegment = null;
 
 		this.mml = new MouseMotionListener() {
@@ -91,7 +93,7 @@ public class SegmentBrowser
 		bdv.getBdvHandle().getViewerPanel().getDisplay().addMouseMotionListener( this.mml );
 
 		final TriggerBehaviourBindings bindings = bdv.getBdvHandle().getTriggerbindings();
-		final AbstractBehaviours behaviours = new AbstractBehaviours( bindings, "segments", inputConf, new String[] { "tr2d" } );
+		final Behaviours behaviours = new Behaviours( inputConf, new String[] { "tr2d" } );
 		behaviours.behaviour(
 				new ScrollBehaviour() {
 					@Override
@@ -115,6 +117,7 @@ public class SegmentBrowser
 				},
 				"select current segment",
 				"button1" );
+		behaviours.install( bindings, "segments" );
 	}
 
 	public synchronized void toggleSelectionOfCurrentSegment() {

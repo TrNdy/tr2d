@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.mastodon.graph.GraphChangeListener;
 import org.mastodon.graph.GraphIdBimap;
+import org.mastodon.graph.GraphListener;
 import org.mastodon.graph.ListenableReadOnlyGraph;
 import org.mastodon.graph.object.AbstractObjectGraph;
 

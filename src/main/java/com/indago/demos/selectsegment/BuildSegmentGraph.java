@@ -16,6 +16,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.mastodon.graph.GraphIdBimap;
+import org.mastodon.graph.algorithm.ShortestPath;
+import org.mastodon.graph.algorithm.traversal.BreadthFirstIterator;
+import org.mastodon.graph.algorithm.traversal.GraphSearch.SearchDirection;
 import org.mastodon.revised.trackscheme.DefaultModelFocusProperties;
 import org.mastodon.revised.trackscheme.DefaultModelGraphProperties;
 import org.mastodon.revised.trackscheme.DefaultModelHighlightProperties;
@@ -27,10 +30,12 @@ import org.mastodon.revised.trackscheme.TrackSchemeGraph;
 import org.mastodon.revised.trackscheme.TrackSchemeHighlight;
 import org.mastodon.revised.trackscheme.TrackSchemeNavigation;
 import org.mastodon.revised.trackscheme.TrackSchemeSelection;
+import org.mastodon.revised.trackscheme.display.TrackSchemeNavigator.NavigatorEtiquette;
 import org.mastodon.revised.trackscheme.display.TrackSchemeOptions;
 import org.mastodon.revised.trackscheme.display.TrackSchemePanel;
 import org.mastodon.revised.ui.grouping.GroupHandle;
 import org.mastodon.revised.ui.grouping.GroupManager;
+import org.mastodon.revised.ui.selection.FocusListener;
 import org.mastodon.revised.ui.selection.FocusModel;
 import org.mastodon.revised.ui.selection.HighlightListener;
 import org.mastodon.revised.ui.selection.HighlightModel;
@@ -128,8 +133,8 @@ public class BuildSegmentGraph
 		if ( tfHandler instanceof BehaviourTransformEventHandler )
 			( ( BehaviourTransformEventHandler< ? > ) tfHandler ).install( triggerbindings );
 
-		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf );
-		trackschemePanel.getSelectionBehaviours().installBehaviourBindings( triggerbindings, inputConf );
+		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf, NavigatorEtiquette.FINDER_LIKE );
+		trackschemePanel.getNavigator().installBehaviourBindings( triggerbindings, inputConf );
 
 		int maxTimepoint = 0;
 		for ( final SegmentVertex v : modelGraph.vertices() )
@@ -481,7 +486,7 @@ public class BuildSegmentGraph
 		final LabelingPlus labelingPlus = new XmlIoLabelingPlus().load( fLabeling );
 
 		final SegmentGraph graph = new SegmentGraph();
-		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( graph, true );
+		final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( graph, SearchDirection.DIRECTED );
 
 		// create vertices for all segments
 		for ( final LabelData segment : labelingPlus.getLabeling().getMapping().getLabels() )

@@ -3,10 +3,10 @@
  */
 package com.indago.demos.selectsegment;
 
-import net.trackmate.graph.Edge;
-import net.trackmate.graph.Graph;
-import net.trackmate.graph.Vertex;
-import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
+import org.mastodon.graph.Edge;
+import org.mastodon.graph.Graph;
+import org.mastodon.graph.Vertex;
+import org.mastodon.graph.algorithm.traversal.BreadthFirstIterator;
 
 /**
  * Same as {@link BreadthFirstIterator} on a graph where all directed edges are

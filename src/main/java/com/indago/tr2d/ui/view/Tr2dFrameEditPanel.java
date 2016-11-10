@@ -25,8 +25,37 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import org.mastodon.graph.GraphIdBimap;
+import org.mastodon.graph.algorithm.ShortestPath;
+import org.mastodon.graph.algorithm.traversal.BreadthFirstIterator;
+import org.mastodon.graph.algorithm.traversal.GraphSearch.SearchDirection;
+import org.mastodon.revised.trackscheme.DefaultModelFocusProperties;
+import org.mastodon.revised.trackscheme.DefaultModelGraphProperties;
+import org.mastodon.revised.trackscheme.DefaultModelHighlightProperties;
+import org.mastodon.revised.trackscheme.DefaultModelNavigationProperties;
+import org.mastodon.revised.trackscheme.DefaultModelSelectionProperties;
+import org.mastodon.revised.trackscheme.ModelGraphProperties;
+import org.mastodon.revised.trackscheme.TrackSchemeFocus;
+import org.mastodon.revised.trackscheme.TrackSchemeGraph;
+import org.mastodon.revised.trackscheme.TrackSchemeHighlight;
+import org.mastodon.revised.trackscheme.TrackSchemeNavigation;
+import org.mastodon.revised.trackscheme.TrackSchemeSelection;
+import org.mastodon.revised.trackscheme.display.TrackSchemeNavigator.NavigatorEtiquette;
+import org.mastodon.revised.trackscheme.display.TrackSchemeOptions;
+import org.mastodon.revised.trackscheme.display.TrackSchemePanel;
+import org.mastodon.revised.ui.grouping.GroupHandle;
+import org.mastodon.revised.ui.grouping.GroupManager;
+import org.mastodon.revised.ui.selection.FocusListener;
+import org.mastodon.revised.ui.selection.FocusModel;
+import org.mastodon.revised.ui.selection.HighlightListener;
+import org.mastodon.revised.ui.selection.HighlightModel;
+import org.mastodon.revised.ui.selection.NavigationHandler;
+import org.mastodon.revised.ui.selection.Selection;
+import org.mastodon.revised.ui.selection.SelectionListener;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.util.InputActionBindings;
+import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import com.indago.data.segmentation.LabelData;
 import com.indago.data.segmentation.LabelingFragment;
@@ -57,8 +86,6 @@ import bdv.util.BdvSource;
 import bdv.util.BdvVirtualChannelSource;
 import bdv.util.PlaceHolderOverlayInfo;
 import bdv.util.VirtualChannels.VirtualChannel;
-import bdv.viewer.InputActionBindings;
-import bdv.viewer.TriggerBehaviourBindings;
 import bdv.viewer.ViewerPanel;
 import gnu.trove.impl.Constants;
 import gnu.trove.set.hash.TLongHashSet;
@@ -74,32 +101,6 @@ import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.ui.TransformEventHandler;
 import net.imglib2.view.Views;
 import net.miginfocom.swing.MigLayout;
-import net.trackmate.graph.GraphIdBimap;
-import net.trackmate.graph.algorithm.ShortestPath;
-import net.trackmate.graph.algorithm.traversal.BreadthFirstIterator;
-import net.trackmate.revised.trackscheme.DefaultModelFocusProperties;
-import net.trackmate.revised.trackscheme.DefaultModelGraphProperties;
-import net.trackmate.revised.trackscheme.DefaultModelHighlightProperties;
-import net.trackmate.revised.trackscheme.DefaultModelNavigationProperties;
-import net.trackmate.revised.trackscheme.DefaultModelSelectionProperties;
-import net.trackmate.revised.trackscheme.ModelGraphProperties;
-import net.trackmate.revised.trackscheme.TrackSchemeFocus;
-import net.trackmate.revised.trackscheme.TrackSchemeGraph;
-import net.trackmate.revised.trackscheme.TrackSchemeHighlight;
-import net.trackmate.revised.trackscheme.TrackSchemeNavigation;
-import net.trackmate.revised.trackscheme.TrackSchemeSelection;
-import net.trackmate.revised.trackscheme.display.TrackSchemeOptions;
-import net.trackmate.revised.trackscheme.display.TrackSchemePanel;
-import net.trackmate.revised.ui.grouping.GroupHandle;
-import net.trackmate.revised.ui.grouping.GroupManager;
-import net.trackmate.revised.ui.selection.FocusListener;
-import net.trackmate.revised.ui.selection.FocusModel;
-import net.trackmate.revised.ui.selection.HighlightListener;
-import net.trackmate.revised.ui.selection.HighlightModel;
-import net.trackmate.revised.ui.selection.NavigationHandler;
-import net.trackmate.revised.ui.selection.Selection;
-import net.trackmate.revised.ui.selection.SelectionListener;
-
 /**
  * @author jug
  */
@@ -299,7 +300,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		if ( labelingPlus != null ) {
 			segmentGraph = new SegmentGraph();
-			final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( segmentGraph, true );
+			final ShortestPath< SegmentVertex, SubsetEdge > sp = new ShortestPath<>( segmentGraph, SearchDirection.DIRECTED );
 
 			// create vertices for all segments
 			mapLabelData2SegmentVertex = new HashMap<>();
@@ -438,8 +439,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		if ( tfHandler instanceof BehaviourTransformEventHandler )
 			( ( BehaviourTransformEventHandler< ? > ) tfHandler ).install( triggerbindings );
 
-		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf );
-		trackschemePanel.getSelectionBehaviours().installBehaviourBindings( triggerbindings, inputConf );
+		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf, NavigatorEtiquette.FINDER_LIKE );
+		trackschemePanel.getNavigator().installBehaviourBindings( triggerbindings, inputConf );
 
 		int maxTimepoint = 0;
 		for ( final SegmentVertex v : modelGraph.vertices() )

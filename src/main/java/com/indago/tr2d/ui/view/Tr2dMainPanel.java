@@ -24,6 +24,7 @@ import javax.swing.event.ChangeListener;
 
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
+import org.scijava.ui.behaviour.util.InputActionBindings;
 
 import com.indago.IndagoLog;
 import com.indago.log.LoggingPanel;
@@ -34,7 +35,6 @@ import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvSource;
-import bdv.viewer.InputActionBindings;
 
 /**
  * @author jug
