@@ -17,6 +17,7 @@ import org.mastodon.graph.algorithm.traversal.BreadthFirstIterator;
  * @author jug
  * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
  */
+// TODO: this is replaced by org.mastodon.graph.algorithm.traversal.InverseBreadthFirstIterator. remove after testing.
 public class InverseBreadthFirstIterator< V extends Vertex< E >, E extends Edge< V > > extends BreadthFirstIterator< V, E >
 {
 	/**
