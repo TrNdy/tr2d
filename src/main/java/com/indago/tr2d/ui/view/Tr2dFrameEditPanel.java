@@ -293,6 +293,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, panelRightSide );
 		this.add( splitPane, BorderLayout.CENTER );
+
+		split.setDividerLocation( 1.0 );
 	}
 
 	private void displayFrameData() {
