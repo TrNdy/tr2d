@@ -113,7 +113,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private int currentFrame;
 
 	// === UI Stuff ====================================================================
-	private JPanel helperPanel;
+	private JPanel segHypothesesTreePanel;
 	private JButton buttonFirst;
 	private JButton buttonPrev;
 	private JButton buttonNext;
@@ -155,6 +155,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private JButton bSelectionFromSolution;
 
 	private SegmentBrowser segmentBrowser;
+
+	private JSplitPane vertSplitPane;
 
 	// === INNER CLASSES ETC. ==========================================================
 
@@ -261,10 +263,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		txtCurFrame = new JTextField( 3 );
 		txtCurFrame.setHorizontalAlignment( JTextField.CENTER );
-		txtCurFrame.setText( "" + ( this.currentFrame + 1 ) );
+		txtCurFrame.setText( "" + this.currentFrame );
 		txtCurFrame.addActionListener( this );
 
-		final JLabel lblNumFrames = new JLabel( "of " + model.getLabelingFrames().getNumFrames() );
+		final JLabel lblNumFrames = new JLabel( "of " + ( model.getLabelingFrames().getNumFrames() - 1 ) );
 
 		final JPanel panelFrameSwitcher = new JPanel();
 		panelFrameSwitcher.add( buttonFirst );
@@ -274,27 +276,26 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		panelFrameSwitcher.add( buttonNext );
 		panelFrameSwitcher.add( buttonLast );
 
-		helperPanel = new JPanel( new BorderLayout() );
-		helperPanel.setPreferredSize( new Dimension( 1000, 400 ) );
-		SwingUtilities.replaceUIActionMap( helperPanel, keybindings.getConcatenatedActionMap() );
-		SwingUtilities.replaceUIInputMap( helperPanel, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keybindings.getConcatenatedInputMap() );
+		segHypothesesTreePanel = new JPanel( new BorderLayout() );
+		segHypothesesTreePanel.setPreferredSize( new Dimension( 1000, 150 ) ); // SET INITIAL SIZE OF HYPOTHESES PANEL HERE
+		SwingUtilities.replaceUIActionMap( segHypothesesTreePanel, keybindings.getConcatenatedActionMap() );
+		SwingUtilities
+				.replaceUIInputMap( segHypothesesTreePanel, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keybindings.getConcatenatedInputMap() );
 
 		bdvHandlePanel = new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
 				.options()
 				.is2D()
 				.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) );
-		final JSplitPane split = new JSplitPane( JSplitPane.VERTICAL_SPLIT, bdvHandlePanel.getViewerPanel(), helperPanel );
-		split.setResizeWeight( 1 );
-		split.setOneTouchExpandable( true );
+		vertSplitPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, bdvHandlePanel.getViewerPanel(), segHypothesesTreePanel );
+		vertSplitPane.setResizeWeight( 1 );
+		vertSplitPane.setOneTouchExpandable( true );
 
 		// ASSEMBLY
 		panelRightSide.add( panelFrameSwitcher, BorderLayout.NORTH );
-		panelRightSide.add( split, BorderLayout.CENTER );
+		panelRightSide.add( vertSplitPane, BorderLayout.CENTER );
 
-		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, panelRightSide );
-		this.add( splitPane, BorderLayout.CENTER );
-
-		split.setDividerLocation( 1.0 );
+		final JSplitPane horSplitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, panelRightSide );
+		this.add( horSplitPane, BorderLayout.CENTER );
 	}
 
 	private void displayFrameData() {
@@ -410,8 +411,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		// === TrackScheme ===
 
 		if ( trackschemePanel != null ) {
-			helperPanel.remove( trackschemePanel );
-//			trackschemePanel.getDisplay().removeHandler( mouseAndKeyHandler );
+			segHypothesesTreePanel.remove( trackschemePanel );
 		}
 
 		final ModelGraphProperties modelGraphProperties = new DefaultModelGraphProperties<>( modelGraph, idmap, selectionModel );
@@ -431,7 +431,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 								new DefaultModelNavigationProperties<>( modelGraph, idmap, navigationHandler ),
 								trackSchemeGraph ),
 						trackSchemeOptions );
-		helperPanel.add( trackschemePanel, BorderLayout.CENTER );
+		segHypothesesTreePanel.add( trackschemePanel, BorderLayout.CENTER );
 
 		mouseAndKeyHandler.setInputMap( triggerbindings.getConcatenatedInputTriggerMap() );
 		mouseAndKeyHandler.setBehaviourMap( triggerbindings.getConcatenatedBehaviourMap() );
@@ -459,7 +459,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		this.bdvRemoveAllOverlays();
 
 		final RandomAccessibleInterval< DoubleType > rawData = model.getTr2dModel().getRawData();
-		final int t = Integer.parseInt( this.txtCurFrame.getText() ) - 1;
+		final int t = Integer.parseInt( this.txtCurFrame.getText() );
 		this.bdvAdd( Views.hyperSlice( rawData, 2, t ), "RAW" );
 
 		RandomAccessibleInterval< UnsignedShortType > overlay = Converters.convert(
@@ -735,7 +735,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 					0,
 					Math.min(
 							model.getLabelingFrames().getNumFrames() - 1,
-							Integer.parseInt( txtCurFrame.getText() ) - 1 ) );
+							Integer.parseInt( txtCurFrame.getText() ) ) );
 			setFrameToShow( this.currentFrame );
 			selectionFromCurrentSolution();
 
@@ -802,7 +802,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				Math.min(
 						model.getLabelingFrames().getNumFrames() - 1,
 						frameNumToShow ) );
-		txtCurFrame.setText( "" + ( frameNumToShow + 1 ) );
+		txtCurFrame.setText( "" + frameNumToShow );
 		displayFrameData();
 	}
 
