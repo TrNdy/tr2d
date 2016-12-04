@@ -29,6 +29,7 @@ import org.scijava.ui.behaviour.util.InputActionBindings;
 import com.indago.IndagoLog;
 import com.indago.log.LoggingPanel;
 import com.indago.tr2d.Tr2dLog;
+import com.indago.tr2d.ui.listener.TabPersistencyController;
 import com.indago.tr2d.ui.model.Tr2dModel;
 
 import bdv.util.Bdv;
@@ -52,6 +53,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	private JPanel tabSegmentation;
 	private JPanel tabFlow;
 	private JPanel tabTracking;
+	private JPanel tabExport;
 
 	private BdvHandlePanel bdvData;
 
@@ -100,12 +102,16 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		//TODO this should at some point be a given model, not fixed the Hernan thing...
 		tabTracking = new Tr2dTrackingPanel( model.getTrackingModel() );
 
+		// === TAB EXPORT========================================================================
+		tabExport = new JPanel();
+
 		// --- ASSEMBLE PANEL ---------------------------------------------------------------------
 
 		tabs.add( "data", tabData );
 		tabs.add( "segments", tabSegmentation );
 		tabs.add( "flow", tabFlow );
 		tabs.add( "tracking", tabTracking );
+		tabs.add( "export", tabExport );
 
 		// --- LOGGING PANEL (from IndagoLoggingWrapper dependency) -------------------------------
 		logPanel.registerToReceiveFrom( "TRACE", Tr2dLog.log, Tr2dLog.gurobilog, IndagoLog.log );
@@ -117,6 +123,9 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		splitPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, tabs, scroll );
 		splitPane.setResizeWeight( .5 ); // 1.0 == extra space given to left (top) component alone!
 		splitPane.setOneTouchExpandable( true );
+
+		// --- TAB PERSISTENCY CONTROLLER ---------------------------------------------------------
+		tabs.addChangeListener( new TabPersistencyController() );
 
 		this.add( splitPane, BorderLayout.CENTER );
 	}
@@ -133,27 +142,37 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 			Tr2dLog.log.info( "Try to fetch yaml from " + ClassLoader.getSystemResource( "tr2d.yaml" ) );
 			URL yamlURL = ClassLoader.getSystemResource( "tr2d.yaml" );
 			if ( yamlURL == null ) {
+				Tr2dLog.log.info( "Try to fetch yaml from " + getClass().getClassLoader().getResource( "tr2d.yaml" ) );
 				yamlURL = getClass().getClassLoader().getResource( "tr2d.yaml" );
 			}
-			final BufferedReader in = new BufferedReader( new InputStreamReader( yamlURL.openStream() ) );
-			final InputTriggerConfig conf = new InputTriggerConfig( YamlConfigIO.read( in ) );
+			if ( yamlURL != null ) {
+				final BufferedReader in = new BufferedReader( new InputStreamReader( yamlURL.openStream() ) );
+				final InputTriggerConfig conf = new InputTriggerConfig( YamlConfigIO.read( in ) );
 
-			final InputActionBindings bindings = new InputActionBindings();
-			SwingUtilities.replaceUIActionMap( this, bindings.getConcatenatedActionMap() );
-			SwingUtilities.replaceUIInputMap( this, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, bindings.getConcatenatedInputMap() );
+				final InputActionBindings bindings = new InputActionBindings();
+				SwingUtilities.replaceUIActionMap( this, bindings.getConcatenatedActionMap() );
+				SwingUtilities.replaceUIInputMap( this, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, bindings.getConcatenatedInputMap() );
 
-//			final AbstractActions a = new AbstractActions( bindings, "tabs", conf, new String[] { "tr2d" } );
+//				final AbstractActions a = new AbstractActions( bindings, "tabs", conf, new String[] { "tr2d" } );
 //
-//			a.runnableAction(
-//					() -> tabs.setSelectedIndex( Math.min( tabs.getSelectedIndex() + 1, tabs.getTabCount() - 1 ) ),
-//					"next tab",
-//					"COLON" );
-//			a.runnableAction(
-//					() -> tabs.setSelectedIndex( Math.max( tabs.getSelectedIndex() - 1, 0 ) ),
-//					"previous tab",
-//					"COMMA" );
+//				a.runnableAction(
+//						() -> tabs.setSelectedIndex( Math.min( tabs.getSelectedIndex() + 1, tabs.getTabCount() - 1 ) ),
+//						"next tab",
+//						"COLON" );
+//				a.runnableAction(
+//						() -> tabs.setSelectedIndex( Math.max( tabs.getSelectedIndex() - 1, 0 ) ),
+//						"previous tab",
+//						"COMMA" );
 
-			return conf;
+				return conf;
+			} else {
+				Tr2dLog.log.info( "Falling back to default BDV action settings." );
+				final InputTriggerConfig conf = new InputTriggerConfig();
+				final InputActionBindings bindings = new InputActionBindings();
+				SwingUtilities.replaceUIActionMap( this, bindings.getConcatenatedActionMap() );
+				SwingUtilities.replaceUIInputMap( this, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, bindings.getConcatenatedInputMap() );
+				return conf;
+			}
 		} catch ( IllegalArgumentException | IOException e ) {
 			e.printStackTrace();
 		}
