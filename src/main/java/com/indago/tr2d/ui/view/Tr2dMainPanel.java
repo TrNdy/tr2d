@@ -29,7 +29,6 @@ import org.scijava.ui.behaviour.util.InputActionBindings;
 import com.indago.IndagoLog;
 import com.indago.log.LoggingPanel;
 import com.indago.tr2d.Tr2dLog;
-import com.indago.tr2d.ui.listener.TabPersistencyController;
 import com.indago.tr2d.ui.model.Tr2dModel;
 
 import bdv.util.Bdv;
@@ -123,9 +122,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		splitPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, tabs, scroll );
 		splitPane.setResizeWeight( .5 ); // 1.0 == extra space given to left (top) component alone!
 		splitPane.setOneTouchExpandable( true );
-
-		// --- TAB PERSISTENCY CONTROLLER ---------------------------------------------------------
-		tabs.addChangeListener( new TabPersistencyController() );
 
 		this.add( splitPane, BorderLayout.CENTER );
 	}
