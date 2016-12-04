@@ -108,7 +108,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
 		if ( e.getSource().equals( bRun ) ) {
-			final Thread t = model.runInThread( false );
+			model.runInThread( false );
 		} else if ( e.getSource().equals( bRestart ) ) {
 			model.reset();
 			model.runInThread( true );

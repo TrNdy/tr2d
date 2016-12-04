@@ -229,8 +229,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		bForceSelected.addActionListener( this );
 		bAvoidSelected = new JButton( "avoid selected" );
 		bAvoidSelected.addActionListener( this );
-		bAvoidSelected = new JButton( "avoid selected" );
-		bAvoidSelected.addActionListener( this );
 		bForceSelectionExactly = new JButton( "all as selected" );
 		bForceSelectionExactly.addActionListener( this );
 		panelLeveragedEditing.add( bForceSelected, "wrap" );
@@ -266,7 +264,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		txtCurFrame.setText( "" + this.currentFrame );
 		txtCurFrame.addActionListener( this );
 
-		final JLabel lblNumFrames = new JLabel( "of " + ( model.getLabelingFrames().getNumFrames() - 1 ) );
+		final JLabel lblNumFrames = new JLabel( "of " + ( model.getTr2dModel().getRawData().dimension( 2 ) - 1 ) );
 
 		final JPanel panelFrameSwitcher = new JPanel();
 		panelFrameSwitcher.add( buttonFirst );

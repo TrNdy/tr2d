@@ -243,9 +243,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 			@Override
 			public void run() {
-				//TODO apply awesomeness everywhere
 				Tr2dTrackingModel.this.run( forceResolve );
-//				self.run( forceResolve );
 
 				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
 				bdvRemoveAll();

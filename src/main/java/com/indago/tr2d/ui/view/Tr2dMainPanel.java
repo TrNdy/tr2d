@@ -102,7 +102,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabTracking = new Tr2dTrackingPanel( model.getTrackingModel() );
 
 		// === TAB EXPORT========================================================================
-		tabExport = new JPanel();
+		tabExport = new Tr2dExportPanel( model );
 
 		// --- ASSEMBLE PANEL ---------------------------------------------------------------------
 
