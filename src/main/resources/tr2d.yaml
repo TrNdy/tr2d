@@ -66,6 +66,23 @@
   action: 2d zoom out slow
   contexts: [bdv]
   triggers: [ctrl DOWN]
+# time ###
+- !mapping
+  action: forward z
+  contexts: [bdv]
+  triggers: [not mapped]
+- !mapping
+  action: backward z
+  contexts: [bdv]
+  triggers: [not mapped]
+- !mapping
+  action: previous timepoint
+  contexts: [bdv]
+  triggers: [COMMA, OPEN_BRACKET, K, N]
+- !mapping
+  action: next timepoint
+  contexts: [bdv]
+  triggers: [PERIOD, CLOSE_BRACKET, L, M]
 #
 #### MOUSE
 # translate
@@ -99,3 +116,8 @@
   action: 2d scroll zoom
   contexts: [bdv]
   triggers: [meta scroll, shift ctrl scroll]
+# GUI navigation
+- !mapping
+  action: goto frame editor
+  contexts: [bdv]
+  triggers: [double-click button1]
