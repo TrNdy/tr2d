@@ -15,10 +15,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.pg.segments.SegmentNode;
@@ -27,6 +28,8 @@ import com.indago.tr2d.ui.util.SolutionExporter;
 import com.indago.tr2d.ui.util.SolutionExporter.Tracklet;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
 import com.indago.util.Bimap;
+
+import net.miginfocom.swing.MigLayout;
 
 
 /**
@@ -50,11 +53,19 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	}
 
 	private void buildGui() {
-		export = new JButton( "EXPORT..." );
-		export.addActionListener( this );
+		final JPanel controls = new JPanel( new MigLayout() );
+		final JPanel viewer = new JPanel( new BorderLayout() );
 
-		this.add( new JLabel( "Export Schitzcells CSV format: " ), BorderLayout.NORTH );
-		this.add( export, BorderLayout.CENTER );
+		final JPanel exportSchitzcells = new JPanel( new MigLayout() );
+		export = new JButton( "export to folder" );
+		export.addActionListener( this );
+		exportSchitzcells.add( export, "growx, wrap" );
+		exportSchitzcells.setBorder( BorderFactory.createTitledBorder( "Schitzcells CSV" ) );
+
+		controls.add( exportSchitzcells, "growx, wrap" );
+
+		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
+		add( splitPane, BorderLayout.CENTER );
 	}
 
 	/**
