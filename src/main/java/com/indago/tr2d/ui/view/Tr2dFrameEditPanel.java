@@ -133,6 +133,18 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private final TrackSchemeOptions trackSchemeOptions;
 	private final InputTriggerConfig inputConf;
 
+	// === Hypotheses browser related stuff ============================================
+	private JButton bForceSelected;
+	private JButton bForceAppearance;
+	private JButton bForceDisappearance;
+	private JButton bForceMove;
+	private JButton bForceDivision;
+	private JButton bAvoidSelected;
+	private JButton bForceSelectionExactly;
+
+	private JButton bSelectionFromSolution;
+
+	// === Other stuff =================================================================
 	private final InputActionBindings keybindings;
 	private final TriggerBehaviourBindings triggerbindings;
 	private final MouseAndKeyHandler mouseAndKeyHandler;
@@ -148,11 +160,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	private TrackSchemePanel trackschemePanel;
 
-	private JButton bForceSelected;
-	private JButton bAvoidSelected;
-	private JButton bForceSelectionExactly;
-
-	private JButton bSelectionFromSolution;
 
 	private SegmentBrowser segmentBrowser;
 
@@ -227,20 +234,32 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		panelLeveragedEditing.setBorder( BorderFactory.createTitledBorder( "leveraged editing" ) );
 		bForceSelected = new JButton( "force selected" );
 		bForceSelected.addActionListener( this );
+		bForceAppearance = new JButton( "force appearance" );
+		bForceAppearance.addActionListener( this );
+		bForceDisappearance = new JButton( "force disappearance" );
+		bForceDisappearance.addActionListener( this );
+		bForceMove = new JButton( "force move" );
+		bForceMove.addActionListener( this );
+		bForceDivision = new JButton( "force division" );
+		bForceDivision.addActionListener( this );
 		bAvoidSelected = new JButton( "avoid selected" );
 		bAvoidSelected.addActionListener( this );
 		bForceSelectionExactly = new JButton( "all as selected" );
 		bForceSelectionExactly.addActionListener( this );
-		panelLeveragedEditing.add( bForceSelected, "wrap" );
-		panelLeveragedEditing.add( bAvoidSelected, "wrap" );
-		panelLeveragedEditing.add( bForceSelectionExactly, "wrap" );
+		panelLeveragedEditing.add( bForceSelected, "growx,wrap" );
+		panelLeveragedEditing.add( bForceAppearance, "growx,wrap" );
+		panelLeveragedEditing.add( bForceDisappearance, "growx,wrap" );
+		panelLeveragedEditing.add( bForceMove, "growx,wrap" );
+		panelLeveragedEditing.add( bForceDivision, "growx,wrap" );
+		panelLeveragedEditing.add( bAvoidSelected, "growx,wrap" );
+		panelLeveragedEditing.add( bForceSelectionExactly, "growx,wrap" );
 
 		layout = new MigLayout();
 		final JPanel panelSelection = new JPanel( layout );
 		panelSelection.setBorder( BorderFactory.createTitledBorder( "selection" ) );
 		bSelectionFromSolution = new JButton( "from solution" );
 		bSelectionFromSolution.addActionListener( this );
-		panelSelection.add( bSelectionFromSolution, "wrap" );
+		panelSelection.add( bSelectionFromSolution, "growx,wrap" );
 
 //		bRun = new JButton( "track" );
 //		bRun.addActionListener( this );
@@ -742,6 +761,22 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			forceCurrentSelection();
 			model.prepareFG();
 			model.runInThread( true );
+		} else if ( e.getSource().equals( bForceAppearance ) ) {
+			forceCurrentSelectionToAppear();
+			model.prepareFG();
+			model.runInThread( true );
+		} else if ( e.getSource().equals( bForceDisappearance ) ) {
+			forceCurrentSelectionToDisappear();
+			model.prepareFG();
+			model.runInThread( true );
+		} else if ( e.getSource().equals( bForceMove ) ) {
+			forceCurrentSelectionToBeMovedTo();
+			model.prepareFG();
+			model.runInThread( true );
+		} else if ( e.getSource().equals( bForceDivision ) ) {
+			forceCurrentSelectionToBeDividedTo();
+			model.prepareFG();
+			model.runInThread( true );
 		} else if ( e.getSource().equals( bAvoidSelected ) ) {
 			avoidCurrentSelection();
 			model.prepareFG();
@@ -786,6 +821,58 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
 			Tr2dLog.log.info( "Forcing: " + segVar.toString() );
 			segProblem.force( segVar );
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void forceCurrentSelectionToBeDividedTo() {
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+			Tr2dLog.log.info( "Forcing division to: " + segVar.toString() );
+			segProblem.forceDivisionTo( segVar );
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void forceCurrentSelectionToBeMovedTo() {
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+			Tr2dLog.log.info( "Forcing move to: " + segVar.toString() );
+			segProblem.forceMoveTo( segVar );
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void forceCurrentSelectionToDisappear() {
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+			Tr2dLog.log.info( "Forcing disappearance of: " + segVar.toString() );
+			segProblem.forceDisappearance( segVar );
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void forceCurrentSelectionToAppear() {
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+			Tr2dLog.log.info( "Forcing appearance of: " + segVar.toString() );
+			segProblem.forceAppearance( segVar );
 		}
 	}
 

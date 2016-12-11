@@ -26,6 +26,10 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	private final AssignmentNodes outAssignments;
 
 	private final Set< SegmentNode > forcedSegmentNodes = new HashSet<>();
+	private final Set< SegmentNode > forcedSegmentNodeAppearances = new HashSet<>();
+	private final Set< SegmentNode > forcedSegmentNodeDisappearances = new HashSet<>();
+	private final Set< SegmentNode > forcedSegmentNodeMoves = new HashSet<>();
+	private final Set< SegmentNode > forcedSegmentNodeDivisions = new HashSet<>();
 	private final Set< SegmentNode > avoidedSegmentNodes = new HashSet<>();
 
 	private final Bimap< SegmentNode, LabelingSegment > segmentBimap;
@@ -103,27 +107,124 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	/**
 	 * Forces the given SegmentNode to be part of any found solution.
 	 * This method is smart enough to avoid obvious problems by removing
-	 * conflicting constraints.
+	 * all potentially conflicting constraints (on segment and assignment
+	 * level).
 	 *
 	 * @see com.indago.pg.SegmentationProblem#force(com.indago.pg.segments.SegmentNode)
 	 */
 	@Override
 	public void force( final SegmentNode segNode ) {
-		// ensure not also being avoided
-		avoidedSegmentNodes.remove( segNode );
+		forceAndClearConflicts( segNode );
+	}
 
-		// unforce all conflicting segment nodes
+	/**
+	 * Forces the given SegmentNode to be part of any found solution my means of
+	 * appearing.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param segNode
+	 */
+	public void forceAppearance( final SegmentNode segNode ) {
+		// to start: un-force all conflicting segment nodes
+		forceAndClearConflicts( segNode );
+		// add to right force-set
+		forcedSegmentNodeAppearances.add( segNode );
+	}
+
+	/**
+	 * Forces the given SegmentNode to be part of any found solution my means of
+	 * disappearing.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param segNode
+	 */
+	public void forceDisappearance( final SegmentNode segNode ) {
+		force( segNode );
+
+		// first: un-force disappearance of all conflicting segment nodes
 		final Collection< ? extends Collection< LabelingSegment > > cliques = conflictGraph.getConflictGraphCliques();
 		for ( final Collection< LabelingSegment > clique : cliques ) {
 			if ( clique.contains( segNode ) ) {
 				for ( final LabelingSegment labelingSegment : clique ) {
-					forcedSegmentNodes.remove( labelingSegment );
+					forcedSegmentNodeDisappearances.remove( labelingSegment );
+				}
+			}
+		}
+
+		forcedSegmentNodeDisappearances.add( segNode );
+	}
+
+	/**
+	 * Forces the given SegmentNode to be part of any found solution my means of
+	 * being moved to.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param segNode
+	 */
+	public void forceMoveTo( final SegmentNode segNode ) {
+		// to start: un-force all conflicting segment nodes
+		forceAndClearConflicts( segNode );
+		// add to right force-set
+		forcedSegmentNodeMoves.add( segNode );
+	}
+
+	/**
+	 * Forces the given SegmentNode to be part of any found solution my means of
+	 * being divided to.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param segNode
+	 */
+	public void forceDivisionTo( final SegmentNode segNode ) {
+		// to start: un-force all conflicting segment nodes
+		forceAndClearConflicts( segNode );
+		// add to right force-set
+		forcedSegmentNodeDivisions.add( segNode );
+	}
+
+	/**
+	 * Forces the given <code>SegmentNode</code> and removes all forces of
+	 * conflicting nodes and (in-)assignments.
+	 *
+	 * @param segNode
+	 */
+	private void forceAndClearConflicts( final SegmentNode segNode ) {
+		// FORCES ON SEGMENT LEVEL
+		// =======================
+
+		// ensure not also being avoided
+		avoidedSegmentNodes.remove( segNode );
+
+		// un-force all conflicting segment nodes
+		Collection< ? extends Collection< LabelingSegment > > cliques = conflictGraph.getConflictGraphCliques();
+		for ( final Collection< LabelingSegment > clique : cliques ) {
+			if ( clique.contains( segmentBimap.getB( segNode ) ) ) {
+				for ( final LabelingSegment labelingSegment : clique ) {
+					forcedSegmentNodes.remove( segmentBimap.getA( labelingSegment ) );
 				}
 			}
 		}
 
 		// force the one!
 		forcedSegmentNodes.add( segNode );
+
+		// FORCES ON ASSIGNMENT LEVEL
+		// ==========================
+		cliques = conflictGraph.getConflictGraphCliques();
+		for ( final Collection< LabelingSegment > clique : cliques ) {
+			if ( clique.contains( segmentBimap.getB( segNode ) ) ) {
+				for ( final LabelingSegment labelingSegment : clique ) {
+					final SegmentNode cliqueSegNode = segmentBimap.getA( labelingSegment );
+					forcedSegmentNodeAppearances.remove( cliqueSegNode );
+					forcedSegmentNodeMoves.remove( cliqueSegNode );
+					forcedSegmentNodeDivisions.remove( cliqueSegNode );
+				}
+			}
+		}
 	}
 
 	/**
@@ -138,12 +239,12 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		// ensure not also being forced
 		forcedSegmentNodes.remove( segNode );
 
-		// unavoid all conflicting segment nodes
+		// un-avoid all conflicting segment nodes
 		final Collection< ? extends Collection< LabelingSegment > > cliques = conflictGraph.getConflictGraphCliques();
 		for ( final Collection< LabelingSegment > clique : cliques ) {
-			if ( clique.contains( segNode ) ) {
+			if ( clique.contains( segmentBimap.getB( segNode ) ) ) {
 				for ( final LabelingSegment labelingSegment : clique ) {
-					avoidedSegmentNodes.remove( labelingSegment );
+					avoidedSegmentNodes.remove( segmentBimap.getA( labelingSegment ) );
 				}
 			}
 		}
@@ -166,5 +267,37 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	@Override
 	public Set< SegmentNode > getAvoidedNodes() {
 		return avoidedSegmentNodes;
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedByAppearanceNodes()
+	 */
+	@Override
+	public Set< SegmentNode > getForcedByAppearanceNodes() {
+		return forcedSegmentNodeAppearances;
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedByDisappearanceNodes()
+	 */
+	@Override
+	public Set< SegmentNode > getForcedByDisappearanceNodes() {
+		return forcedSegmentNodeDisappearances;
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedByMoveNodes()
+	 */
+	@Override
+	public Set< SegmentNode > getForcedByMoveNodes() {
+		return forcedSegmentNodeMoves;
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedByDivisionNodes()
+	 */
+	@Override
+	public Set< SegmentNode > getForcedByDivisionNodes() {
+		return forcedSegmentNodeDivisions;
 	}
 }

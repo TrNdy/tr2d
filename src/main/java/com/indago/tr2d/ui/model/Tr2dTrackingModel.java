@@ -277,8 +277,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 *
 	 */
 	private void saveFactorGraph() {
-		// TODO Auto-generated method stub
-
+		Tr2dLog.log.debug( "Saveing of FGs not yet implemented!" );
 	}
 
 	/**
