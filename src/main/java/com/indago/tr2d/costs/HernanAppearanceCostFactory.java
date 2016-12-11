@@ -29,7 +29,7 @@ public class HernanAppearanceCostFactory implements CostFactory< LabelingSegment
 		this.imgOrig = imgOrig;
 
 		params = new CostParams();
-		params.add( "area", 3 );
+		params.add( "area", 0 );
 		params.add( "√(d_border)", 1 );
 		params.add( "d_border", .5 );
 	}

@@ -35,7 +35,7 @@ public class HernanMovementCostFactory
 
 		params = new CostParams();
 		params.add( "Δsize(A,B)", 0.333 );
-		params.add( "Δpos(A,B)", 1 );
+		params.add( "Δpos(A,B)", 5 );
 	}
 
 	/**

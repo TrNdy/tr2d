@@ -37,6 +37,7 @@ public class HernanDivisionCostFactory
 		this.sourceImage = sourceImage;
 
 		params = new CostParams();
+		params.add( "const", 500 );
 		params.add( "Δsize(A,B1+B2)", 25 );
 		params.add( "Δsize(B1,B2)", 50 );
 		params.add( "avg(Δpos(A↦B1),Δpos(A↦B2)) ", 0.333 );
@@ -58,11 +59,12 @@ public class HernanDivisionCostFactory
 	@Override
 	public double getCost(
 			final Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > segments ) {
-		final double a_1 = params.get( 0 );
-		final double a_2 = params.get( 1 );
-		final double a_3 = params.get( 2 );
-		final double a_4 = params.get( 3 );
-		final double a_5 = params.get( 4 );
+		final double a_0 = params.get( 0 );
+		final double a_1 = params.get( 1 );
+		final double a_2 = params.get( 2 );
+		final double a_3 = params.get( 3 );
+		final double a_4 = params.get( 4 );
+		final double a_5 = params.get( 5 );
 
 		final double deltaSize1to2 = deltaSize( segments.getA(), segments.getB().getA(), segments.getB().getB() );
 		final double deltaSizeBetween2s = deltaSize( segments.getB().getA(), segments.getB().getB() );
@@ -73,7 +75,7 @@ public class HernanDivisionCostFactory
 		if ( avgDeltaPosToChildren > HernanCostConstants.MAX_AVG_SQUARED_DIVISION_MOVE_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 		if ( deltaPosChildren > HernanCostConstants.MAX_SQUARED_DIVISION_OFFSPRING_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
 
-		return a_1 * deltaSize1to2 + a_2 * deltaSizeBetween2s + a_3 * avgDeltaPosToChildren + a_4 * deltaPosChildren + a_5 * offElongationPenalty;
+		return a_0 + a_1 * deltaSize1to2 + a_2 * deltaSizeBetween2s + a_3 * avgDeltaPosToChildren + a_4 * deltaPosChildren + a_5 * offElongationPenalty;
 	}
 
 	/**
