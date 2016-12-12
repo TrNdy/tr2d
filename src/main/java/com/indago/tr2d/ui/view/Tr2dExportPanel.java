@@ -21,6 +21,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import com.indago.data.Ellipse2D;
+import com.indago.data.PixelCloud2D;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.ui.model.Tr2dModel;
@@ -29,6 +31,7 @@ import com.indago.tr2d.ui.util.SolutionExporter.Tracklet;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
 import com.indago.util.Bimap;
 
+import net.imglib2.Cursor;
 import net.miginfocom.swing.MigLayout;
 
 
@@ -100,21 +103,34 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 			final BufferedWriter objWriter = new BufferedWriter( new FileWriter( objects ) );
 			objWriter.write( "# Tr2d export from " + strNow + "\n" );
-			objWriter.write( "# t, id, x, y, area\n" );
+			objWriter.write( "# t, id, area, com_x, com_y, angle, r1, r2\n" );
 			final Map< Integer, Bimap< Integer, SegmentNode > > mapTime2Segments = exp.getTime2SegmentsMap();
 			for ( int t = 0; t < mapTime2Segments.size(); t++ ) {
 				final Bimap< Integer, SegmentNode > bimap = mapTime2Segments.get( t );
 				for ( int objId = 0; objId < bimap.size(); objId++ ) {
 					final SegmentNode segNode = bimap.getB( objId );
 					final LabelingSegment segment = segNode.getSegment();
+
+					// get fitted ellipse
+					final PixelCloud2D< Integer > cloud = new PixelCloud2D<>();
+					final Cursor< Void > cursor = segment.getRegion().cursor();
+					while ( cursor.hasNext() ) {
+						cursor.fwd();
+						cloud.addPoint( cursor.getIntPosition( 0 ), cursor.getIntPosition( 1 ), 1 );
+					}
+					final Ellipse2D ellipse = cloud.getEllipticalApproximation();
+
 					objWriter.write(
 							String.format(
-									"%3d,%3d,%8.4f,%8.4f,%3d\n",
+									"%3d,%3d,%3d,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f\n",
 									t,
 									objId,
-									segment.getCenterOfMass().getDoublePosition( 0 ),
-									segment.getCenterOfMass().getDoublePosition( 1 ),
-									segment.getArea() ) );
+									segment.getArea(),
+									ellipse.getCenter().getX(),
+									ellipse.getCenter().getY(),
+									ellipse.getAngle(),
+									ellipse.getA(),
+									ellipse.getB() ) );
 				}
 			}
 			objWriter.close();
