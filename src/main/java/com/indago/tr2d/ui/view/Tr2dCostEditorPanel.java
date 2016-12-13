@@ -7,10 +7,17 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -20,10 +27,12 @@ import com.indago.costs.CostParams;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.ui.model.Tr2dSolDiffModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
+import com.indago.tr2d.ui.util.UniversalFileChooser;
 
 import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;
 import net.miginfocom.swing.MigLayout;
+import weka.gui.ExtensionFileFilter;
 
 
 /**
@@ -126,28 +135,64 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
 		if ( e.getSource().equals( bRetrack ) ) {
-			// TODO update costs without the need for regeneration of everything...
-//			model.updateCosts();
-//			model.prepareFG();
 			model.reset();
 			model.runInThread( true );
 		} else if ( e.getSource().equals( bSaveCosts ) ) {
-			int size = 0;
-			for ( final CostFactory< ? > cf : model.getCostFactories() ) {
-				size += cf.getParameters().size();
+			final File costsFile = UniversalFileChooser.showSaveFileChooser(
+					model.getTr2dModel().getMainPanel().getTopLevelAncestor(),
+					"",
+					"Choose file for tr2d cost parameter...",
+					new ExtensionFileFilter( "tr2dcosts", "Tr2d cost parametrization file" ) );
+			try {
+				exportCostParametrization( costsFile );
+			} catch ( final IOException e1 ) {
+				JOptionPane.showMessageDialog( this, "Cannot write to selected file.", "File Error", JOptionPane.ERROR_MESSAGE );
 			}
-			final double[] allParams = new double[ size ];
-			int i = 0;
-			for ( final CostFactory< ? > cf : model.getCostFactories() ) {
-				final double[] params = cf.getParameters().getAsArray();
-				for (int j=0; j<params.length; j++) {
-					allParams[i++] = params[j];
-				}
-			}
-			Tr2dLog.log.trace( "Params: " );
-			for ( final double value : allParams ) {
-				Tr2dLog.log.trace( String.format( "%.2f; ", value ) );
+		} else if ( e.getSource().equals( bLoadCosts ) ) {
+			final File costsFile = UniversalFileChooser.showLoadFileChooser(
+					model.getTr2dModel().getMainPanel().getTopLevelAncestor(),
+					"",
+					"Choose tr2d cost parameters file...",
+					new ExtensionFileFilter( "tr2dcosts", "Tr2d cost parametrization file" ) );
+			try {
+				importCostParametrization( costsFile );
+			} catch ( final IOException e1 ) {
+				JOptionPane.showMessageDialog( this, "Cannot write to selected file.", "File Error", JOptionPane.ERROR_MESSAGE );
 			}
 		}
+	}
+
+	/**
+	 * @param costsFile
+	 */
+	private void importCostParametrization( final File costsFile ) throws IOException {
+		Tr2dLog.log.trace( "Loading should happen now... :)" );
+	}
+
+	/**
+	 * @param costsFile
+	 * @throws IOException
+	 */
+	private void exportCostParametrization( final File costsFile ) throws IOException {
+		final SimpleDateFormat sdfDate = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+		final Date now = new Date();
+		final String strNow = sdfDate.format( now );
+
+		BufferedWriter costWriter;
+		costWriter = new BufferedWriter( new FileWriter( costsFile ) );
+		costWriter.write( "# Tr2d cost parameters export from " + strNow + "\n" );
+
+		int size = 0;
+		for ( final CostFactory< ? > cf : model.getCostFactories() ) {
+			size += cf.getParameters().size();
+			costWriter.write( String.format( "# PARAMS FOR: %s\n", cf.getName() ) );
+			final double[] params = cf.getParameters().getAsArray();
+			for ( int j = 0; j < params.length; j++ ) {
+				costWriter.write( String.format( "# >> %s\n", cf.getParameters().getName( j ) ) );
+				costWriter.write( String.format( "%f\n", params[ j ] ) );
+			}
+		}
+		costWriter.flush();
+		costWriter.close();
 	}
 }
