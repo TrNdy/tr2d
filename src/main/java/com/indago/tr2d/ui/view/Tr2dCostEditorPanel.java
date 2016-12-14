@@ -7,8 +7,12 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -49,6 +53,7 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 	private JButton bSaveCosts;
 	private JButton bRetrack;
 
+	private JPanel panelCosts;
 
 	/**
 	 * @param model
@@ -85,17 +90,22 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 		panelCenter.add( diffModel.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 		this.add( panelCenter, BorderLayout.CENTER );
 
-		final JPanel panelCosts = new JPanel();
-		fillCostEditPanel( panelCosts );
+		fillCostEditPanel();
 		final JScrollPane sp = new JScrollPane( panelCosts );
 		sp.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
 		sp.setViewportBorder( null );
 		this.add( sp, BorderLayout.EAST );
 	}
 
-	private void fillCostEditPanel( final JPanel panel ) {
+	private void fillCostEditPanel() {
+		if ( panelCosts == null ) {
+			panelCosts = new JPanel();
+		} else {
+			panelCosts.removeAll();
+		}
+
 		final MigLayout layout = new MigLayout( "", "[][grow][]", "" );
-		panel.setLayout( layout );
+		panelCosts.setLayout( layout );
 
 		for ( final CostFactory< ? > cf : model.getCostFactories() ) {
 			final MigLayout layoutCF = new MigLayout( "", "[][grow]", "" );
@@ -114,18 +124,38 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 
 					@Override
 					public void actionPerformed( final ActionEvent e ) {
-						try {
-							params.set( index, Double.parseDouble( txtValue.getText() ) );
-							Tr2dLog.log.trace( "SET " + name + " TO " + params.get( index ) );
-						} catch ( final NumberFormatException nfe ) {
-							Tr2dLog.log.error( "NOPE! :)" );
-						}
+						updateParam( params, name, index, txtValue );
+					}
+				} );
+				txtValue.addFocusListener( new FocusListener() {
+
+					@Override
+					public void focusGained( final FocusEvent e ) {};
+
+					@Override
+					public void focusLost( final FocusEvent e ) {
+						updateParam( params, name, index, txtValue );
 					}
 				} );
 				panelCF.add( labelParam, "" );
 				panelCF.add( txtValue, "growx, wrap" );
 			}
-			panel.add( panelCF, "growx, wrap" );
+			panelCosts.add( panelCF, "growx, wrap" );
+		}
+	}
+
+	/**
+	 * @param params
+	 * @param name
+	 * @param index
+	 * @param txtValue
+	 */
+	private void updateParam( final CostParams params, final String name, final int index, final JTextField txtValue ) {
+		try {
+			params.set( index, Double.parseDouble( txtValue.getText() ) );
+			Tr2dLog.log.trace( "SET " + name + " TO " + params.get( index ) );
+		} catch ( final NumberFormatException nfe ) {
+			Tr2dLog.log.error( "NOPE! :)" );
 		}
 	}
 
@@ -166,7 +196,23 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 	 * @param costsFile
 	 */
 	private void importCostParametrization( final File costsFile ) throws IOException {
-		Tr2dLog.log.trace( "Loading should happen now... :)" );
+		final BufferedReader costReader = new BufferedReader( new FileReader( costsFile ) );
+
+		String line = "";
+		for ( final CostFactory< ? > cf : model.getCostFactories() ) {
+			final double[] params = cf.getParameters().getAsArray();
+			for ( int j = 0; j < params.length; j++ ) {
+				do {
+					line = costReader.readLine();
+				}
+				while ( line.trim().startsWith( "#" ) || line.trim().isEmpty() );
+
+				params[ j ] = Double.parseDouble( line );
+			}
+			cf.getParameters().setFromArray( params );
+		}
+		costReader.close();
+		fillCostEditPanel();
 	}
 
 	/**
@@ -178,13 +224,10 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 		final Date now = new Date();
 		final String strNow = sdfDate.format( now );
 
-		BufferedWriter costWriter;
-		costWriter = new BufferedWriter( new FileWriter( costsFile ) );
+		final BufferedWriter costWriter = new BufferedWriter( new FileWriter( costsFile ) );
 		costWriter.write( "# Tr2d cost parameters export from " + strNow + "\n" );
 
-		int size = 0;
 		for ( final CostFactory< ? > cf : model.getCostFactories() ) {
-			size += cf.getParameters().size();
 			costWriter.write( String.format( "# PARAMS FOR: %s\n", cf.getName() ) );
 			final double[] params = cf.getParameters().getAsArray();
 			for ( int j = 0; j < params.length; j++ ) {
