@@ -53,7 +53,6 @@ public class UniversalFileChooser {
 			if ( fd.getFile() == null ) { return null; }
 			System.setProperty( "apple.awt.fileDialogForDirectories", "false" );
 			return selectedFile;
-
 		} else {
 			return showSwingLoadFolderChooser( parent, path, title );
 		}
@@ -165,14 +164,14 @@ public class UniversalFileChooser {
 			frame = null;
 		}
 
-		if ( OSValidator.isMac() && frame != null ) {
+		if ( ( OSValidator.isMac() || OSValidator.isWindows() ) && frame != null ) {
 
 			if ( showOptionPaneWithTitleOnMac )
 				JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a file...", JOptionPane.INFORMATION_MESSAGE );
 
 			final FileDialog fd = new FileDialog( frame, title, FileDialog.SAVE );
 			fd.setDirectory( path );
-//			fd.setFile( "." + fileFilter.getExtensions() );
+			if ( OSValidator.isMac() ) fd.setLocation( frame.getBounds().x + 50, frame.getBounds().y + 50 );
 			fd.setFilenameFilter( fileFilter );
 			fd.setVisible( true );
 
@@ -194,7 +193,12 @@ public class UniversalFileChooser {
 			return selectedFile;
 
 		} else {
-			return showSwingSaveFileChooser( parent, path, title, fileFilter );
+			final File file = showSwingSaveFileChooser( parent, path, title, fileFilter );
+			if ( !fileFilter.accept( file ) ) {
+				return new File( file.getAbsolutePath().concat( fileFilter.getExtensions()[ 0 ] ) );
+			} else {
+				return file;
+			}
 		}
 	}
 
@@ -240,7 +244,7 @@ public class UniversalFileChooser {
 			frame = null;
 		}
 
-		if ( OSValidator.isMac() && frame != null ) {
+		if ( ( OSValidator.isMac() || OSValidator.isWindows() ) && frame != null ) {
 
 			if ( showOptionPaneWithTitleOnMac )
 				JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a file...", JOptionPane.INFORMATION_MESSAGE );
@@ -248,6 +252,8 @@ public class UniversalFileChooser {
 			final FileDialog fd = new FileDialog( frame, title, FileDialog.LOAD );
 			fd.setDirectory( path );
 			fd.setFilenameFilter( fileFilter );
+			if ( OSValidator.isMac() ) fd.setLocation( frame.getBounds().x + 50, frame.getBounds().y + 50 );
+
 			fd.setVisible( true );
 			final File selectedFile = new File( fd.getDirectory() + "/" + fd.getFile() );
 			if ( fd.getFile() == null ) { return null; }
