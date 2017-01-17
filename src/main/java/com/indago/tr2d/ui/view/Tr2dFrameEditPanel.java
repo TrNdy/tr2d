@@ -144,6 +144,9 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	private JButton bSelectionFromSolution;
 
+	private JButton bOverlayMappingAssignmentsForSelection;
+	private JButton bOverlayDivisionAssignmentsForSelection;
+
 	// === Other stuff =================================================================
 	private final InputActionBindings keybindings;
 	private final TriggerBehaviourBindings triggerbindings;
@@ -160,10 +163,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	private TrackSchemePanel trackschemePanel;
 
-
 	private SegmentBrowser segmentBrowser;
 
 	private JSplitPane vertSplitPane;
+
 
 	// === INNER CLASSES ETC. ==========================================================
 
@@ -221,6 +224,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		this.currentFrame = 0;
 		displayFrameData();
+
+//		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay_tracking" );
 	}
 
 	private void buildGui() {
@@ -261,12 +266,18 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		bSelectionFromSolution.addActionListener( this );
 		panelSelection.add( bSelectionFromSolution, "growx,wrap" );
 
-//		bRun = new JButton( "track" );
-//		bRun.addActionListener( this );
+		layout = new MigLayout();
+		final JPanel panelDebug = new JPanel( layout );
+		panelSelection.setBorder( BorderFactory.createTitledBorder( "assignments" ) );
+		bOverlayMappingAssignmentsForSelection = new JButton( "show mappings" );
+		bOverlayDivisionAssignmentsForSelection = new JButton( "show divisions" );
+		bOverlayMappingAssignmentsForSelection.addActionListener( this );
+		bOverlayDivisionAssignmentsForSelection.addActionListener( this );
+		panelSelection.add( bSelectionFromSolution, "growx,wrap" );
 
-		controls.add( panelLeveragedEditing, "wrap" );
-		controls.add( panelSelection, "wrap" );
-//		controls.add( bRun, "growx, wrap" );
+		controls.add( panelLeveragedEditing, "span, grow, wrap" );
+		controls.add( panelSelection, "span, grow, wrap" );
+		controls.add( panelDebug, "span, grow, wrap" );
 
 		// RIGHT SIDE
 		buttonFirst = new JButton( "<<" );
@@ -489,13 +500,13 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				labelingPlus.getLabeling().getIndexImg(),
 				new HighlightedSegmentsConverter( labelingPlus, highlightModel ),
 				new UnsignedShortType() );
-		this.bdvAdd( overlay, "highlighted segment", 0, 1, new ARGBType( 0xFF00FF ), true );
+		this.bdvAdd( overlay, "highlighted segments", 0, 1, new ARGBType( 0xFF00FF ), true );
 
 		overlay = Converters.convert(
 				labelingPlus.getLabeling().getIndexImg(),
 				new FocusedSegmentsConverter( labelingPlus, focusModel ),
 				new UnsignedShortType() );
-		this.bdvAdd( overlay, "focused segment", 0, 1, new ARGBType( 0x0000FF ), true );
+		this.bdvAdd( overlay, "focused segments", 0, 1, new ARGBType( 0x0000FF ), true );
 
 		highlightModel.addHighlightListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
 		selectionModel.addSelectionListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
@@ -527,7 +538,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 						conv,
 						new ARGBType() ),
 				virtualChannels,
-				"segments",
+				"graph highlights (sel;high;focus;mouse)",
 				Bdv.options().inputTriggerConfig( inputConf ).is2D().addTo( bdvGetHandlePanel() ) ); // .screenScales( new double[] { 1 } )
 		final Bdv bdv = vchanSources.get( 0 );
 
@@ -795,6 +806,12 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		// SELECTION RELATED
 		} else if ( e.getSource().equals( bSelectionFromSolution ) ) {
 			selectionFromCurrentSolution();
+
+			// ASSIGNMENT RELATED
+		} else if ( e.getSource().equals( bOverlayMappingAssignmentsForSelection ) ) {
+
+		} else if ( e.getSource().equals( bOverlayDivisionAssignmentsForSelection ) ) {
+
 		}
 	}
 

@@ -62,9 +62,9 @@ public class HernanMovementCostFactory
 		final Pair< LabelingSegment, LabelingSegment > segments = segmentsAndFlowVector.getA();
 		final Pair< Double, Double > flow = segmentsAndFlowVector.getB();
 		final double deltaSize = deltaSize( segments.getA(), segments.getB() );
-		final double deltaPos = deltaPosSquared( segments.getA(), segments.getB(), flow );
+		double deltaPos = deltaPosSquared( segments.getA(), segments.getB(), flow );
 
-		if ( deltaPos > HernanCostConstants.MAX_SQUARED_MOVEMENT_DISTANCE ) { return HernanCostConstants.TRUNCATE_COST_VALUE; }
+		if ( deltaPos > HernanCostConstants.MAX_SQUARED_MOVEMENT_DISTANCE ) { deltaPos*=2; }
 
 		return a_1 * deltaSize + a_2 * deltaPos;
 	}

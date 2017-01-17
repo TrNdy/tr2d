@@ -32,7 +32,6 @@ import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.Tr2dLog;
-import com.indago.tr2d.costs.HernanCostConstants;
 import com.indago.tr2d.data.LabelingTimeLapse;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
@@ -317,9 +316,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 						tr2dModel.getFlowModel(),
 						appearanceCosts,
 						moveCosts,
-						HernanCostConstants.TRUNCATE_COST_THRESHOLD,
 						divisionCosts,
-						HernanCostConstants.TRUNCATE_COST_THRESHOLD,
 						disappearanceCosts );
 
 		for ( int frameId = 0; frameId < labelingFrames.getNumFrames(); frameId++ ) {

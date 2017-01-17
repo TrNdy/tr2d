@@ -110,9 +110,7 @@ public class UniversalFileChooser {
 			fd.setDirectory( path );
 			fd.setVisible( true );
 			final File selectedFile = new File( fd.getDirectory() + "/" + fd.getFile() );
-			if ( fd.getFile() == null ) {
-				return null;
-			}
+			if ( fd.getFile() == null ) { return null; }
 			System.setProperty( "apple.awt.fileDialogForDirectories", "false" );
 			return selectedFile;
 

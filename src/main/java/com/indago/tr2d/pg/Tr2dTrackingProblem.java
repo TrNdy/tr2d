@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.LabelingSegment;
@@ -35,16 +36,14 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	private final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
 	private final CostFactory< LabelingSegment > disappearanceCosts;
 
-	private double maxRelevantMovementCost = Double.MAX_VALUE;
-	private double maxRelevantDivisionCost = Double.MAX_VALUE;
+	private final int maxMovementsToAddPerHypothesis = 5;
+	private final int maxDivisionsToAddPerHypothesis = 5;
 
 	public Tr2dTrackingProblem(
 			final Tr2dFlowModel flowModel,
 			final CostFactory< LabelingSegment > appearanceCosts,
 			final CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts,
-			final double maxRelevantMovementCost,
 			final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
-			final double maxRelevantDivisionCost,
 			final CostFactory< LabelingSegment > disappearanceCosts ) {
 		this.flowModel = flowModel;
 		timepoints = new ArrayList< >();
@@ -52,8 +51,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		this.movementCosts = movementCosts;
 		this.divisionCosts = divisionCosts;
 		this.disappearanceCosts = disappearanceCosts;
-		this.maxRelevantMovementCost = maxRelevantMovementCost;
-		this.maxRelevantDivisionCost = maxRelevantDivisionCost;
 	}
 
 	@Override
@@ -153,7 +150,8 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					pos.getDoublePosition( 0 ) + flow_vec.getA(),
 					pos.getDoublePosition( 1 ) + flow_vec.getB() );
 
-			final double radius = 20; // TODO
+			final double radius = 35; // TODO needs to be smarter and NOT fixed to 35 pixels distance
+			final PriorityQueue< MovementHypothesis > prioQueue = new PriorityQueue<>( 100, Util.getCostComparatorForMovementHypothesis() );
 
 			search.search( flow_pos, radius, false );
 			final int numNeighbors = search.numNeighbors();
@@ -166,13 +164,12 @@ public class Tr2dTrackingProblem implements TrackingProblem {
     								segVarL.getSegment(),
     								segVarR.getSegment() ),
 							flow_vec ) );
-
-				if ( cost_flow <= maxRelevantMovementCost ) {
-					final MovementHypothesis moveHyp =
-							new MovementHypothesis( cost_flow, segVarL, segVarR );
-					segVarL.getOutAssignments().add( moveHyp );
-					segVarR.getInAssignments().add( moveHyp );
-				}
+				prioQueue.add( new MovementHypothesis( cost_flow, segVarL, segVarR ) );
+			}
+			for ( int i = 0; i < Math.min( maxMovementsToAddPerHypothesis, prioQueue.size() ); i++ ) {
+				final MovementHypothesis moveHyp = prioQueue.poll();
+				moveHyp.getSrc().getOutAssignments().add( moveHyp );
+				moveHyp.getDest().getInAssignments().add( moveHyp );
 			}
 		}
 	}
@@ -197,8 +194,11 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 
 		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
 			final RealLocalizable pos = segVarL.getSegment().getCenterOfMass();
-			final double radius = 30; // TODO
-			search.search( pos, radius, false );
+
+			final double radius = 60; // TODO needs to be smarter and NOT fixed to 60 pixels distance
+			final PriorityQueue< DivisionHypothesis > prioQueue = new PriorityQueue<>( 100, Util.getCostComparatorForDivisionHypothesis() );
+
+			search.search( pos, radius, true );
 			final int numNeighbors = search.numNeighbors();
 			for ( int i = 0; i < numNeighbors; ++i ) {
 				for ( int j = i + 1; j < numNeighbors; ++j ) {
@@ -210,14 +210,14 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 									new ValuePair< LabelingSegment, LabelingSegment> (
 											segVarR1.getSegment(),
 											segVarR2.getSegment() ) ) );
-					if ( cost <= maxRelevantDivisionCost ) {
-						final DivisionHypothesis moveHyp =
-								new DivisionHypothesis( cost, segVarL, segVarR1, segVarR2 );
-						segVarL.getOutAssignments().add( moveHyp );
-						segVarR1.getInAssignments().add( moveHyp );
-						segVarR2.getInAssignments().add( moveHyp );
-					}
+					prioQueue.add( new DivisionHypothesis( cost, segVarL, segVarR1, segVarR2 ) );
 				}
+			}
+			for ( int i = 0; i < Math.min( maxDivisionsToAddPerHypothesis, prioQueue.size() ); i++ ) {
+				final DivisionHypothesis divHyp = prioQueue.poll();
+				divHyp.getSrc().getOutAssignments().add( divHyp );
+				divHyp.getDest1().getInAssignments().add( divHyp );
+				divHyp.getDest2().getInAssignments().add( divHyp );
 			}
 		}
 	}
