@@ -34,8 +34,8 @@ public class HernanMovementCostFactory
 		this.sourceImage = sourceImage;
 
 		params = new CostParams();
-		params.add( "Δsize(A,B)", 0.333 );
-		params.add( "Δpos(A,B)", 5 );
+		params.add( "Δsize(A,B)", 1.0 );
+		params.add( "Δpos(A,B)", 1.0 );
 	}
 
 	/**

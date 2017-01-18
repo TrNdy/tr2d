@@ -29,9 +29,9 @@ public class HernanDisappearanceCostFactory implements CostFactory< LabelingSegm
 		this.imgOrig = imgOrig;
 
 		params = new CostParams();
-		params.add( "area", 3 );
-		params.add( "√(d_border)", 1 );
-		params.add( "d_border", .5 );
+		params.add( "area", 2 );
+		params.add( "√(d_border)", 0 );
+		params.add( "d_border", 0 );
 	}
 
 	/**

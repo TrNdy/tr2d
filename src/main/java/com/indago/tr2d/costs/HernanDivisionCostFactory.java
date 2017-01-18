@@ -37,12 +37,13 @@ public class HernanDivisionCostFactory
 		this.sourceImage = sourceImage;
 
 		params = new CostParams();
-		params.add( "const", 500 );
-		params.add( "Δsize(A,B1+B2)", 25 );
-		params.add( "Δsize(B1,B2)", 50 );
-		params.add( "avg(Δpos(A↦B1),Δpos(A↦B2)) ", 0.333 );
-		params.add( "Δpos(B1↦B2)", 0.333 );
-		params.add( "off elong. penalty", 50 );
+		params.add( "const", 10 );
+		params.add( "Δsize(A,B1+B2)", 0.25 );
+		params.add( "Δsize(B1,B2)", 0.25 );
+		params.add( "(Δsize(B1,B2))^2", 0.1 );
+		params.add( "avg(Δpos(A↦B1),Δpos(A↦B2)) ", 0.5 );
+		params.add( "Δpos(B1↦B2)", 0.2 );
+		params.add( "off elong. penalty", 1 );
     }
 
 	/**
@@ -65,9 +66,11 @@ public class HernanDivisionCostFactory
 		final double a_3 = params.get( 3 );
 		final double a_4 = params.get( 4 );
 		final double a_5 = params.get( 5 );
+		final double a_6 = params.get( 6 );
 
 		final double deltaSize1to2 = deltaSize( segments.getA(), segments.getB().getA(), segments.getB().getB() );
 		final double deltaSizeBetween2s = deltaSize( segments.getB().getA(), segments.getB().getB() );
+		final double deltaSizeBetween2sSquared = deltaSizeBetween2s * deltaSizeBetween2s;
 		double avgDeltaPosToChildren = avgDeltaPosSquared( segments.getA(), segments.getB().getA(), segments.getB().getB() );
 		double deltaPosChildren = deltaPosSquared( segments.getB().getA(), segments.getB().getB() );
 		final double offElongationPenalty = offElongationPenalty( segments.getA(), segments.getB().getA(), segments.getB().getB() );
@@ -75,7 +78,7 @@ public class HernanDivisionCostFactory
 		if ( avgDeltaPosToChildren > HernanCostConstants.MAX_AVG_SQUARED_DIVISION_MOVE_DISTANCE ) { avgDeltaPosToChildren*=2; }
 		if ( deltaPosChildren > HernanCostConstants.MAX_SQUARED_DIVISION_OFFSPRING_DISTANCE ) { deltaPosChildren*=2; }
 
-		return a_0 + a_1 * deltaSize1to2 + a_2 * deltaSizeBetween2s + a_3 * avgDeltaPosToChildren + a_4 * deltaPosChildren + a_5 * offElongationPenalty;
+		return a_0 + a_1 * deltaSize1to2 + a_2 * deltaSizeBetween2s + a_3 * deltaSizeBetween2sSquared + a_4 * avgDeltaPosToChildren + a_5 * deltaPosChildren + a_6 * offElongationPenalty;
 	}
 
 	/**
