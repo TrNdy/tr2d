@@ -178,23 +178,34 @@ public class Tr2dOutAssignmentsOverlayOnSelection extends BdvOverlay {
 		g.setComposite( alcom );
 
 		// draw dest cross
-		g.setColor( colors.get( i % colors.size() ) );
 		g2.setStroke( new BasicStroke( ( float ) 1.5 ) );
 		final int len = 3;
+		g.setColor( Color.lightGray ); // shadow
+		g.drawLine( ( int ) gposTo[ 0 ] - len - 1, ( int ) gposTo[ 1 ] - len + 1, ( int ) gposTo[ 0 ] + len - 1, ( int ) gposTo[ 1 ] + len + 1 );
+		g.drawLine( ( int ) gposTo[ 0 ] - len - 1, ( int ) gposTo[ 1 ] + len + 1, ( int ) gposTo[ 0 ] + len - 1, ( int ) gposTo[ 1 ] - len + 1 );
+		g.setColor( colors.get( i % colors.size() ) ); // cross
 		g.drawLine( ( int ) gposTo[ 0 ] - len, ( int ) gposTo[ 1 ] - len, ( int ) gposTo[ 0 ] + len, ( int ) gposTo[ 1 ] + len );
 		g.drawLine( ( int ) gposTo[ 0 ] - len, ( int ) gposTo[ 1 ] + len, ( int ) gposTo[ 0 ] + len, ( int ) gposTo[ 1 ] - len );
 
 		// write cost string
 		final Font font = g2.getFont();
 		final FontMetrics metrics = g2.getFontMetrics( font );
+		g.setColor( Color.lightGray ); // shadow
+		g.drawString(
+				String.format( " c=%.2f", move.getCost() ),
+				( int ) gposFrom[ 0 ] - 1,
+				( int ) ( gposFrom[ 1 ] - metrics.getHeight() * ( i + 0.5 ) + 1 ) );
+		g.setColor( colors.get( i % colors.size() ) ); // text
 		g.drawString(
 				String.format( " c=%.2f", move.getCost() ),
 				( int ) gposFrom[ 0 ],
 				( int ) ( gposFrom[ 1 ] - metrics.getHeight() * ( i + 0.5 ) ) );
 
 		// draw move line
-		g.setColor( colors.get( i % colors.size() ) );
 		g2.setStroke( new BasicStroke( 1 + ( ( float ) i * 6 ) / n ) );
+//		g.setColor( Color.lightGray ); // shadow
+//		g.drawLine( ( int ) gposFrom[ 0 ] - 1, ( int ) gposFrom[ 1 ] + 1, ( int ) gposTo[ 0 ] - 1, ( int ) gposTo[ 1 ] + 1 );
+		g.setColor( colors.get( i % colors.size() ) ); // line
 		g.drawLine( ( int ) gposFrom[ 0 ], ( int ) gposFrom[ 1 ], ( int ) gposTo[ 0 ], ( int ) gposTo[ 1 ] );
 	}
 
@@ -246,9 +257,14 @@ public class Tr2dOutAssignmentsOverlayOnSelection extends BdvOverlay {
 		g.setComposite( alcom );
 
 		// draw dest crossess
-		g.setColor( colors.get( i % colors.size() ) );
 		g2.setStroke( new BasicStroke( ( float ) 1.5 ) );
 		final int len = 3;
+		g.setColor( Color.lightGray ); // shadow
+		g.drawLine( ( int ) gposTo1[ 0 ] - len - 1, ( int ) gposTo1[ 1 ] - len + 1, ( int ) gposTo1[ 0 ] + len - 1, ( int ) gposTo1[ 1 ] + len + 1 );
+		g.drawLine( ( int ) gposTo1[ 0 ] - len - 1, ( int ) gposTo1[ 1 ] + len + 1, ( int ) gposTo1[ 0 ] + len - 1, ( int ) gposTo1[ 1 ] - len + 1 );
+		g.drawLine( ( int ) gposTo2[ 0 ] - len - 1, ( int ) gposTo2[ 1 ] - len + 1, ( int ) gposTo2[ 0 ] + len - 1, ( int ) gposTo2[ 1 ] + len + 1 );
+		g.drawLine( ( int ) gposTo2[ 0 ] - len - 1, ( int ) gposTo2[ 1 ] + len + 1, ( int ) gposTo2[ 0 ] + len - 1, ( int ) gposTo2[ 1 ] - len + 1 );
+		g.setColor( colors.get( i % colors.size() ) ); // crosses
 		g.drawLine( ( int ) gposTo1[ 0 ] - len, ( int ) gposTo1[ 1 ] - len, ( int ) gposTo1[ 0 ] + len, ( int ) gposTo1[ 1 ] + len );
 		g.drawLine( ( int ) gposTo1[ 0 ] - len, ( int ) gposTo1[ 1 ] + len, ( int ) gposTo1[ 0 ] + len, ( int ) gposTo1[ 1 ] - len );
 		g.drawLine( ( int ) gposTo2[ 0 ] - len, ( int ) gposTo2[ 1 ] - len, ( int ) gposTo2[ 0 ] + len, ( int ) gposTo2[ 1 ] + len );
@@ -257,6 +273,12 @@ public class Tr2dOutAssignmentsOverlayOnSelection extends BdvOverlay {
 		// write cost string
 		final Font font = g2.getFont();
 		final FontMetrics metrics = g2.getFontMetrics( font );
+		g.setColor( Color.lightGray ); // shadow
+		g.drawString(
+				String.format( " c=%.2f", division.getCost() ),
+				( int ) gposFrom[ 0 ] - 1,
+				( int ) ( gposFrom[ 1 ] + metrics.getHeight() * ( i + 0.5 ) + 1 ) );
+		g.setColor( colors.get( i % colors.size() ) ); // text
 		g.drawString(
 				String.format( " c=%.2f", division.getCost() ),
 				( int ) gposFrom[ 0 ],

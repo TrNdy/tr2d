@@ -36,8 +36,8 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	private final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
 	private final CostFactory< LabelingSegment > disappearanceCosts;
 
-	private final int maxMovementsToAddPerHypothesis = 5;
-	private final int maxDivisionsToAddPerHypothesis = 5;
+	private final int maxMovementsToAddPerHypothesis = 5; //TODO make this some user configurable parameter
+	private final int maxDivisionsToAddPerHypothesis = 5; //TODO make this some user configurable parameter
 
 	public Tr2dTrackingProblem(
 			final Tr2dFlowModel flowModel,
