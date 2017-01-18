@@ -137,19 +137,19 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 			final BufferedWriter trackWriter = new BufferedWriter( new FileWriter( tracks ) );
 			trackWriter.write( "# Tr2d export from " + strNow + "\n" );
-			trackWriter.write( "# tracklet_id, parent_tracklet_id, child_tracklat_id1, child_tracklat_id2, time_start, [object_ids, ...]\n" );
+			trackWriter.write( "# tracklet_id, parent_tracklet_id, child_tracklat_id1, child_tracklat_id2, (time, object_id)...\n" );
 			final List< Tracklet > tracklets = exp.getTracklets();
 			for ( final Tracklet tracklet : tracklets ) {
 				trackWriter.write( String.format(
-						"%3d,%3d,%3d,%3d,%3d ",
+						"%3d,%3d,%3d,%3d",
 						tracklet.getTrackletId(),
 						tracklet.getParentId(),
 						tracklet.getChild1(),
-						tracklet.getChild2(),
-						tracklet.getStartTime() ) );
+						tracklet.getChild2() ) );
 				final List< Integer > oids = tracklet.getObjectIds();
+				int time = tracklet.getStartTime();
 				for ( final int oid : oids ) {
-					trackWriter.write( String.format( ",%3d", oid ) );
+					trackWriter.write( String.format( " ,%3d,%3d", time++, oid ) );
 				}
 				trackWriter.write( "\n" );
 			}
