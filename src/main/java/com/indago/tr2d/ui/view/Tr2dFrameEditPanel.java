@@ -75,6 +75,7 @@ import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
+import com.indago.tr2d.ui.view.bdv.overlays.Tr2dOutAssignmentsOverlayOnSelection;
 import com.indago.ui.bdv.BdvWithOverlaysOwner;
 
 import bdv.BehaviourTransformEventHandler;
@@ -133,7 +134,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private final TrackSchemeOptions trackSchemeOptions;
 	private final InputTriggerConfig inputConf;
 
-	// === Hypotheses browser related stuff ============================================
+	// === Leveraged editing related stuff =============================================
 	private JButton bForceSelected;
 	private JButton bForceAppearance;
 	private JButton bForceDisappearance;
@@ -142,10 +143,12 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private JButton bAvoidSelected;
 	private JButton bForceSelectionExactly;
 
+	// === Hypotheses browser related stuff ============================================
 	private JButton bSelectionFromSolution;
 
-	private JButton bOverlayMappingAssignmentsForSelection;
+	private JButton bOverlayMovementAssignmentsForSelection;
 	private JButton bOverlayDivisionAssignmentsForSelection;
+	private JButton bOverlayRemoveAll;
 
 	// === Other stuff =================================================================
 	private final InputActionBindings keybindings;
@@ -268,12 +271,16 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		layout = new MigLayout();
 		final JPanel panelDebug = new JPanel( layout );
-		panelSelection.setBorder( BorderFactory.createTitledBorder( "assignments" ) );
-		bOverlayMappingAssignmentsForSelection = new JButton( "show mappings" );
+		panelDebug.setBorder( BorderFactory.createTitledBorder( "debug" ) );
+		bOverlayMovementAssignmentsForSelection = new JButton( "show mappings" );
 		bOverlayDivisionAssignmentsForSelection = new JButton( "show divisions" );
-		bOverlayMappingAssignmentsForSelection.addActionListener( this );
+		bOverlayRemoveAll = new JButton( "unshow all" );
+		bOverlayMovementAssignmentsForSelection.addActionListener( this );
 		bOverlayDivisionAssignmentsForSelection.addActionListener( this );
-		panelSelection.add( bSelectionFromSolution, "growx,wrap" );
+		bOverlayRemoveAll.addActionListener( this );
+		panelDebug.add( bOverlayMovementAssignmentsForSelection, "growx,wrap" );
+		panelDebug.add( bOverlayDivisionAssignmentsForSelection, "growx,wrap" );
+		panelDebug.add( bOverlayRemoveAll, "growx,wrap" );
 
 		controls.add( panelLeveragedEditing, "span, grow, wrap" );
 		controls.add( panelSelection, "span, grow, wrap" );
@@ -807,11 +814,19 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		} else if ( e.getSource().equals( bSelectionFromSolution ) ) {
 			selectionFromCurrentSolution();
 
-			// ASSIGNMENT RELATED
-		} else if ( e.getSource().equals( bOverlayMappingAssignmentsForSelection ) ) {
+		// ASSIGNMENT INSPECTION RELATED
+		} else if ( e.getSource().equals( bOverlayMovementAssignmentsForSelection ) ) {
+			final Tr2dOutAssignmentsOverlayOnSelection overlay = new Tr2dOutAssignmentsOverlayOnSelection( model, this.currentFrame, true, false );
+			overlay.setSelectedSegmentNodes( getSelectedSegmentNodes() );
+			bdvAdd( overlay, "outgoing moves" );
 
 		} else if ( e.getSource().equals( bOverlayDivisionAssignmentsForSelection ) ) {
+			final Tr2dOutAssignmentsOverlayOnSelection overlay = new Tr2dOutAssignmentsOverlayOnSelection( model, this.currentFrame, false, true );
+			overlay.setSelectedSegmentNodes( getSelectedSegmentNodes() );
+			bdvAdd( overlay, "outgoing divisions" );
 
+		} else if ( e.getSource().equals( bOverlayRemoveAll ) ) {
+			bdvRemoveAllOverlays();
 		}
 	}
 
@@ -1169,5 +1184,19 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	@Override
 	public void solutionChanged( final Assignment< IndicatorNode > newAssignment ) {
 		selectionFromCurrentSolution();
+	}
+
+	/**
+	 * @return a List< SegmentNode > containing all currently selected segments.
+	 */
+	private List< SegmentNode > getSelectedSegmentNodes() {
+		final List< SegmentNode > ret = new ArrayList<>();
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+			ret.add( segVar );
+		}
+		return ret;
 	}
 }

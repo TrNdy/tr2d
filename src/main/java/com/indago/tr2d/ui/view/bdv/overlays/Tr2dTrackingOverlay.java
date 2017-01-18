@@ -39,7 +39,6 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 	 */
 	@Override
 	protected void draw( final Graphics2D g ) {
-		final Tr2dTrackingProblem tr2dPG = trackingModel.getTrackingProblem();
 		final Assignment< IndicatorNode > pgSolution = trackingModel.getSolution();
 
 		if ( pgSolution != null ) {
@@ -63,8 +62,7 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		final AffineTransform2D trans = new AffineTransform2D();
 		getCurrentTransform2D( trans );
 		final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( info.getTimePointIndex() );
-		for ( final SegmentNode segment : tp0.getSegments() ) {
-			final SegmentNode segvar = tp0.getSegmentVar( tp0.getLabelingSegment( segment ) );
+		for ( final SegmentNode segvar : tp0.getSegments() ) {
 			if ( pgSolution.getAssignment( segvar ) == 1 ) {
 				for ( final MovementHypothesis move : segvar.getInAssignments().getMoves() ) {
 					if ( pgSolution.getAssignment( move ) == 1 ) {
@@ -146,8 +144,7 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		final AffineTransform2D trans = new AffineTransform2D();
 		getCurrentTransform2D( trans );
 		final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( info.getTimePointIndex() );
-		for ( final SegmentNode segment : tp0.getSegments() ) {
-			final SegmentNode segvar = tp0.getSegmentVar( tp0.getLabelingSegment( segment ) );
+		for ( final SegmentNode segvar : tp0.getSegments() ) {
 			if ( pgSolution.getAssignment( segvar ) == 1 ) {
 				final RealLocalizable com = segvar.getSegment().getCenterOfMass();
 				final double[] lpos = new double[ 2 ];
