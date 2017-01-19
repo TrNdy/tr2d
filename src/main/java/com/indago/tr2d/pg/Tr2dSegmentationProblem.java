@@ -2,7 +2,6 @@ package com.indago.tr2d.pg;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -13,6 +12,7 @@ import com.indago.pg.SegmentationProblem;
 import com.indago.pg.assignments.AssignmentNodes;
 import com.indago.pg.segments.ConflictSet;
 import com.indago.pg.segments.SegmentNode;
+import com.indago.tr2d.pg.levedit.EditState;
 import com.indago.util.Bimap;
 
 public class Tr2dSegmentationProblem implements SegmentationProblem {
@@ -25,12 +25,8 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	private final AssignmentNodes inAssignments;
 	private final AssignmentNodes outAssignments;
 
-	private final Set< SegmentNode > forcedSegmentNodes = new HashSet<>();
-	private final Set< SegmentNode > forcedSegmentNodeAppearances = new HashSet<>();
-	private final Set< SegmentNode > forcedSegmentNodeDisappearances = new HashSet<>();
-	private final Set< SegmentNode > forcedSegmentNodeMoves = new HashSet<>();
-	private final Set< SegmentNode > forcedSegmentNodeDivisions = new HashSet<>();
-	private final Set< SegmentNode > avoidedSegmentNodes = new HashSet<>();
+	// LEVERAGED EDITING STATE
+	private EditState edits = new EditState();
 
 	private final Bimap< SegmentNode, LabelingSegment > segmentBimap;
 
@@ -129,7 +125,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		// to start: un-force all conflicting segment nodes
 		forceAndClearConflicts( segNode );
 		// add to right force-set
-		forcedSegmentNodeAppearances.add( segNode );
+		edits.getForcedSegmentNodeAppearances().add( segNode );
 	}
 
 	/**
@@ -148,12 +144,12 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		for ( final Collection< LabelingSegment > clique : cliques ) {
 			if ( clique.contains( segNode ) ) {
 				for ( final LabelingSegment labelingSegment : clique ) {
-					forcedSegmentNodeDisappearances.remove( labelingSegment );
+					edits.getForcedSegmentNodeDisappearances().remove( labelingSegment );
 				}
 			}
 		}
 
-		forcedSegmentNodeDisappearances.add( segNode );
+		edits.getForcedSegmentNodeDisappearances().add( segNode );
 	}
 
 	/**
@@ -168,7 +164,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		// to start: un-force all conflicting segment nodes
 		forceAndClearConflicts( segNode );
 		// add to right force-set
-		forcedSegmentNodeMoves.add( segNode );
+		edits.getForcedSegmentNodeMoves().add( segNode );
 	}
 
 	/**
@@ -183,7 +179,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		// to start: un-force all conflicting segment nodes
 		forceAndClearConflicts( segNode );
 		// add to right force-set
-		forcedSegmentNodeDivisions.add( segNode );
+		edits.getForcedSegmentNodeDivisions().add( segNode );
 	}
 
 	/**
@@ -197,20 +193,20 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		// =======================
 
 		// ensure not also being avoided
-		avoidedSegmentNodes.remove( segNode );
+		edits.getAvoidedSegmentNodes().remove( segNode );
 
 		// un-force all conflicting segment nodes
 		Collection< ? extends Collection< LabelingSegment > > cliques = conflictGraph.getConflictGraphCliques();
 		for ( final Collection< LabelingSegment > clique : cliques ) {
 			if ( clique.contains( segmentBimap.getB( segNode ) ) ) {
 				for ( final LabelingSegment labelingSegment : clique ) {
-					forcedSegmentNodes.remove( segmentBimap.getA( labelingSegment ) );
+					edits.getForcedSegmentNodes().remove( segmentBimap.getA( labelingSegment ) );
 				}
 			}
 		}
 
 		// force the one!
-		forcedSegmentNodes.add( segNode );
+		edits.getForcedSegmentNodes().add( segNode );
 
 		// FORCES ON ASSIGNMENT LEVEL
 		// ==========================
@@ -219,9 +215,9 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 			if ( clique.contains( segmentBimap.getB( segNode ) ) ) {
 				for ( final LabelingSegment labelingSegment : clique ) {
 					final SegmentNode cliqueSegNode = segmentBimap.getA( labelingSegment );
-					forcedSegmentNodeAppearances.remove( cliqueSegNode );
-					forcedSegmentNodeMoves.remove( cliqueSegNode );
-					forcedSegmentNodeDivisions.remove( cliqueSegNode );
+					edits.getForcedSegmentNodeAppearances().remove( cliqueSegNode );
+					edits.getForcedSegmentNodeMoves().remove( cliqueSegNode );
+					edits.getForcedSegmentNodeDivisions().remove( cliqueSegNode );
 				}
 			}
 		}
@@ -237,10 +233,10 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	@Override
 	public void avoid( final SegmentNode segNode ) {
 		// ensure not also being forced
-		forcedSegmentNodes.remove( segNode );
+		edits.getForcedSegmentNodes().remove( segNode );
 
 		// avoid the one!
-		avoidedSegmentNodes.add( segNode );
+		edits.getAvoidedSegmentNodes().add( segNode );
 	}
 
 	/**
@@ -248,7 +244,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 */
 	@Override
 	public Set< SegmentNode > getForcedNodes() {
-		return forcedSegmentNodes;
+		return edits.getForcedSegmentNodes();
 	}
 
 	/**
@@ -256,7 +252,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 */
 	@Override
 	public Set< SegmentNode > getAvoidedNodes() {
-		return avoidedSegmentNodes;
+		return edits.getAvoidedSegmentNodes();
 	}
 
 	/**
@@ -264,7 +260,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 */
 	@Override
 	public Set< SegmentNode > getForcedByAppearanceNodes() {
-		return forcedSegmentNodeAppearances;
+		return edits.getForcedSegmentNodeAppearances();
 	}
 
 	/**
@@ -272,7 +268,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 */
 	@Override
 	public Set< SegmentNode > getForcedByDisappearanceNodes() {
-		return forcedSegmentNodeDisappearances;
+		return edits.getForcedSegmentNodeDisappearances();
 	}
 
 	/**
@@ -280,7 +276,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 */
 	@Override
 	public Set< SegmentNode > getForcedByMoveNodes() {
-		return forcedSegmentNodeMoves;
+		return edits.getForcedSegmentNodeMoves();
 	}
 
 	/**
@@ -288,6 +284,21 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 */
 	@Override
 	public Set< SegmentNode > getForcedByDivisionNodes() {
-		return forcedSegmentNodeDivisions;
+		return edits.getForcedSegmentNodeDivisions();
+	}
+
+	/**
+	 * @return the current EditState
+	 */
+	public EditState getEditState() {
+		return edits;
+	}
+
+	/**
+	 * @param state
+	 *            the EditState to be set
+	 */
+	public void setEditState( final EditState state ) {
+		this.edits = state;
 	}
 }

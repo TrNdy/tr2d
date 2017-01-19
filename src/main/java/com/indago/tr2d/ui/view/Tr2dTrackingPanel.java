@@ -114,6 +114,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		if ( e.getSource().equals( bRun ) ) {
 			model.runInThread( false );
 		} else if ( e.getSource().equals( bRestart ) ) {
+			this.frameEditPanel.emptyUndoRedoStacks();
 			model.runInThread( true, true );
 		} else if ( e.getSource().equals( bRefetch ) ) {
 			model.reset();

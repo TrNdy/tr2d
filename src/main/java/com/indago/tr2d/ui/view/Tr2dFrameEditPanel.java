@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -73,6 +74,7 @@ import com.indago.pg.IndicatorNode;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
+import com.indago.tr2d.pg.levedit.EditState;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dOutAssignmentsOverlayOnSelection;
@@ -101,6 +103,8 @@ import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.ui.TransformEventHandler;
+import net.imglib2.util.Pair;
+import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 import net.miginfocom.swing.MigLayout;
 /**
@@ -143,6 +147,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private JButton bForceDivision;
 	private JButton bAvoidSelected;
 	private JButton bForceSelectionExactly;
+
+	private JButton bUndo;
+	private JButton bRedo;
+	private final Stack< Pair< Integer, EditState > > undoStack = new Stack<>();
+	private final Stack< Pair< Integer, EditState > > redoStack = new Stack<>();
 
 	// === Hypotheses browser related stuff ============================================
 	private JButton bSelectionFromSolution;
@@ -255,13 +264,21 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		bAvoidSelected.addActionListener( this );
 		bForceSelectionExactly = new JButton( "all as selected" );
 		bForceSelectionExactly.addActionListener( this );
-		panelLeveragedEditing.add( bForceSelected, "growx,wrap" );
-		panelLeveragedEditing.add( bForceAppearance, "growx,wrap" );
-		panelLeveragedEditing.add( bForceDisappearance, "growx,wrap" );
-		panelLeveragedEditing.add( bForceMove, "growx,wrap" );
-		panelLeveragedEditing.add( bForceDivision, "growx,wrap" );
-		panelLeveragedEditing.add( bAvoidSelected, "growx,wrap" );
-		panelLeveragedEditing.add( bForceSelectionExactly, "growx,wrap" );
+		bUndo = new JButton( "undo" );
+		bUndo.setEnabled( false );
+		bUndo.addActionListener( this );
+		bRedo = new JButton( "redo" );
+		bRedo.setEnabled( false );
+		bRedo.addActionListener( this );
+		panelLeveragedEditing.add( bForceSelected, "span,growx,wrap" );
+		panelLeveragedEditing.add( bForceAppearance, "span,growx,wrap" );
+		panelLeveragedEditing.add( bForceDisappearance, "span,growx,wrap" );
+		panelLeveragedEditing.add( bForceMove, "span,growx,wrap" );
+		panelLeveragedEditing.add( bForceDivision, "span,growx,wrap" );
+		panelLeveragedEditing.add( bAvoidSelected, "span,growx,wrap" );
+		panelLeveragedEditing.add( bForceSelectionExactly, "span,growx,wrap" );
+		panelLeveragedEditing.add( bUndo, "growx" );
+		panelLeveragedEditing.add( bRedo, "growx,wrap" );
 
 		layout = new MigLayout();
 		final JPanel panelSelection = new JPanel( layout );
@@ -751,22 +768,27 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	public void actionPerformed( final ActionEvent e ) {
 		// FRAME NAVIGATION
 		if ( e.getSource().equals( buttonFirst ) ) {
+			emptyRedoStack();
 			this.currentFrame = 0;
 			setFrameToShow( this.currentFrame );
 			selectionFromCurrentSolution();
 		} else if ( e.getSource().equals( buttonPrev ) ) {
+			emptyRedoStack();
 			this.currentFrame = Math.max( 0, currentFrame - 1 );
 			setFrameToShow( this.currentFrame );
 			selectionFromCurrentSolution();
 		} else if ( e.getSource().equals( buttonNext ) ) {
+			emptyRedoStack();
 			this.currentFrame = Math.min( model.getLabelingFrames().getNumFrames() - 1, currentFrame + 1 );
 			setFrameToShow( this.currentFrame );
 			selectionFromCurrentSolution();
 		} else if ( e.getSource().equals( buttonLast ) ) {
+			emptyRedoStack();
 			this.currentFrame = model.getLabelingFrames().getNumFrames() - 1;
 			setFrameToShow( this.currentFrame );
 			selectionFromCurrentSolution();
 		} else if ( e.getSource().equals( txtCurFrame ) ) {
+			emptyRedoStack();
 			this.currentFrame = Math.max(
 					0,
 					Math.min(
@@ -776,6 +798,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			selectionFromCurrentSolution();
 
 		// LEVERAGED EDITING BUTTONS
+		} else if ( e.getSource().equals( bUndo ) ) {
+			callUndo();
+		} else if ( e.getSource().equals( bRedo ) ) {
+			callRedo();
 		} else if ( e.getSource().equals( bForceSelected ) ) {
 			forceCurrentSelection();
 			model.prepareFG();
@@ -834,7 +860,108 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	/**
 	 *
 	 */
+	private void pushCurrentStateOnUndoStack() {
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+//		JOptionPane.showMessageDialog( null, "push2undo: " + segProblem.getEditState().getDebugString() );
+		undoStack.push( new ValuePair< Integer, EditState >( this.currentFrame, new EditState( segProblem.getEditState() ) ) );
+		bUndo.setEnabled( true );
+	}
+
+	/**
+	 */
+	private void pushCurrentStateOnRedoStack() {
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+//		JOptionPane.showMessageDialog( null, "push2redo: " + segProblem.getEditState().getDebugString() );
+		redoStack.push( new ValuePair< Integer, EditState >( this.currentFrame, new EditState( segProblem.getEditState() ) ) );
+		bRedo.setEnabled( true );
+	}
+
+	/**
+	 * Empties undo and redo stacks and disables corresponding buttons.
+	 */
+	public void emptyUndoRedoStacks() {
+		emptyUndoStack();
+		emptyRedoStack();
+	}
+
+	/**
+	 *
+	 */
+	private void emptyUndoStack() {
+		undoStack.removeAllElements();
+		bUndo.setEnabled( false );
+	}
+
+	/**
+	 *
+	 */
+	private void emptyRedoStack() {
+		redoStack.removeAllElements();
+		bRedo.setEnabled( false );
+	}
+
+	/**
+	 *
+	 */
+	private void callUndo() {
+		if ( !undoStack.isEmpty() ) {
+			pushCurrentStateOnRedoStack();
+
+			final Pair< Integer, EditState > poppedStatePair = undoStack.pop();
+			if ( undoStack.isEmpty() ) {
+				bUndo.setEnabled( false );
+			}
+
+			final int editTime = poppedStatePair.getA();
+			final EditState oldState = poppedStatePair.getB();
+
+			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( editTime );
+			segProblem.setEditState( oldState );
+
+//			JOptionPane.showMessageDialog( null, "Undo to: " + oldState.getDebugString() );
+
+			if ( this.currentFrame != editTime ) {
+				setFrameToShow( editTime );
+			}
+			model.prepareFG();
+			model.runInThread( true );
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void callRedo() {
+		if ( !redoStack.isEmpty() ) {
+			pushCurrentStateOnUndoStack();
+
+			final Pair< Integer, EditState > poppedStatePair = redoStack.pop();
+			if ( redoStack.isEmpty() ) {
+				bRedo.setEnabled( false );
+			}
+
+			final int editTime = poppedStatePair.getA();
+			final EditState redoState = poppedStatePair.getB();
+
+			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( editTime );
+			segProblem.setEditState( redoState );
+
+//			JOptionPane.showMessageDialog( null, "Redo to: " + redoState.getDebugString() );
+
+			if ( this.currentFrame != editTime ) {
+				setFrameToShow( editTime );
+			}
+			model.prepareFG();
+			model.runInThread( true );
+		}
+	}
+
+	/**
+	 *
+	 */
 	private void avoidCurrentSelection() {
+		pushCurrentStateOnUndoStack();
+		emptyRedoStack();
 		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
@@ -848,6 +975,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 *
 	 */
 	private void forceCurrentSelection() {
+		pushCurrentStateOnUndoStack();
+		emptyRedoStack();
 		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
@@ -861,6 +990,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 *
 	 */
 	private void forceCurrentSelectionToBeDividedTo() {
+		pushCurrentStateOnUndoStack();
+		emptyRedoStack();
 		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
@@ -874,6 +1005,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 *
 	 */
 	private void forceCurrentSelectionToBeMovedTo() {
+		pushCurrentStateOnUndoStack();
+		emptyRedoStack();
 		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
@@ -887,6 +1020,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 *
 	 */
 	private void forceCurrentSelectionToDisappear() {
+		pushCurrentStateOnUndoStack();
+		emptyRedoStack();
 		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
@@ -900,6 +1035,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 *
 	 */
 	private void forceCurrentSelectionToAppear() {
+		pushCurrentStateOnUndoStack();
+		emptyRedoStack();
 		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
