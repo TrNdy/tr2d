@@ -76,6 +76,7 @@ import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dOutAssignmentsOverlayOnSelection;
+import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 import com.indago.ui.bdv.BdvWithOverlaysOwner;
 
 import bdv.BehaviourTransformEventHandler;
@@ -818,12 +819,12 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		} else if ( e.getSource().equals( bOverlayMovementAssignmentsForSelection ) ) {
 			final Tr2dOutAssignmentsOverlayOnSelection overlay = new Tr2dOutAssignmentsOverlayOnSelection( model, this.currentFrame, true, false );
 			overlay.setSelectedSegmentNodes( getSelectedSegmentNodes() );
-			bdvAdd( overlay, "outgoing moves" );
+			bdvAdd( overlay, "outgoing moves overlay" );
 
 		} else if ( e.getSource().equals( bOverlayDivisionAssignmentsForSelection ) ) {
 			final Tr2dOutAssignmentsOverlayOnSelection overlay = new Tr2dOutAssignmentsOverlayOnSelection( model, this.currentFrame, false, true );
 			overlay.setSelectedSegmentNodes( getSelectedSegmentNodes() );
-			bdvAdd( overlay, "outgoing divisions" );
+			bdvAdd( overlay, "outgoing divisions overlay" );
 
 		} else if ( e.getSource().equals( bOverlayRemoveAll ) ) {
 			bdvRemoveAllOverlays();
@@ -992,6 +993,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 					selectionModel.setSelected( mapLabelingSegment2SegmentVertex.get( labelingSegment ), false );
     			}
     		}
+
+			// Add the tracking overlay for this time point
+			bdvRemoveAllOverlays();
+			final Tr2dTrackingOverlay overlay = new Tr2dTrackingOverlay( model, this.currentFrame );
+			bdvAdd( overlay, "tracking overlay" );
 		}
 	}
 

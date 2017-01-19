@@ -26,12 +26,22 @@ import net.imglib2.realtransform.AffineTransform2D;
 public class Tr2dTrackingOverlay extends BdvOverlay {
 
 	private final Tr2dTrackingModel trackingModel;
+	private final int time;
 
 	/**
 	 * @param model
 	 */
 	public Tr2dTrackingOverlay( final Tr2dTrackingModel model ) {
 		this.trackingModel = model;
+		this.time = -1;
+	}
+
+	/**
+	 * @param model
+	 */
+	public Tr2dTrackingOverlay( final Tr2dTrackingModel model, final int t ) {
+		this.trackingModel = model;
+		this.time = t;
 	}
 
 	/**
@@ -42,11 +52,12 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		final Assignment< IndicatorNode > pgSolution = trackingModel.getSolution();
 
 		if ( pgSolution != null ) {
-			final AffineTransform2D t = new AffineTransform2D();
-			getCurrentTransform2D( t );
+			final AffineTransform2D trans = new AffineTransform2D();
+			getCurrentTransform2D( trans );
 
-			drawCOMs( g, info.getTimePointIndex() );
-			drawCOMTails( g, info.getTimePointIndex(), 5 );
+			final int t = ( this.time == -1 ) ? info.getTimePointIndex() : this.time;
+			drawCOMs( g, t );
+			drawCOMTails( g, t, 5 );
 		}
 	}
 
@@ -61,7 +72,7 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 
 		final AffineTransform2D trans = new AffineTransform2D();
 		getCurrentTransform2D( trans );
-		final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( info.getTimePointIndex() );
+		final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( cur_t );
 		for ( final SegmentNode segvar : tp0.getSegments() ) {
 			if ( pgSolution.getAssignment( segvar ) == 1 ) {
 				for ( final MovementHypothesis move : segvar.getInAssignments().getMoves() ) {
@@ -143,7 +154,7 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 
 		final AffineTransform2D trans = new AffineTransform2D();
 		getCurrentTransform2D( trans );
-		final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( info.getTimePointIndex() );
+		final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( cur_t );
 		for ( final SegmentNode segvar : tp0.getSegments() ) {
 			if ( pgSolution.getAssignment( segvar ) == 1 ) {
 				final RealLocalizable com = segvar.getSegment().getCenterOfMass();
