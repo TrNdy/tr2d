@@ -198,7 +198,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * Does not force resolving. If wanted: call <code>run(true)</code>.
 	 */
 	public void run() {
-		run( false );
+		run( false, false );
 	}
 
 	/**
@@ -210,11 +210,14 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 *
 	 * @param forceSolving
 	 *            true, force resolve in any case.
+	 * @param forceRebuildPG
+	 *            true, force problem graph rebuild (drops all leveraged editing
+	 *            constraints etc.)
 	 */
-	public void run( final boolean forceSolving ) {
+	public void run( final boolean forceSolving, final boolean forceRebuildPG ) {
 		boolean doSolving = forceSolving;
 
-		if ( tr2dTraProblem == null ) {
+		if ( tr2dTraProblem == null || forceRebuildPG ) {
 			if ( preparePG() ) {
 				prepareFG();
 				doSolving = true;
@@ -237,12 +240,20 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * Additionally also takes care of the BDV.
 	 */
 	public Thread runInThread( final boolean forceResolve ) {
+		return this.runInThread( forceResolve, false );
+	}
+
+	/**
+	 * (Re)runs the trackins problem in a thread of it's own.
+	 * Additionally also takes care of the BDV.
+	 */
+	public Thread runInThread( final boolean forceResolve, final boolean forceRebuildFG ) {
 //		final Tr2dTrackingModel self = this;
 		final Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
-				Tr2dTrackingModel.this.run( forceResolve );
+				Tr2dTrackingModel.this.run( forceResolve, forceRebuildFG );
 
 				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
 				bdvRemoveAll();
