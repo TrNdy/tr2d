@@ -126,16 +126,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		final Tr2dSegmentationProblem segProblemL = timepoints.get( timepoints.size() - 2 );
 		final Tr2dSegmentationProblem segProblemR = timepoints.get( timepoints.size() - 1 );
 
-		List< SegmentNode > segmentList;
-		if ( segProblemR.getSegments() instanceof List )
-			segmentList = ( List< SegmentNode > ) segProblemR.getSegments();
-		else
-			segmentList = new ArrayList<>( segProblemR.getSegments() );
-		final ArrayList< RealLocalizable > positions = new ArrayList<>();
-		for ( final SegmentNode n : segmentList )
-			positions.add( n.getSegment().getCenterOfMass() );
-		final KDTree< SegmentNode > kdtree = new KDTree<>( segmentList, positions );
-		final RadiusNeighborSearchOnKDTree< SegmentNode > search = new RadiusNeighborSearchOnKDTree<>( kdtree );
+		final RadiusNeighborSearchOnKDTree< SegmentNode > search = createRadiusNeighborSearch( segProblemR );
 
 		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
 
@@ -175,22 +166,31 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	}
 
 	/**
+	 * @param segProblem
+	 * @return
+	 */
+	private RadiusNeighborSearchOnKDTree< SegmentNode > createRadiusNeighborSearch( final Tr2dSegmentationProblem segProblem ) {
+		List< SegmentNode > segmentList;
+		if ( segProblem.getSegments() instanceof List )
+			segmentList = ( List< SegmentNode > ) segProblem.getSegments();
+		else
+			segmentList = new ArrayList<>( segProblem.getSegments() );
+		final ArrayList< RealLocalizable > positions = new ArrayList<>();
+		for ( final SegmentNode n : segmentList )
+			positions.add( n.getSegment().getCenterOfMass() );
+		final KDTree< SegmentNode > kdtree = new KDTree<>( segmentList, positions );
+		final RadiusNeighborSearchOnKDTree< SegmentNode > search = new RadiusNeighborSearchOnKDTree<>( kdtree );
+		return search;
+	}
+
+	/**
 	 *
 	 */
 	private void addDivisionsToLatestFramePair() {
 		final Tr2dSegmentationProblem segProblemL = timepoints.get( timepoints.size() - 2 );
 		final Tr2dSegmentationProblem segProblemR = timepoints.get( timepoints.size() - 1 );
 
-		List< SegmentNode > segmentList;
-		if ( segProblemR.getSegments() instanceof List )
-			segmentList = ( List< SegmentNode > ) segProblemR.getSegments();
-		else
-			segmentList = new ArrayList<>( segProblemR.getSegments() );
-		final ArrayList< RealLocalizable > positions = new ArrayList<>();
-		for ( final SegmentNode n : segmentList )
-			positions.add( n.getSegment().getCenterOfMass() );
-		final KDTree< SegmentNode > kdtree = new KDTree<>( segmentList, positions );
-		final RadiusNeighborSearchOnKDTree< SegmentNode > search = new RadiusNeighborSearchOnKDTree<>( kdtree );
+		final RadiusNeighborSearchOnKDTree< SegmentNode > search = createRadiusNeighborSearch( segProblemR );
 
 		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
 			final RealLocalizable pos = segVarL.getSegment().getCenterOfMass();
