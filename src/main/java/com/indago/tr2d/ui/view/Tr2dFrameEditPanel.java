@@ -979,7 +979,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 * coincide with all active segments in this current tracking solution.
 	 */
 	public void selectionFromCurrentSolution() {
-		if (model.getTrackingProblem() != null) { // there must be a current solution... :)
+		if ( model.getSolution() != null ) { // there must be a current solution... :)
 			if ( selectionModel == null ) return;
 			selectionModel.clearSelection();
     		final Tr2dSegmentationProblem frameSegmentationModel = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
@@ -998,6 +998,9 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			bdvRemoveAllOverlays();
 			final Tr2dTrackingOverlay overlay = new Tr2dTrackingOverlay( model, this.currentFrame );
 			bdvAdd( overlay, "tracking overlay" );
+		} else {
+			selectionModel.clearSelection();
+			bdvRemoveAllOverlays();
 		}
 	}
 

@@ -382,8 +382,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			fgSolution = SolveGurobi.staticSolve( fg, new DefaultLoggingGurobiCallback( Tr2dLog.gurobilog ) );
 			pgSolution = assMapper.map( fgSolution );
 		} catch ( final GRBException e ) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch ( final IllegalStateException ise ) {
+			fgSolution = null;
+			pgSolution = null;
+			Tr2dLog.log.error( "Model is now infeasible and needs to be retracked!" );
 		}
 	}
 
