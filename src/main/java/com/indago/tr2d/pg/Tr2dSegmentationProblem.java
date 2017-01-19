@@ -239,16 +239,6 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		// ensure not also being forced
 		forcedSegmentNodes.remove( segNode );
 
-		// un-avoid all conflicting segment nodes
-		final Collection< ? extends Collection< LabelingSegment > > cliques = conflictGraph.getConflictGraphCliques();
-		for ( final Collection< LabelingSegment > clique : cliques ) {
-			if ( clique.contains( segmentBimap.getB( segNode ) ) ) {
-				for ( final LabelingSegment labelingSegment : clique ) {
-					avoidedSegmentNodes.remove( segmentBimap.getA( labelingSegment ) );
-				}
-			}
-		}
-
 		// avoid the one!
 		avoidedSegmentNodes.add( segNode );
 	}
