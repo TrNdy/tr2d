@@ -165,8 +165,7 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
 		if ( e.getSource().equals( bRetrack ) ) {
-			model.reset();
-			model.runInThread( true );
+			model.runInThread( true, true );
 		} else if ( e.getSource().equals( bSaveCosts ) ) {
 			final File costsFile = UniversalFileChooser.showSaveFileChooser(
 					model.getTr2dModel().getMainPanel().getTopLevelAncestor(),
