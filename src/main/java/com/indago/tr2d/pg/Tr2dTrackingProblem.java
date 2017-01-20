@@ -36,8 +36,8 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	private final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
 	private final CostFactory< LabelingSegment > disappearanceCosts;
 
-	private final int maxMovementsToAddPerHypothesis = 5; //TODO make this some user configurable parameter
-	private final int maxDivisionsToAddPerHypothesis = 5; //TODO make this some user configurable parameter
+	private final int maxMovementsToAddPerHypothesis = 4; //TODO make this some user configurable parameter
+	private final int maxDivisionsToAddPerHypothesis = 8; //TODO make this some user configurable parameter
 
 	public Tr2dTrackingProblem(
 			final Tr2dFlowModel flowModel,
@@ -141,7 +141,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					pos.getDoublePosition( 0 ) + flow_vec.getA(),
 					pos.getDoublePosition( 1 ) + flow_vec.getB() );
 
-			final double radius = 35; // TODO needs to be smarter and NOT fixed to 35 pixels distance
+			final double radius = 35; //TODO make this some user configurable parameter
 			final PriorityQueue< MovementHypothesis > prioQueue = new PriorityQueue<>( 100, Util.getCostComparatorForMovementHypothesis() );
 
 			search.search( flow_pos, radius, false );
@@ -195,7 +195,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
 			final RealLocalizable pos = segVarL.getSegment().getCenterOfMass();
 
-			final double radius = 60; // TODO needs to be smarter and NOT fixed to 60 pixels distance
+			final double radius = 40; //TODO make this some user configurable parameter
 			final PriorityQueue< DivisionHypothesis > prioQueue = new PriorityQueue<>( 100, Util.getCostComparatorForDivisionHypothesis() );
 
 			search.search( pos, radius, true );
