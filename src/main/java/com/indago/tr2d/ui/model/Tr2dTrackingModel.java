@@ -36,6 +36,7 @@ import com.indago.tr2d.data.LabelingTimeLapse;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
+import com.indago.tr2d.ui.listener.ModelInfeasibleListener;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.util.SolutionVisulizer;
 import com.indago.ui.bdv.BdvWithOverlaysOwner;
@@ -94,6 +95,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private final List< BdvSource > bdvOverlaySources = new ArrayList< >();
 
 	private final List< SolutionChangedListener > solChangedListeners;
+	private final List< ModelInfeasibleListener > modelInfeasibleListeners;
 
 	/**
 	 * @param model
@@ -111,6 +113,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		dataFolder.mkdirs();
 
 		solChangedListeners = new ArrayList<>();
+		modelInfeasibleListeners = new ArrayList<>();
 
 		this.segmentCosts = segmentCosts;
 		this.appearanceCosts = appearanceCosts;
@@ -247,13 +250,13 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * (Re)runs the trackins problem in a thread of it's own.
 	 * Additionally also takes care of the BDV.
 	 */
-	public Thread runInThread( final boolean forceResolve, final boolean forceRebuildFG ) {
+	public Thread runInThread( final boolean forceResolve, final boolean forceRebuildPG ) {
 //		final Tr2dTrackingModel self = this;
 		final Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
-				Tr2dTrackingModel.this.run( forceResolve, forceRebuildFG );
+				Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG );
 
 				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
 				bdvRemoveAll();
@@ -387,6 +390,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			fgSolution = null;
 			pgSolution = null;
 			Tr2dLog.log.error( "Model is now infeasible and needs to be retracked!" );
+			fireModelInfeasibleEvent();
 		}
 	}
 
@@ -549,6 +553,16 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void fireSolutionChangedEvent() {
 		for ( final SolutionChangedListener scl : solChangedListeners ) {
 			scl.solutionChanged( pgSolution );
+		}
+	}
+
+	public void addModelInfeasibleListener( final ModelInfeasibleListener mil ) {
+		modelInfeasibleListeners.add( mil );
+	}
+
+	private void fireModelInfeasibleEvent() {
+		for ( final ModelInfeasibleListener mil : modelInfeasibleListeners ) {
+			mil.modelIsInfeasible();
 		}
 	}
 

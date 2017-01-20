@@ -21,6 +21,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
@@ -75,6 +76,7 @@ import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.levedit.EditState;
+import com.indago.tr2d.ui.listener.ModelInfeasibleListener;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dOutAssignmentsOverlayOnSelection;
@@ -110,7 +112,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * @author jug
  */
-public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWithOverlaysOwner, SolutionChangedListener {
+public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWithOverlaysOwner, SolutionChangedListener, ModelInfeasibleListener {
 
 	private static final long serialVersionUID = -9051482691122695949L;
 
@@ -222,6 +224,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		this.model = model;
 
 		this.model.addSolutionChangedListener( this );
+		this.model.addModelInfeasibleListener( this );
 
 		manager = new GroupManager();
 		trackSchemeGroupHandle = manager.createGroupHandle();
@@ -766,6 +769,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 */
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
+		boolean reprepAndRun = false;
+
 		// FRAME NAVIGATION
 		if ( e.getSource().equals( buttonFirst ) ) {
 			emptyRedoStack();
@@ -804,28 +809,22 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			callRedo();
 		} else if ( e.getSource().equals( bForceSelected ) ) {
 			forceCurrentSelection();
-			model.prepareFG();
-			model.runInThread( true );
+			reprepAndRun = true;
 		} else if ( e.getSource().equals( bForceAppearance ) ) {
 			forceCurrentSelectionToAppear();
-			model.prepareFG();
-			model.runInThread( true );
+			reprepAndRun = true;
 		} else if ( e.getSource().equals( bForceDisappearance ) ) {
 			forceCurrentSelectionToDisappear();
-			model.prepareFG();
-			model.runInThread( true );
+			reprepAndRun = true;
 		} else if ( e.getSource().equals( bForceMove ) ) {
 			forceCurrentSelectionToBeMovedTo();
-			model.prepareFG();
-			model.runInThread( true );
+			reprepAndRun = true;
 		} else if ( e.getSource().equals( bForceDivision ) ) {
 			forceCurrentSelectionToBeDividedTo();
-			model.prepareFG();
-			model.runInThread( true );
+			reprepAndRun = true;
 		} else if ( e.getSource().equals( bAvoidSelected ) ) {
 			avoidCurrentSelection();
-			model.prepareFG();
-			model.runInThread( true );
+			reprepAndRun = true;
 		} else if ( e.getSource().equals( bForceSelectionExactly ) ) {
 			final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
 			// avoid all...
@@ -834,8 +833,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			}
 			// ...then force selected
 			forceCurrentSelection();
-			model.prepareFG();
-			model.runInThread( true );
+			reprepAndRun = true;
 
 		// SELECTION RELATED
 		} else if ( e.getSource().equals( bSelectionFromSolution ) ) {
@@ -854,6 +852,12 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		} else if ( e.getSource().equals( bOverlayRemoveAll ) ) {
 			bdvRemoveAllOverlays();
+		}
+
+		// Since this is the same for all LevEdits, I put it here
+		if ( reprepAndRun ) {
+			model.prepareFG();
+			model.runInThread( true );
 		}
 	}
 
@@ -1344,5 +1348,39 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			ret.add( segVar );
 		}
 		return ret;
+	}
+
+	/**
+	 * @see com.indago.tr2d.ui.listener.ModelInfeasibleListener#modelIsInfeasible()
+	 */
+	@Override
+	public void modelIsInfeasible() {
+		final String[] options = new String[] { "Undo", "Restart", "Cancel" };
+		final int response = JOptionPane.showOptionDialog(
+				this,
+				"No solution can be found, the current model is infeasible.\nPlease choose your preferred action:",
+				"Model infeasible",
+				JOptionPane.DEFAULT_OPTION,
+				JOptionPane.QUESTION_MESSAGE,
+				null,
+				options,
+				options[ 0 ] );
+		switch ( response ) {
+		case 0:
+			callUndo();
+			model.prepareFG();
+			model.runInThread( true );
+			break;
+		case 1:
+			SwingUtilities.invokeLater( new Runnable() {
+				@Override
+				public void run() {
+					emptyUndoRedoStacks();
+					model.runInThread( true, true );
+				}
+
+			} );
+			break;
+		}
 	}
 }
