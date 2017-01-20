@@ -38,11 +38,11 @@ public class HernanDivisionCostFactory
 
 		params = new CostParams();
 		params.add( "const", 10 );
-		params.add( "Δsize(A,B1+B2)", 0.25 );
-		params.add( "Δsize(B1,B2)", 0.25 );
-		params.add( "(Δsize(B1,B2))^2", 0.1 );
+		params.add( "Δsize(A,B1+B2)", 0.2 );
+		params.add( "Δsize(B1,B2)", 0.2 );
+		params.add( "(Δsize(B1,B2))^2", 0.05 );
 		params.add( "avg(Δpos(A↦B1),Δpos(A↦B2)) ", 0.5 );
-		params.add( "Δpos(B1↦B2)", 0.2 );
+		params.add( "Δpos(B1↦B2)", 0.05 );
 		params.add( "off elong. penalty", 1 );
     }
 
