@@ -204,6 +204,11 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 				for ( int j = i + 1; j < numNeighbors; ++j ) {
 					final SegmentNode segVarR1 = search.getSampler( i ).get();
 					final SegmentNode segVarR2 = search.getSampler( j ).get();
+
+					if ( segVarR1.getSegment().conflictsWith( segVarR2.getSegment() ) ) {
+						continue; // do not add divisions towards conflicting hypotheses
+					}
+
 					final double cost = divisionCosts.getCost(
 							new ValuePair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > >(
 									segVarL.getSegment(),
