@@ -124,8 +124,20 @@ public class SegmentBrowser
 		if ( currentSegment != null )
 		{
 			selectionModel.pauseListeners();
-			if ( selectionModel.isSelected( currentSegment ) ) {
+			if ( isCliqueSelected( currentSegment ) ) {
+				// unselect entire clique
+				final List< SegmentVertex > conflicting = new ArrayList<>();
+				new BreadthFirstIterator<>( currentSegment, segmentGraph ).forEachRemaining( v -> conflicting.add( v ) );
+				new InverseBreadthFirstIterator<>( currentSegment, segmentGraph ).forEachRemaining( v -> conflicting.add( v ) );
+				for ( final SegmentVertex v : conflicting )
+					selectionModel.setSelected( v, false );
 				selectionModel.setSelected( currentSegment, false );
+			} else if ( selectionModel.isSelected( currentSegment ) ) {
+				final List< SegmentVertex > conflicting = new ArrayList<>();
+				new BreadthFirstIterator<>( currentSegment, segmentGraph ).forEachRemaining( v -> conflicting.add( v ) );
+				new InverseBreadthFirstIterator<>( currentSegment, segmentGraph ).forEachRemaining( v -> conflicting.add( v ) );
+				for ( final SegmentVertex v : conflicting )
+					selectionModel.setSelected( v, true );
 			} else {
 				final List< SegmentVertex > conflicting = new ArrayList<>();
 				new BreadthFirstIterator<>( currentSegment, segmentGraph ).forEachRemaining( v -> conflicting.add( v ) );
@@ -138,6 +150,22 @@ public class SegmentBrowser
 		}
 	}
 
+
+	/**
+	 * @param currentSegment
+	 * @return true if the currentSegment and all conflicting segments are
+	 *         currently selected.
+	 */
+	private boolean isCliqueSelected( final SegmentVertex currentSegment ) {
+		if ( !selectionModel.isSelected( currentSegment ) ) { return false; }
+		final List< SegmentVertex > conflicting = new ArrayList<>();
+		new BreadthFirstIterator<>( currentSegment, segmentGraph ).forEachRemaining( v -> conflicting.add( v ) );
+		new InverseBreadthFirstIterator<>( currentSegment, segmentGraph ).forEachRemaining( v -> conflicting.add( v ) );
+		for ( final SegmentVertex v : conflicting ) {
+			if ( !selectionModel.isSelected( v ) ) { return false; }
+		}
+		return true;
+	}
 
 	public synchronized void browseSegments( final int x, final int y, final boolean forward ) {
 		if ( currentSegment != null ) {
