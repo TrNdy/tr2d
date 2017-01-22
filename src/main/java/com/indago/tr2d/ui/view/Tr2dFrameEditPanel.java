@@ -79,6 +79,7 @@ import com.indago.tr2d.pg.levedit.EditState;
 import com.indago.tr2d.ui.listener.ModelInfeasibleListener;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
+import com.indago.tr2d.ui.view.bdv.overlays.Tr2dInAssignmentsOverlayOnSelection;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dOutAssignmentsOverlayOnSelection;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 import com.indago.ui.bdv.BdvWithOverlaysOwner;
@@ -145,8 +146,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private JButton bForceSelected;
 	private JButton bForceAppearance;
 	private JButton bForceDisappearance;
-	private JButton bForceMove;
-	private JButton bForceDivision;
+	private JButton bForceMoveIn;
+	private JButton bForceDivisionIn;
+	private JButton bForceMoveOut;
+	private JButton bForceDivisionOut;
 	private JButton bAvoidSelected;
 	private JButton bForceSelectionExactly;
 
@@ -155,11 +158,13 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private final Stack< Pair< Integer, EditState > > undoStack = new Stack<>();
 	private final Stack< Pair< Integer, EditState > > redoStack = new Stack<>();
 
-	// === Hypotheses browser related stuff ============================================
+	// === Hypotheses browser related (debugging) =====================================
 	private JButton bSelectionFromSolution;
-
-	private JButton bOverlayMovementAssignmentsForSelection;
-	private JButton bOverlayDivisionAssignmentsForSelection;
+	private JButton bShowTrackingOverlay;
+	private JButton bOverlayMovementInAssignmentsForSelection;
+	private JButton bOverlayDivisionInAssignmentsForSelection;
+	private JButton bOverlayMovementOutAssignmentsForSelection;
+	private JButton bOverlayDivisionOutAssignmentsForSelection;
 	private JButton bOverlayRemoveAll;
 
 	// === Other stuff =================================================================
@@ -259,10 +264,14 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		bForceAppearance.addActionListener( this );
 		bForceDisappearance = new JButton( "force disappearance" );
 		bForceDisappearance.addActionListener( this );
-		bForceMove = new JButton( "force move" );
-		bForceMove.addActionListener( this );
-		bForceDivision = new JButton( "force division" );
-		bForceDivision.addActionListener( this );
+		bForceMoveIn = new JButton( "move to" );
+		bForceMoveIn.addActionListener( this );
+		bForceDivisionIn = new JButton( "divide to" );
+		bForceDivisionIn.addActionListener( this );
+		bForceMoveOut = new JButton( "from" );
+		bForceMoveOut.addActionListener( this );
+		bForceDivisionOut = new JButton( "from" );
+		bForceDivisionOut.addActionListener( this );
 		bAvoidSelected = new JButton( "avoid selected" );
 		bAvoidSelected.addActionListener( this );
 		bForceSelectionExactly = new JButton( "all as selected" );
@@ -276,8 +285,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		panelLeveragedEditing.add( bForceSelected, "span,growx,wrap" );
 		panelLeveragedEditing.add( bForceAppearance, "span,growx,wrap" );
 		panelLeveragedEditing.add( bForceDisappearance, "span,growx,wrap" );
-		panelLeveragedEditing.add( bForceMove, "span,growx,wrap" );
-		panelLeveragedEditing.add( bForceDivision, "span,growx,wrap" );
+		panelLeveragedEditing.add( bForceMoveIn, "growx" );
+		panelLeveragedEditing.add( bForceMoveOut, "growx,wrap" );
+		panelLeveragedEditing.add( bForceDivisionIn, "growx" );
+		panelLeveragedEditing.add( bForceDivisionOut, "growx,wrap" );
 		panelLeveragedEditing.add( bAvoidSelected, "span,growx,wrap" );
 		panelLeveragedEditing.add( bForceSelectionExactly, "span,growx,wrap" );
 		panelLeveragedEditing.add( bUndo, "growx" );
@@ -292,16 +303,25 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		layout = new MigLayout();
 		final JPanel panelDebug = new JPanel( layout );
-		panelDebug.setBorder( BorderFactory.createTitledBorder( "debug" ) );
-		bOverlayMovementAssignmentsForSelection = new JButton( "show mappings" );
-		bOverlayDivisionAssignmentsForSelection = new JButton( "show divisions" );
+		panelDebug.setBorder( BorderFactory.createTitledBorder( "show for selection" ) );
+		bShowTrackingOverlay = new JButton( "show tracking overlay" );
+		bShowTrackingOverlay.addActionListener( this );
+		bOverlayMovementInAssignmentsForSelection = new JButton( "moves in" );
+		bOverlayMovementInAssignmentsForSelection.addActionListener( this );
+		bOverlayMovementOutAssignmentsForSelection = new JButton( "out" );
+		bOverlayMovementOutAssignmentsForSelection.addActionListener( this );
+		bOverlayDivisionInAssignmentsForSelection = new JButton( "divisions in" );
+		bOverlayDivisionInAssignmentsForSelection.addActionListener( this );
+		bOverlayDivisionOutAssignmentsForSelection = new JButton( "out" );
+		bOverlayDivisionOutAssignmentsForSelection.addActionListener( this );
 		bOverlayRemoveAll = new JButton( "unshow all" );
-		bOverlayMovementAssignmentsForSelection.addActionListener( this );
-		bOverlayDivisionAssignmentsForSelection.addActionListener( this );
 		bOverlayRemoveAll.addActionListener( this );
-		panelDebug.add( bOverlayMovementAssignmentsForSelection, "growx,wrap" );
-		panelDebug.add( bOverlayDivisionAssignmentsForSelection, "growx,wrap" );
-		panelDebug.add( bOverlayRemoveAll, "growx,wrap" );
+		panelDebug.add( bShowTrackingOverlay, "span,growx,wrap" );
+		panelDebug.add( bOverlayMovementInAssignmentsForSelection, "growx" );
+		panelDebug.add( bOverlayMovementOutAssignmentsForSelection, "growx,wrap" );
+		panelDebug.add( bOverlayDivisionInAssignmentsForSelection, "growx" );
+		panelDebug.add( bOverlayDivisionOutAssignmentsForSelection, "growx,wrap" );
+		panelDebug.add( bOverlayRemoveAll, "span,growx,wrap" );
 
 		controls.add( panelLeveragedEditing, "span, grow, wrap" );
 		controls.add( panelSelection, "span, grow, wrap" );
@@ -816,11 +836,17 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		} else if ( e.getSource().equals( bForceDisappearance ) ) {
 			forceCurrentSelectionToDisappear();
 			reprepAndRun = true;
-		} else if ( e.getSource().equals( bForceMove ) ) {
+		} else if ( e.getSource().equals( bForceMoveIn ) ) {
 			forceCurrentSelectionToBeMovedTo();
 			reprepAndRun = true;
-		} else if ( e.getSource().equals( bForceDivision ) ) {
+		} else if ( e.getSource().equals( bForceDivisionIn ) ) {
 			forceCurrentSelectionToBeDividedTo();
+			reprepAndRun = true;
+		} else if ( e.getSource().equals( bForceMoveOut ) ) {
+			forceCurrentSelectionToBeMovedFrom();
+			reprepAndRun = true;
+		} else if ( e.getSource().equals( bForceDivisionOut ) ) {
+			forceCurrentSelectionToBeDividedFrom();
 			reprepAndRun = true;
 		} else if ( e.getSource().equals( bAvoidSelected ) ) {
 			avoidCurrentSelection();
@@ -839,13 +865,25 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		} else if ( e.getSource().equals( bSelectionFromSolution ) ) {
 			selectionFromCurrentSolution();
 
-		// ASSIGNMENT INSPECTION RELATED
-		} else if ( e.getSource().equals( bOverlayMovementAssignmentsForSelection ) ) {
+			// ASSIGNMENT INSPECTION RELATED (DEBUG)
+		} else if ( e.getSource().equals( bShowTrackingOverlay ) ) {
+			showTrackingOverlay();
+		} else if ( e.getSource().equals( bOverlayMovementInAssignmentsForSelection ) ) {
+			final Tr2dInAssignmentsOverlayOnSelection overlay = new Tr2dInAssignmentsOverlayOnSelection( model, this.currentFrame, true, false );
+			overlay.setSelectedSegmentNodes( getSelectedSegmentNodes() );
+			bdvAdd( overlay, "incoming moves overlay" );
+
+		} else if ( e.getSource().equals( bOverlayMovementOutAssignmentsForSelection ) ) {
 			final Tr2dOutAssignmentsOverlayOnSelection overlay = new Tr2dOutAssignmentsOverlayOnSelection( model, this.currentFrame, true, false );
 			overlay.setSelectedSegmentNodes( getSelectedSegmentNodes() );
 			bdvAdd( overlay, "outgoing moves overlay" );
 
-		} else if ( e.getSource().equals( bOverlayDivisionAssignmentsForSelection ) ) {
+		} else if ( e.getSource().equals( bOverlayDivisionInAssignmentsForSelection ) ) {
+			final Tr2dInAssignmentsOverlayOnSelection overlay = new Tr2dInAssignmentsOverlayOnSelection( model, this.currentFrame, false, true );
+			overlay.setSelectedSegmentNodes( getSelectedSegmentNodes() );
+			bdvAdd( overlay, "incoming divisions overlay" );
+
+		} else if ( e.getSource().equals( bOverlayDivisionOutAssignmentsForSelection ) ) {
 			final Tr2dOutAssignmentsOverlayOnSelection overlay = new Tr2dOutAssignmentsOverlayOnSelection( model, this.currentFrame, false, true );
 			overlay.setSelectedSegmentNodes( getSelectedSegmentNodes() );
 			bdvAdd( overlay, "outgoing divisions overlay" );
@@ -1008,6 +1046,21 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	/**
 	 *
 	 */
+	private void forceCurrentSelectionToBeDividedFrom() {
+		pushCurrentStateOnUndoStack();
+		emptyRedoStack();
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+			Tr2dLog.log.info( "Forcing division from: " + segVar.toString() );
+			segProblem.forceDivisionFrom( segVar );
+		}
+	}
+
+	/**
+	 *
+	 */
 	private void forceCurrentSelectionToBeMovedTo() {
 		pushCurrentStateOnUndoStack();
 		emptyRedoStack();
@@ -1017,6 +1070,21 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
 			Tr2dLog.log.info( "Forcing move to: " + segVar.toString() );
 			segProblem.forceMoveTo( segVar );
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void forceCurrentSelectionToBeMovedFrom() {
+		pushCurrentStateOnUndoStack();
+		emptyRedoStack();
+		final Tr2dSegmentationProblem segProblem = model.getTrackingProblem().getTimepoints().get( this.currentFrame );
+		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
+			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
+			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
+			Tr2dLog.log.info( "Forcing move from: " + segVar.toString() );
+			segProblem.forceMoveFrom( segVar );
 		}
 	}
 
@@ -1136,13 +1204,20 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
     		}
 
 			// Add the tracking overlay for this time point
-			bdvRemoveAllOverlays();
-			final Tr2dTrackingOverlay overlay = new Tr2dTrackingOverlay( model, this.currentFrame );
-			bdvAdd( overlay, "tracking overlay" );
+			showTrackingOverlay();
 		} else {
 			selectionModel.clearSelection();
 			bdvRemoveAllOverlays();
 		}
+	}
+
+	/**
+	 * Shows the tracking overlay for the current time point.
+	 */
+	private void showTrackingOverlay() {
+		bdvRemoveAllOverlays();
+		final Tr2dTrackingOverlay overlay = new Tr2dTrackingOverlay( model, this.currentFrame );
+		bdvAdd( overlay, "tracking overlay" );
 	}
 
 	// --- new stuff -- need refactoring ---

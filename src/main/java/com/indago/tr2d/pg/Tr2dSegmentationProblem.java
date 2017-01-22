@@ -154,7 +154,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 
 	/**
 	 * Forces the given SegmentNode to be part of any found solution my means of
-	 * being moved to.
+	 * being moved to from the past.
 	 * This method is smart enough to avoid obvious problems by removing
 	 * conflicting constraints.
 	 *
@@ -164,12 +164,27 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		// to start: un-force all conflicting segment nodes
 		forceAndClearConflicts( segNode );
 		// add to right force-set
-		edits.getForcedSegmentNodeMoves().add( segNode );
+		edits.getForcedSegmentNodeMovesTo().add( segNode );
 	}
 
 	/**
 	 * Forces the given SegmentNode to be part of any found solution my means of
-	 * being divided to.
+	 * being moved from it into the future.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param segNode
+	 */
+	public void forceMoveFrom( final SegmentNode segNode ) {
+		// to start: un-force all conflicting segment nodes
+		forceAndClearConflicts( segNode );
+		// add to right force-set
+		edits.getForcedSegmentNodeMovesFrom().add( segNode );
+	}
+
+	/**
+	 * Forces the given SegmentNode to be part of any found solution my means of
+	 * being divided to from the past.
 	 * This method is smart enough to avoid obvious problems by removing
 	 * conflicting constraints.
 	 *
@@ -179,7 +194,22 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		// to start: un-force all conflicting segment nodes
 		forceAndClearConflicts( segNode );
 		// add to right force-set
-		edits.getForcedSegmentNodeDivisions().add( segNode );
+		edits.getForcedSegmentNodeDivisionsTo().add( segNode );
+	}
+
+	/**
+	 * Forces the given SegmentNode to be part of any found solution my means of
+	 * being divided into the future.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param segNode
+	 */
+	public void forceDivisionFrom( final SegmentNode segNode ) {
+		// to start: un-force all conflicting segment nodes
+		forceAndClearConflicts( segNode );
+		// add to right force-set
+		edits.getForcedSegmentNodeDivisionsFrom().add( segNode );
 	}
 
 	/**
@@ -216,8 +246,10 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 				for ( final LabelingSegment labelingSegment : clique ) {
 					final SegmentNode cliqueSegNode = segmentBimap.getA( labelingSegment );
 					edits.getForcedSegmentNodeAppearances().remove( cliqueSegNode );
-					edits.getForcedSegmentNodeMoves().remove( cliqueSegNode );
-					edits.getForcedSegmentNodeDivisions().remove( cliqueSegNode );
+					edits.getForcedSegmentNodeMovesTo().remove( cliqueSegNode );
+					edits.getForcedSegmentNodeDivisionsTo().remove( cliqueSegNode );
+					edits.getForcedSegmentNodeMovesFrom().remove( cliqueSegNode );
+					edits.getForcedSegmentNodeDivisionsFrom().remove( cliqueSegNode );
 				}
 			}
 		}
@@ -272,19 +304,35 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.pg.SegmentationProblem#getForcedByMoveNodes()
+	 * @see com.indago.pg.SegmentationProblem#getForcedByMoveNodesTo()
 	 */
 	@Override
-	public Set< SegmentNode > getForcedByMoveNodes() {
-		return edits.getForcedSegmentNodeMoves();
+	public Set< SegmentNode > getForcedByMoveNodesTo() {
+		return edits.getForcedSegmentNodeMovesTo();
 	}
 
 	/**
-	 * @see com.indago.pg.SegmentationProblem#getForcedByDivisionNodes()
+	 * @see com.indago.pg.SegmentationProblem#getForcedByMoveNodesFrom()
 	 */
 	@Override
-	public Set< SegmentNode > getForcedByDivisionNodes() {
-		return edits.getForcedSegmentNodeDivisions();
+	public Set< SegmentNode > getForcedByMoveNodesFrom() {
+		return edits.getForcedSegmentNodeMovesFrom();
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedByDivisionNodesTo()
+	 */
+	@Override
+	public Set< SegmentNode > getForcedByDivisionNodesTo() {
+		return edits.getForcedSegmentNodeDivisionsTo();
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedByDivisionNodesFrom()
+	 */
+	@Override
+	public Set< SegmentNode > getForcedByDivisionNodesFrom() {
+		return edits.getForcedSegmentNodeDivisionsTo();
 	}
 
 	/**
