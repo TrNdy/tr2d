@@ -92,6 +92,19 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		return ret;
 	}
 
+	public ConflictSet getConflictSetFor( final SegmentNode node ) {
+		for ( final Collection< LabelingSegment > clique : conflictGraph.getConflictGraphCliques() ) {
+			if ( clique.contains( node.getSegment() ) ) {
+				final ConflictSet cs = new ConflictSet();
+				for ( final LabelingSegment ls : clique ) {
+					cs.add( segmentBimap.getA( ls ) );
+				}
+				return cs;
+			}
+		}
+		return new ConflictSet();
+	}
+
 	public SegmentNode getSegmentVar( final LabelingSegment segment ) {
 		return segmentBimap.getA( segment );
 	}
@@ -168,6 +181,21 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
+	 * Forces that a member of the given ConflictSet will be part of any found
+	 * solution my means of finding a movement towards any member from the past.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param confSet
+	 */
+	public void forceMoveTo( final ConflictSet confSet ) {
+		// to start: un-force all conflicting segment nodes
+		forceAndClearConflicts( confSet, true, false );
+		// add to right force-set
+		edits.getForcedConflictSetMovesTo().add( confSet );
+	}
+
+	/**
 	 * Forces the given SegmentNode to be part of any found solution my means of
 	 * being moved from it into the future.
 	 * This method is smart enough to avoid obvious problems by removing
@@ -183,6 +211,22 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
+	 * Forces that a member of the given ConflictSet will be part of any found
+	 * solution my means of finding a division from any member towards the
+	 * future.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param confSet
+	 */
+	public void forceMoveFrom( final ConflictSet confSet ) {
+		// to start: un-force all conflicting segment nodes
+		forceAndClearConflicts( confSet, false, true );
+		// add to right force-set
+		edits.getForcedConflictSetMovesFrom().add( confSet );
+	}
+
+	/**
 	 * Forces the given SegmentNode to be part of any found solution my means of
 	 * being divided to from the past.
 	 * This method is smart enough to avoid obvious problems by removing
@@ -195,6 +239,37 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		forceAndClearConflicts( segNode );
 		// add to right force-set
 		edits.getForcedSegmentNodeDivisionsTo().add( segNode );
+	}
+
+	/**
+	 * Forces that a member of the given ConflictSet will be part of any found
+	 * solution my means of finding a division towards any member from the past.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param confSet
+	 */
+	public void forceDivisionTo( final ConflictSet confSet ) {
+		// to start: un-force all conflicting segment nodes
+		forceAndClearConflicts( confSet, true, false );
+		// add to right force-set
+		edits.getForcedConflictSetDivisionsTo().add( confSet );
+	}
+
+	/**
+	 * Forces that a member of the given ConflictSet will be part of any found
+	 * solution my means of finding a division from any member towards the
+	 * future.
+	 * This method is smart enough to avoid obvious problems by removing
+	 * conflicting constraints.
+	 *
+	 * @param confSet
+	 */
+	public void forceDivisionFrom( final ConflictSet confSet ) {
+		// to start: un-force all conflicting segment nodes
+		forceAndClearConflicts( confSet, false, true );
+		// add to right force-set
+		edits.getForcedConflictSetDivisionsFrom().add( confSet );
 	}
 
 	/**
@@ -256,6 +331,32 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
+	 * Forces a member <code>ConflictSet</code> to be active and removes all
+	 * individual forces of nodes in the given conflict set.
+	 *
+	 * @param confSet
+	 */
+	private void forceAndClearConflicts(
+			final ConflictSet confSet,
+			final boolean removeSegmentInAssignments,
+			final boolean removeSegmentOutAssignments ) {
+
+		for ( final SegmentNode node : confSet ) {
+			edits.getAvoidedSegmentNodes().remove( node );
+			edits.getForcedSegmentNodeAppearances().remove( node );
+
+			if ( removeSegmentInAssignments ) {
+				edits.getForcedSegmentNodeMovesTo().remove( node );
+				edits.getForcedSegmentNodeDivisionsTo().remove( node );
+			}
+			if ( removeSegmentOutAssignments ) {
+				edits.getForcedSegmentNodeMovesFrom().remove( node );
+				edits.getForcedSegmentNodeDivisionsFrom().remove( node );
+			}
+		}
+	}
+
+	/**
 	 * Avoids the given SegmentNode in any found solution.
 	 * This method is smart enough to avoid obvious problems by removing
 	 * conflicting constraints.
@@ -304,35 +405,67 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	/**
-	 * @see com.indago.pg.SegmentationProblem#getForcedByMoveNodesTo()
+	 * @see com.indago.pg.SegmentationProblem#getForcedSegmentNodeMovesTo()
 	 */
 	@Override
-	public Set< SegmentNode > getForcedByMoveNodesTo() {
+	public Set< SegmentNode > getForcedSegmentNodeMovesTo() {
 		return edits.getForcedSegmentNodeMovesTo();
 	}
 
 	/**
-	 * @see com.indago.pg.SegmentationProblem#getForcedByMoveNodesFrom()
+	 * @see com.indago.pg.SegmentationProblem#getForcedSegmentNodeMovesFrom()
 	 */
 	@Override
-	public Set< SegmentNode > getForcedByMoveNodesFrom() {
+	public Set< SegmentNode > getForcedSegmentNodeMovesFrom() {
 		return edits.getForcedSegmentNodeMovesFrom();
 	}
 
 	/**
-	 * @see com.indago.pg.SegmentationProblem#getForcedByDivisionNodesTo()
+	 * @see com.indago.pg.SegmentationProblem#getForcedSegmentNodeDivisionsTo()
 	 */
 	@Override
-	public Set< SegmentNode > getForcedByDivisionNodesTo() {
+	public Set< SegmentNode > getForcedSegmentNodeDivisionsTo() {
 		return edits.getForcedSegmentNodeDivisionsTo();
 	}
 
 	/**
-	 * @see com.indago.pg.SegmentationProblem#getForcedByDivisionNodesFrom()
+	 * @see com.indago.pg.SegmentationProblem#getForcedSegmentNodeDivisionsFrom()
 	 */
 	@Override
-	public Set< SegmentNode > getForcedByDivisionNodesFrom() {
+	public Set< SegmentNode > getForcedSegmentNodeDivisionsFrom() {
 		return edits.getForcedSegmentNodeDivisionsTo();
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedConflictSetMovesTo()
+	 */
+	@Override
+	public Set< ConflictSet > getForcedConflictSetMovesTo() {
+		return edits.getForcedConflictSetMovesTo();
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedConflictSetMovesFrom()
+	 */
+	@Override
+	public Set< ConflictSet > getForcedConflictSetMovesFrom() {
+		return edits.getForcedConflictSetMovesFrom();
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedConflictSetDivisionsTo()
+	 */
+	@Override
+	public Set< ConflictSet > getForcedConflictSetDivisionsTo() {
+		return edits.getForcedConflictSetDivisionsTo();
+	}
+
+	/**
+	 * @see com.indago.pg.SegmentationProblem#getForcedConflictSetDivisionsFrom()
+	 */
+	@Override
+	public Set< ConflictSet > getForcedConflictSetDivisionsFrom() {
+		return edits.getForcedConflictSetDivisionsFrom();
 	}
 
 	/**

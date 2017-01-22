@@ -72,6 +72,7 @@ import com.indago.demos.selectsegment.SegmentVertex;
 import com.indago.demos.selectsegment.SubsetEdge;
 import com.indago.fg.Assignment;
 import com.indago.pg.IndicatorNode;
+import com.indago.pg.segments.ConflictSet;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
@@ -1038,8 +1039,15 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			Tr2dLog.log.info( "Forcing division to: " + segVar.toString() );
-			segProblem.forceDivisionTo( segVar );
+
+			final ConflictSet confSet = segProblem.getConflictSetFor( segVar );
+			if ( isSelected( confSet ) ) {
+				Tr2dLog.log.info( "Forcing division to conflict set: " + confSet.toString() );
+				segProblem.forceDivisionTo( confSet );
+			} else {
+				Tr2dLog.log.info( "Forcing division to single node: " + segVar.toString() );
+    			segProblem.forceDivisionTo( segVar );
+			}
 		}
 	}
 
@@ -1053,8 +1061,15 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			Tr2dLog.log.info( "Forcing division from: " + segVar.toString() );
-			segProblem.forceDivisionFrom( segVar );
+
+			final ConflictSet confSet = segProblem.getConflictSetFor( segVar );
+			if ( isSelected( confSet ) ) {
+				Tr2dLog.log.info( "Forcing division from conflict set: " + confSet.toString() );
+				segProblem.forceDivisionFrom( confSet );
+			} else {
+				Tr2dLog.log.info( "Forcing division from single node: " + segVar.toString() );
+				segProblem.forceDivisionFrom( segVar );
+			}
 		}
 	}
 
@@ -1068,8 +1083,15 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			Tr2dLog.log.info( "Forcing move to: " + segVar.toString() );
-			segProblem.forceMoveTo( segVar );
+
+			final ConflictSet confSet = segProblem.getConflictSetFor( segVar );
+			if ( isSelected( confSet ) ) {
+				Tr2dLog.log.info( "Forcing move to conflict set: " + confSet.toString() );
+				segProblem.forceMoveTo( confSet );
+			} else {
+				Tr2dLog.log.info( "Forcing move to single node: " + segVar.toString() );
+				segProblem.forceMoveTo( segVar );
+			}
 		}
 	}
 
@@ -1083,8 +1105,15 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		for ( final SegmentVertex selectedSegmentVertex : selectionModel.getSelectedVertices() ) {
 			final LabelingSegment labelingSegment = selectedSegmentVertex.getLabelData().getSegment();
 			final SegmentNode segVar = segProblem.getSegmentVar( labelingSegment );
-			Tr2dLog.log.info( "Forcing move from: " + segVar.toString() );
-			segProblem.forceMoveFrom( segVar );
+
+			final ConflictSet confSet = segProblem.getConflictSetFor( segVar );
+			if ( isSelected( confSet ) ) {
+				Tr2dLog.log.info( "Forcing move from conflict set: " + confSet.toString() );
+				segProblem.forceMoveFrom( confSet );
+			} else {
+				Tr2dLog.log.info( "Forcing move from single node: " + segVar.toString() );
+				segProblem.forceMoveFrom( segVar );
+			}
 		}
 	}
 
@@ -1116,6 +1145,18 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			Tr2dLog.log.info( "Forcing appearance of: " + segVar.toString() );
 			segProblem.forceAppearance( segVar );
 		}
+	}
+
+	/**
+	 * @param conflictSet
+	 * @return true, iff all nodes in the given conflict set are currently
+	 *         selected
+	 */
+	private boolean isSelected( final ConflictSet conflictSet ) {
+		for ( final SegmentNode node : conflictSet ) {
+			if ( !selectionModel.isSelected( mapLabelingSegment2SegmentVertex.get( node.getSegment() ) ) ) { return false; }
+		}
+		return true;
 	}
 
 	/**
