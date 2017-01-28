@@ -144,10 +144,12 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 	 * @param g
 	 */
 	private void drawCOMs( final Graphics2D g, final int cur_t ) {
-		g.setColor( Color.RED );
+		final Color theRegularColor = Color.RED.darker();
+		final Color theForcedColor = Color.RED.brighter();
+		final Color theAvoidedColor = Color.GRAY.brighter().brighter();
+
 		final Graphics2D g2 = g;
-		g2.setStroke( new BasicStroke( ( float ) 2.5 ) );
-		final int len = 3;
+		int len = 3;
 
 		final Tr2dTrackingProblem tr2dPG = trackingModel.getTrackingProblem();
 		final Assignment< IndicatorNode > pgSolution = trackingModel.getSolution();
@@ -156,14 +158,30 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		getCurrentTransform2D( trans );
 		final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( cur_t );
 		for ( final SegmentNode segvar : tp0.getSegments() ) {
-			if ( pgSolution.getAssignment( segvar ) == 1 ) {
+			if ( pgSolution.getAssignment( segvar ) == 1 || tp0.getEditState().isAvoided( segvar ) ) {
 				final RealLocalizable com = segvar.getSegment().getCenterOfMass();
 				final double[] lpos = new double[ 2 ];
 				final double[] gpos = new double[ 2 ];
 				com.localize( lpos );
 				trans.apply( lpos, gpos );
-				g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] + len );
-				g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] + len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] - len );
+
+				if ( tp0.getEditState().isForced( segvar ) ) {
+					g.setColor( theForcedColor );
+					g2.setStroke( new BasicStroke( ( float ) 3.5 ) );
+					len = 8;
+					g.drawOval( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, len * 2, len * 2 );
+				} else if ( tp0.getEditState().isAvoided( segvar ) ) {
+					g.setColor( theAvoidedColor );
+					g2.setStroke( new BasicStroke( 4 ) );
+					len = 8;
+					g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] + len );
+					g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] + len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] - len );
+				} else {
+					g.setColor( theRegularColor );
+					g2.setStroke( new BasicStroke( ( float ) 2.0 ) );
+					len = 4;
+					g.drawOval( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, len * 2, len * 2 );
+				}
 			}
 		}
 	}

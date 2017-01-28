@@ -110,4 +110,20 @@ public class EditState {
 				avoidedSegmentNodes.size() );
 	}
 
+	/**
+	 * @param segvar
+	 * @return true, iff the given segvar represents an avoided segment
+	 */
+	public boolean isAvoided( final SegmentNode segvar ) {
+		return avoidedSegmentNodes.contains( segvar );
+	}
+
+	/**
+	 * @param segvar
+	 * @return true, iff the given segvar represents a forced segment
+	 */
+	public boolean isForced( final SegmentNode segvar ) {
+		return forcedSegmentNodes.contains( segvar );
+	}
+
 }
