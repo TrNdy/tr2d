@@ -111,19 +111,71 @@ public class EditState {
 	}
 
 	/**
-	 * @param segvar
-	 * @return true, iff the given segvar represents an avoided segment
+	 * @param segnode
+	 * @return true, iff the given segnode represents an avoided segment
 	 */
-	public boolean isAvoided( final SegmentNode segvar ) {
-		return avoidedSegmentNodes.contains( segvar );
+	public boolean isAvoided( final SegmentNode segnode ) {
+		return avoidedSegmentNodes.contains( segnode );
 	}
 
 	/**
-	 * @param segvar
-	 * @return true, iff the given segvar represents a forced segment
+	 * @param segnode
+	 * @return true, iff the given segnode represents a forced segment
 	 */
-	public boolean isForced( final SegmentNode segvar ) {
-		return forcedSegmentNodes.contains( segvar );
+	public boolean isForced( final SegmentNode segnode ) {
+		return forcedSegmentNodes.contains( segnode );
+	}
+
+	/**
+	 * @param segnode
+	 * @return true, iff the given segnode has movement forced towards it
+	 *         or from a conflict set force it is contained in
+	 */
+	public boolean isMoveForcedTo( final SegmentNode segnode ) {
+		boolean ret = forcedSegmentNodeMovesTo.contains( segnode );
+		for ( final ConflictSet confset : getForcedConflictSetMovesTo() ) {
+			ret |= confset.contains( segnode );
+		}
+		return ret;
+	}
+
+	/**
+	 * @param segnode
+	 * @return true, iff the given segnode has movement forced away from it
+	 *         or from a conflict set force it is contained in (towards future)
+	 */
+	public boolean isMoveForcedFrom( final SegmentNode segnode ) {
+		boolean ret = forcedSegmentNodeMovesFrom.contains( segnode );
+		for ( final ConflictSet confset : getForcedConflictSetMovesFrom() ) {
+			ret |= confset.contains( segnode );
+		}
+		return ret;
+	}
+
+	/**
+	 * @param segnode
+	 * @return true, iff the given segnode has division forced towards it
+	 *         or from a conflict set force it is contained in
+	 */
+	public boolean isDivisionForcedTo( final SegmentNode segnode ) {
+		boolean ret = forcedSegmentNodeDivisionsTo.contains( segnode );
+		for ( final ConflictSet confset : getForcedConflictSetDivisionsTo() ) {
+			ret |= confset.contains( segnode );
+		}
+		return ret;
+	}
+
+	/**
+	 * @param segnode
+	 * @return true, iff the given segnode has division forced away from it
+	 *         or from a conflict set force it is contained in (towards future)
+	 */
+	public boolean isDivisionForcedFrom( final SegmentNode segnode ) {
+		boolean ret = forcedSegmentNodeDivisionsFrom.contains( segnode );
+		for ( final ConflictSet confset : getForcedConflictSetDivisionsFrom() ) {
+			ret |= confset.contains( segnode );
+		}
+		return ret;
 	}
 
 }

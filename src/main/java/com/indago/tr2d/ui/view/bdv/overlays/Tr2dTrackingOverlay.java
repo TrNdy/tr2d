@@ -72,17 +72,17 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 
 		final AffineTransform2D trans = new AffineTransform2D();
 		getCurrentTransform2D( trans );
-		final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( cur_t );
-		for ( final SegmentNode segvar : tp0.getSegments() ) {
+		final Tr2dSegmentationProblem tp1 = tr2dPG.getTimepoints().get( cur_t );
+		for ( final SegmentNode segvar : tp1.getSegments() ) {
 			if ( pgSolution.getAssignment( segvar ) == 1 ) {
 				for ( final MovementHypothesis move : segvar.getInAssignments().getMoves() ) {
 					if ( pgSolution.getAssignment( move ) == 1 ) {
-						drawCOMTailSegment( g, trans, move.getSrc(), segvar, Color.GREEN, 0, length );
+						drawCOMTailSegment( g, trans, cur_t - 1, move.getSrc(), segvar, Color.GREEN, 0, length );
 					}
 				}
 				for ( final DivisionHypothesis div : segvar.getInAssignments().getDivisions() ) {
 					if ( pgSolution.getAssignment( div ) == 1 ) {
-						drawCOMTailSegment( g, trans, div.getSrc(), segvar, Color.ORANGE, 0, length );
+						drawCOMTailSegment( g, trans, cur_t - 1, div.getSrc(), segvar, Color.ORANGE, 0, length );
 					}
 				}
 			}
@@ -92,26 +92,30 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 	/**
 	 * @param g
 	 * @param trans
+	 * @param from_t
 	 * @param from
 	 * @param to
+	 * @param color
 	 * @param i
+	 * @param length
 	 */
 	private void drawCOMTailSegment(
 			final Graphics2D g,
 			final AffineTransform2D trans,
+			final int from_t,
 			final SegmentNode from,
 			final SegmentNode to,
 			final Color color,
 			final int i,
 			final int length ) {
 
-		g.setColor( color );
-
 		final Graphics2D g2 = g;
 		g2.setStroke( new BasicStroke( 3 * ( ( length - i ) / ( ( float ) length ) ) ) );
 
 		final Assignment< IndicatorNode > pgSolution = trackingModel.getSolution();
 
+		final Tr2dSegmentationProblem tp0 = trackingModel.getTrackingProblem().getTimepoints().get( from_t );
+		final Tr2dSegmentationProblem tp1 = trackingModel.getTrackingProblem().getTimepoints().get( from_t + 1 );
 		final RealLocalizable comFrom = from.getSegment().getCenterOfMass();
 		final double[] lposFrom = new double[ 2 ];
 		final double[] gposFrom = new double[ 2 ];
@@ -124,17 +128,26 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		comTo.localize( lposTo );
 		trans.apply( lposTo, gposTo );
 
-		g.drawLine( ( int ) gposFrom[ 0 ], ( int ) gposFrom[ 1 ], ( int ) gposTo[ 0 ], ( int ) gposTo[ 1 ] );
+		if ( tp0.getEditState().isMoveForcedFrom( from ) ||
+			 tp1.getEditState().isMoveForcedTo( to ) ||
+		  	 tp0.getEditState().isDivisionForcedFrom( from ) ||
+			 tp1.getEditState().isDivisionForcedTo( to )	) {
+			g.setColor( Color.CYAN );
+			g.drawLine( ( int ) gposFrom[ 0 ], ( int ) gposFrom[ 1 ], ( int ) gposTo[ 0 ], ( int ) gposTo[ 1 ] );
+		} else {
+			g.setColor( color );
+			g.drawLine( ( int ) gposFrom[ 0 ], ( int ) gposFrom[ 1 ], ( int ) gposTo[ 0 ], ( int ) gposTo[ 1 ] );
+		}
 
-		if ( i < length ) {
-			for ( final MovementHypothesis move : to.getInAssignments().getMoves() ) {
+		if ( from_t > 0 && i < length ) {
+			for ( final MovementHypothesis move : from.getInAssignments().getMoves() ) {
 				if ( pgSolution.getAssignment( move ) == 1 ) {
-					drawCOMTailSegment( g, trans, to, move.getSrc(), Color.GREEN, i + 1, length );
+					drawCOMTailSegment( g, trans, from_t - 1, move.getSrc(), from, Color.GREEN, i + 1, length );
 				}
 			}
-			for ( final DivisionHypothesis div : to.getInAssignments().getDivisions() ) {
+			for ( final DivisionHypothesis div : from.getInAssignments().getDivisions() ) {
 				if ( pgSolution.getAssignment( div ) == 1 ) {
-					drawCOMTailSegment( g, trans, to, div.getSrc(), Color.ORANGE, i + 1, length );
+					drawCOMTailSegment( g, trans, from_t - 1, div.getSrc(), from, Color.ORANGE, i + 1, length );
 				}
 			}
 		}
