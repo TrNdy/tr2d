@@ -24,6 +24,7 @@ import com.indago.io.ProjectFolder;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 
+import indago.ui.progress.ProgressListener;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccessibleInterval;
@@ -190,8 +191,15 @@ public class LabelingTimeLapse {
 
 	/**
 	 * @param folder
+	 * @param progressListeners
+	 *            please do not hand <code>null</code>. Empty lists are fine
+	 *            though.
 	 */
-	public void saveTo( final ProjectFolder folder ) {
+	public void saveTo( final ProjectFolder folder, final List< ProgressListener > progressListeners ) {
+		for ( final ProgressListener progressListener : progressListeners ) {
+			progressListener.resetProgress( "Saving segment hypotheses labelings...", frameLabelingBuilders.size() );
+		}
+
 		final String fnPrefix = "labeling_frame";
 		int i = 0;
 		for ( final LabelingBuilder lb : frameLabelingBuilders ) {
@@ -203,7 +211,11 @@ public class LabelingTimeLapse {
 				Tr2dLog.log.error( String.format( "Could not store labeling_frame%04d.* to project folder!", i ) );
 //				e.printStackTrace();
 			}
+
 			i++;
+			for ( final ProgressListener progressListener : progressListeners ) {
+				progressListener.hasProgressed();
+			}
 		}
 	}
 

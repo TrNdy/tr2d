@@ -47,6 +47,8 @@ import bdv.util.BdvOverlay;
 import bdv.util.BdvSource;
 import gurobi.GRBException;
 import ij.IJ;
+import indago.ui.progress.DialogProgress;
+import indago.ui.progress.ProgressListener;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
@@ -96,6 +98,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private final List< SolutionChangedListener > solChangedListeners;
 	private final List< ModelInfeasibleListener > modelInfeasibleListeners;
+
+	private final List< ProgressListener > progressListeners = new ArrayList<>();
 
 	/**
 	 * @param model
@@ -231,16 +235,24 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		}
 
 		if (doSolving) {
+			fireNextProgressPhaseEvent( "Solving tracking with GUROBI...", 3 );
+			fireProgressEvent();
     		solveFactorGraph();
+			fireProgressEvent();
 			imgSolution = SolutionVisulizer.drawSolutionSegmentImages( this, pgSolution );
     		saveSolution();
 			fireSolutionChangedEvent();
+			fireProgressEvent();
 		}
+
+		fireProgressCompletedEvent();
 	}
 
 	/**
 	 * (Re)runs the trackins problem in a thread of it's own.
 	 * Additionally also takes care of the BDV.
+	 *
+	 * @param progress
 	 */
 	public Thread runInThread( final boolean forceResolve ) {
 		return this.runInThread( forceResolve, false );
@@ -314,7 +326,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				JOptionPane.showMessageDialog( Tr2dContext.guiFrame, msg, "No segmentation found...", JOptionPane.ERROR_MESSAGE );
 				return false;
 			}
-			labelingFrames.saveTo( hypothesesFolder );
+			labelingFrames.saveTo( hypothesesFolder, progressListeners );
 		}
 		return true;
 	}
@@ -333,6 +345,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 						divisionCosts,
 						disappearanceCosts );
 
+		fireNextProgressPhaseEvent( "Building tracking problem (PG)...", labelingFrames.getNumFrames() );
 		for ( int frameId = 0; frameId < labelingFrames.getNumFrames(); frameId++ ) {
 			Tr2dLog.log.info(
 					String.format( "Working on frame %d of %d...", frameId + 1, labelingFrames.getNumFrames() ) );
@@ -355,6 +368,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			tictoc.tic( "Connect it to Tr2dTrackingProblem..." );
 			tr2dTraProblem.addSegmentationProblem( segmentationProblem );
 			tictoc.toc( "done!" );
+
+			fireProgressEvent();
 		}
 		tr2dTraProblem.addDummyDisappearance();
 
@@ -367,7 +382,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void buildFactorGraph() {
 		final TicToc tictoc = new TicToc();
 		tictoc.tic( "Constructing FactorGraph for created Tr2dTrackingProblem..." );
-		mfg = FactorGraphFactory.createFactorGraph( tr2dTraProblem );
+		mfg = FactorGraphFactory.createFactorGraph( tr2dTraProblem, progressListeners );
 		tictoc.toc( "done!" );
 	}
 
@@ -571,5 +586,62 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public MappedFactorGraph getMappedFactorGraph() {
 		return mfg;
+	}
+
+	/**
+	 * @param progressListener
+	 */
+	public void addProgressListener( final ProgressListener progressListener ) {
+		this.progressListeners.add( progressListener );
+	}
+
+	/**
+	 * @param maxProgress
+	 */
+	public void setTotalProgressSteps( final int maxProgress ) {
+		for ( final ProgressListener progressListener : this.progressListeners ) {
+			progressListener.setTotalProgressSteps( maxProgress );
+		}
+	}
+
+	/**
+	 *
+	 */
+	public void fireProgressEvent() {
+		for ( final ProgressListener progressListener : this.progressListeners ) {
+			progressListener.hasProgressed();
+		}
+	}
+
+	/**
+	 * @param newMessage
+	 */
+	public void fireProgressEvent( final String newMessage ) {
+		for ( final ProgressListener progressListener : this.progressListeners ) {
+			progressListener.hasProgressed( newMessage );
+		}
+	}
+
+	/**
+	 * @param newMessage
+	 * @param maxProgress
+	 */
+	public void fireNextProgressPhaseEvent( final String newMessage, final int maxProgress ) {
+		for ( final ProgressListener progressListener : this.progressListeners ) {
+			progressListener.resetProgress( newMessage, maxProgress );
+		}
+	}
+
+	public void fireProgressCompletedEvent() {
+		for ( final ProgressListener progressListener : this.progressListeners ) {
+			progressListener.hasCompleted();
+		}
+	}
+
+	/**
+	 * @param progress
+	 */
+	public void removeProgressListener( final DialogProgress progress ) {
+		this.progressListeners.remove( progress );
 	}
 }

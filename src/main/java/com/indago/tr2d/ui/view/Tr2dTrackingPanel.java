@@ -21,6 +21,7 @@ import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 
 import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;
+import indago.ui.progress.DialogProgress;
 import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
 
@@ -40,6 +41,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 
 	private Tr2dFrameEditPanel frameEditPanel;
 
+	private DialogProgress trackingProgressDialog;
+
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
 		this.model = trackingModel;
@@ -52,6 +55,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		}
 		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay_tracking" );
 		model.bdvAdd( new Tr2dFlowOverlay( model.getTr2dModel().getFlowModel() ), "overlay_flow", false );
+
+		trackingProgressDialog = null;
 	}
 
 	/**
@@ -111,14 +116,26 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
+		if ( trackingProgressDialog == null ) {
+			trackingProgressDialog = new DialogProgress( this, "Starting tracking...", 10 );
+			model.addProgressListener( trackingProgressDialog );
+		}
+
 		if ( e.getSource().equals( bRun ) ) {
 			model.runInThread( false );
 		} else if ( e.getSource().equals( bRestart ) ) {
 			this.frameEditPanel.emptyUndoRedoStacks();
 			model.runInThread( true, true );
 		} else if ( e.getSource().equals( bRefetch ) ) {
-			model.reset();
-			model.runInThread( true );
+			final Thread t = new Thread( new Runnable() {
+
+				@Override
+				public void run() {
+					model.reset();
+					model.runInThread( true );
+				}
+			} );
+			t.start();
 		}
 	}
 }
