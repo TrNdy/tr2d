@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>sc.fiji</groupId>
 		<artifactId>pom-indago</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.3-SNAPSHOT</version>
 	</parent>
  
  	<properties>
@@ -48,6 +48,10 @@
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>Indago</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.indago</groupId>
+			<artifactId>ui-elements</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.indago</groupId>
@@ -149,7 +153,8 @@
 			<organization>MPI-CBG</organization>
 			<organizationUrl>http://www.mpi-cbg.de/</organizationUrl>
 			<roles>
-				<role>postdoc</role>
+				<role>architect</role>
+				<role>developer</role>
 			</roles>
 			<timezone>+1</timezone>
 		</developer>
