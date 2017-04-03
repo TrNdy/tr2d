@@ -96,13 +96,6 @@
 			<artifactId>AppleJavaExtensions</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>gurobi.com</groupId>
-			<artifactId>gurobi.jar</artifactId>
-			<version>6.5.0</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/gurobi.jar</systemPath>
-		</dependency>
-		<dependency>
 			<groupId>nz.ac.waikato.cms.weka</groupId>
 			<artifactId>weka-dev</artifactId>
 		</dependency>		
@@ -143,6 +136,29 @@
 		</plugins>
 	</build>
  -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.googlecode.addjars-maven-plugin</groupId>
+				<artifactId>addjars-maven-plugin</artifactId>
+				<version>1.0.5</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>add-jars</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>${basedir}/lib</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin> 
+		</plugins>
+	</build>
  
 	<developers>
 		<developer>
