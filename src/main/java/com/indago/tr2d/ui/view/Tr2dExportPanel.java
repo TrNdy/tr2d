@@ -90,7 +90,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	/**
 	 * @param projectFolderBasePath
 	 */
-	private void schnitzcellExport( final File projectFolderBasePath ) {
+	public void schnitzcellExport( final File projectFolderBasePath ) {
 		final File objects = new File( projectFolderBasePath, "tr2d_objects.csv" );
 		final File tracks = new File( projectFolderBasePath, "tr2d_tracks.csv" );
 

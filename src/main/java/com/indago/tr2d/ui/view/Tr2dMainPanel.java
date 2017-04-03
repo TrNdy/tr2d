@@ -52,7 +52,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	private JPanel tabSegmentation;
 	private JPanel tabFlow;
 	private JPanel tabTracking;
-	private JPanel tabExport;
+	private Tr2dExportPanel tabExport;
 
 	private BdvHandlePanel bdvData;
 
@@ -200,4 +200,6 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	public LoggingPanel getLogPanel() {
 		return logPanel;
 	}
+
+	public Tr2dExportPanel getExportPanel() { return tabExport; }
 }
