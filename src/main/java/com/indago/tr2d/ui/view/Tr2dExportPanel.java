@@ -150,8 +150,6 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 			final Date now = new Date();
 			final String strNow = sdfDate.format( now );
 
-			final SolutionExporter exp = new SolutionExporter( model.getTrackingModel(), model.getTrackingModel().getSolution() );
-
 			final BufferedWriter problemWriter = new BufferedWriter( new FileWriter( exportFile ) );
 			problemWriter.write( "# Tr2d problem export from " + strNow + "\n" );
 
@@ -369,8 +367,15 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	 * @param projectFolderBasePath
 	 */
 	private void trackingProblemILPExport( final File projectFolderBasePath ) {
-		// TODO Auto-generated method stub
+		final File exportFile = new File( projectFolderBasePath, "tr2d_problem.lp" );
 
+		try {
+			model.getTrackingModel().getSolver().saveLatestModel( exportFile.getAbsolutePath() );
+		} catch ( final NullPointerException e ) {
+			JOptionPane
+					.showMessageDialog( this, "Cannot write LP to file.", "Gurobi Model Error", JOptionPane.ERROR_MESSAGE );
+			e.printStackTrace();
+		}
 	}
 
 	/**
