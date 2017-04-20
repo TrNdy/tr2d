@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.pg.TrackingProblem;
@@ -233,9 +235,11 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	 * @param file
 	 */
 	public void saveToFile( final File file ) throws IOException {
-		for ( final Tr2dSegmentationProblem segProblem : timepoints ) {
-
-		}
+//		for ( final Tr2dSegmentationProblem segProblem : timepoints ) {
+//
+//		}
+		//TODO implement! :)
+		throw new NotImplementedException();
 	}
 
 }
