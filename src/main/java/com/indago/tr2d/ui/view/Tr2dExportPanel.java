@@ -43,6 +43,7 @@ import com.indago.tr2d.ui.util.UniversalFileChooser;
 import com.indago.util.Bimap;
 
 import net.imglib2.Cursor;
+import net.imglib2.util.ValuePair;
 import net.miginfocom.swing.MigLayout;
 
 
@@ -140,9 +141,9 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	private void trackingProblemExport( final File projectFolderBasePath ) {
 		final File exportFile = new File( projectFolderBasePath, "tr2d_problem.jug" );
 
-		final Map< SegmentNode, Integer > mapSeg2Id = new HashMap<>();
+		final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id = new HashMap<>();
 		int next_segment_id = -1;
-		final Map< AssignmentNode, Integer > mapAss2Id = new HashMap<>();
+		final Map< AssignmentNode, ValuePair< Integer, Integer > > mapAss2Id = new HashMap<>();
 		int next_assignment_id = -1;
 
 		try {
@@ -157,40 +158,42 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 			problemWriter.write( "\n# === SEGMENT HYPOTHESES =================================================\n" );
 			for ( final Tr2dSegmentationProblem t : timePoints ) {
-				problemWriter.write( String.format( "\nt=%d\n", t.getTime() ) );
+				next_segment_id = -1;
+				problemWriter.write( String.format( "\n# t=%d\n", t.getTime() ) );
 
 				// write all segment hypotheses
 				final Collection< SegmentNode > segments = t.getSegments();
 				for ( final SegmentNode segment : segments ) {
-					mapSeg2Id.put( segment, ++next_segment_id );
-					writeSegmentLine( segment, next_segment_id, problemWriter );
+					mapSeg2Id.put( segment, new ValuePair< Integer, Integer >( t.getTime(), ++next_segment_id ) );
+					writeSegmentLine( t.getTime(), segment, next_segment_id, problemWriter );
 				}
 			}
 
 			problemWriter.write( "\n# === ASSIGNMNETS ========================================================\n\n" );
 			for ( final Tr2dSegmentationProblem t : timePoints ) {
+				next_assignment_id = -1;
 				final Collection< SegmentNode > segments = t.getSegments();
 				// for each segmetn hyp, write all assignments
 				for ( final SegmentNode segment : segments ) {
 
 					final Collection< AppearanceHypothesis > apps = segment.getInAssignments().getAppearances();
 					for ( final AppearanceHypothesis app : apps ) {
-						mapAss2Id.put( app, ++next_assignment_id );
+						mapAss2Id.put( app, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
 						writeAppearanceLine( app, next_assignment_id, mapSeg2Id, problemWriter );
 					}
 					final Collection< DisappearanceHypothesis > disapps = segment.getOutAssignments().getDisappearances();
 					for ( final DisappearanceHypothesis disapp : disapps ) {
-						mapAss2Id.put( disapp, ++next_assignment_id );
+						mapAss2Id.put( disapp, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
 						writeDisappearanceLine( disapp, next_assignment_id, mapSeg2Id, problemWriter );
 					}
 					final Collection< MovementHypothesis > moves = segment.getOutAssignments().getMoves();
 					for ( final MovementHypothesis move : moves ) {
-						mapAss2Id.put( move, ++next_assignment_id );
+						mapAss2Id.put( move, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
 						writeMovementLine( move, next_assignment_id, mapSeg2Id, problemWriter );
 					}
 					final Collection< DivisionHypothesis > divs = segment.getOutAssignments().getDivisions();
 					for ( final DivisionHypothesis div : divs ) {
-						mapAss2Id.put( div, ++next_assignment_id );
+						mapAss2Id.put( div, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
 						writeDivisionLine( div, next_assignment_id, mapSeg2Id, problemWriter );
 					}
 					problemWriter.write( "\n" );
@@ -200,46 +203,48 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 			problemWriter.write( "# === CONSTRAINTS ========================================================\n\n" );
 			for ( final Tr2dSegmentationProblem t : timePoints ) {
 				for ( final ConflictSet cs : t.getConflictSets() ) {
-					final List< Integer > ids = new ArrayList<>();
+					final List< ValuePair< Integer, Integer > > timeAndIdPairs = new ArrayList<>();
 					final Iterator< SegmentNode > it = cs.iterator();
 					while ( it.hasNext() ) {
 						final SegmentNode segnode = it.next();
-						final Integer id = mapSeg2Id.get( segnode );
-						if ( id == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
-						ids.add( id );
+						final ValuePair< Integer, Integer > timeAndId = mapSeg2Id.get( segnode );
+						if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
+						timeAndIdPairs.add( timeAndId );
 					}
 					// CONFSET <t> <ids...>
 					problemWriter.write( String.format( "CONFSET %d ", t.getTime() ) );
-					for ( final int id : ids ) {
-						problemWriter.write( String.format( "%d ", id ) );
+					for ( final ValuePair< Integer, Integer > timeAndId : timeAndIdPairs ) {
+						problemWriter.write( String.format( "%3d %4d ", timeAndId.a, timeAndId.b ) );
 					}
 					problemWriter.write( "\n" );
 
 					final Collection< SegmentNode > segments = t.getSegments();
 					for ( final SegmentNode segment : segments ) {
-						final List< Integer > leftids = new ArrayList<>();
+						final List< ValuePair< Integer, Integer > > leftSegs = new ArrayList<>();
 						for ( final AssignmentNode ass : segment.getInAssignments().getAllAssignments() ) {
-							final Integer id = mapAss2Id.get( ass );
-							if ( id == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
-							leftids.add( id );
+							final ValuePair< Integer, Integer > timeAndId = mapAss2Id.get( ass );
+							if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
+							leftSegs.add( timeAndId );
 						}
-						// CONT <t> <seg_id> <left_ass_ids...>
-						problemWriter.write( String.format( "CONT %d %d ", t.getTime(), mapSeg2Id.get( segment ) ) );
-						for ( final int id : leftids ) {
-							problemWriter.write( String.format( "%d ", id ) );
+						final ValuePair< Integer, Integer > segTimeAndId = mapSeg2Id.get( segment );
+
+						// CONT <time> <seg_id> <left_ass_ids as (time, id) pairs...>
+						problemWriter.write( String.format( "CONT    %3d %4d ", segTimeAndId.a, segTimeAndId.b ) );
+						for ( final ValuePair< Integer, Integer > leftTimeAndId : leftSegs ) {
+							problemWriter.write( String.format( "%3d %4d", leftTimeAndId.a, leftTimeAndId.b ) );
 						}
 						problemWriter.write( "\n" );
 
-						final List< Integer > rightids = new ArrayList<>();
+						final List< ValuePair< Integer, Integer > > rightSegs = new ArrayList<>();
 						for ( final AssignmentNode ass : segment.getOutAssignments().getAllAssignments() ) {
-							final Integer id = mapAss2Id.get( ass );
-							if ( id == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
-							rightids.add( id );
+							final ValuePair< Integer, Integer > timeAndId = mapAss2Id.get( ass );
+							if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
+							rightSegs.add( timeAndId );
 						}
-						// CONT <t> <seg_id> <right_ass_ids...>
-						problemWriter.write( String.format( "CONT %d %d ", t.getTime(), mapSeg2Id.get( segment ) ) );
-						for ( final int id : rightids ) {
-							problemWriter.write( String.format( "%d ", id ) );
+						// CONT <time> <seg_id> <right_ass_ids as (time, id) pairs...>
+						problemWriter.write( String.format( "CONT    %3d %4d ", segTimeAndId.a, segTimeAndId.b ) );
+						for ( final ValuePair< Integer, Integer > rightTimeAndId : rightSegs ) {
+							problemWriter.write( String.format( "%3d %4d", rightTimeAndId.a, rightTimeAndId.b ) );
 						}
 						problemWriter.write( "\n" );
 					}
@@ -256,16 +261,18 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	}
 
 	/**
+	 * @param t
 	 * @param segment
 	 * @param id
 	 * @param writer
 	 * @throws IOException
 	 */
-	private void writeSegmentLine( final SegmentNode segment, final int id, final BufferedWriter writer ) throws IOException {
+	private void writeSegmentLine( final int t, final SegmentNode segment, final int id, final BufferedWriter writer ) throws IOException {
 		// H <id> <cost> <com_x_pos> <com_y_pos>
 		writer.write(
 				String.format(
-						"H %d %.16f (%.1f,%.1f)\n",
+						"H %3d %4d %.16f (%.1f,%.1f)\n",
+						t,
 						id,
 						segment.getCost(),
 						segment.getSegment().getCenterOfMass().getFloatPosition( 0 ),
@@ -282,15 +289,17 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	private void writeAppearanceLine(
 			final AppearanceHypothesis app,
 			final int next_assignment_id,
-			final Map< SegmentNode, Integer > mapSeg2Id,
+			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
-		// APP <ass_id> <segment_id> <cost>
+		// APP <ass_id> <time> <segment_id> <cost>
+		final ValuePair< Integer, Integer > timeAndId = mapSeg2Id.get( app.getDest() );
 		writer.write(
 				String.format(
-						"APP %d %d %.16f\n",
+						"APP     %4d %3d %4d %.16f\n",
 						next_assignment_id,
-						mapSeg2Id.get( app.getDest() ),
+						timeAndId.a,
+						timeAndId.b,
 						app.getCost() ) );
 	}
 
@@ -304,15 +313,17 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	private void writeDisappearanceLine(
 			final DisappearanceHypothesis disapp,
 			final int next_assignment_id,
-			final Map< SegmentNode, Integer > mapSeg2Id,
+			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
-		// DISAPP <ass_id> <segment_id> <cost>
+		// DISAPP <ass_id> <time> <segment_id> <cost>
+		final ValuePair< Integer, Integer > timeAndId = mapSeg2Id.get( disapp.getSrc() );
 		writer.write(
 				String.format(
-						"DISAPP %d %d %.16f\n",
+						"DISAPP  %4d %3d %4d %.16f\n",
 						next_assignment_id,
-						mapSeg2Id.get( disapp.getSrc() ),
+						timeAndId.a,
+						timeAndId.b,
 						disapp.getCost() ) );
 	}
 
@@ -326,16 +337,20 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	private void writeMovementLine(
 			final MovementHypothesis move,
 			final int next_assignment_id,
-			final Map< SegmentNode, Integer > mapSeg2Id,
+			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
-		// MOVE <ass_id> <source_segment_id> <dest_segment_id> <cost>
+		// MOVE <ass_id> <source_time> <source_segment_id> <dest_time> <dest_segment_id> <cost>
+		final ValuePair< Integer, Integer > timeAndId4Src = mapSeg2Id.get( move.getSrc() );
+		final ValuePair< Integer, Integer > timeAndId4Dest = mapSeg2Id.get( move.getDest() );
 		writer.write(
 				String.format(
-						"MOVE %d %d %d %.16f\n",
+						"MOVE    %4d %3d %4d %3d %4d %.16f\n",
 						next_assignment_id,
-						mapSeg2Id.get( move.getSrc() ),
-						mapSeg2Id.get( move.getDest() ),
+						timeAndId4Src.a,
+						timeAndId4Src.b,
+						timeAndId4Dest.a,
+						timeAndId4Dest.b,
 						move.getCost() ) );
 	}
 
@@ -349,17 +364,23 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	private void writeDivisionLine(
 			final DivisionHypothesis div,
 			final int next_assignment_id,
-			final Map< SegmentNode, Integer > mapSeg2Id,
+			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
 		// MOVE <ass_id> <source_segment_id> <dest1_segment_id> <dest2_segment_id> <cost>
+		final ValuePair< Integer, Integer > timeAndId4Src = mapSeg2Id.get( div.getSrc() );
+		final ValuePair< Integer, Integer > timeAndId4Dest1 = mapSeg2Id.get( div.getDest1() );
+		final ValuePair< Integer, Integer > timeAndId4Dest2 = mapSeg2Id.get( div.getDest2() );
 		writer.write(
 				String.format(
-						"DIV %d %d %d %d %.16f\n",
+						"DIV     %4d %3d %4d %3d %4d %3d %4d %.16f\n",
 						next_assignment_id,
-						mapSeg2Id.get( div.getSrc() ),
-						mapSeg2Id.get( div.getDest1() ),
-						mapSeg2Id.get( div.getDest2() ),
+						timeAndId4Src.a,
+						timeAndId4Src.b,
+						timeAndId4Dest1.a,
+						timeAndId4Dest1.b,
+						timeAndId4Dest2.a,
+						timeAndId4Dest2.b,
 						div.getCost() ) );
 	}
 
