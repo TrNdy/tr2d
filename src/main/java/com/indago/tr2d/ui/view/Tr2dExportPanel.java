@@ -139,6 +139,8 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	 * @param projectFolderBasePath
 	 */
 	private void trackingProblemExport( final File projectFolderBasePath ) {
+		final boolean export_continuation_constraints = false; // currently not desired (agreement with Paul)
+
 		final File exportFile = new File( projectFolderBasePath, "tr2d_problem.jug" );
 
 		final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id = new HashMap<>();
@@ -211,42 +213,51 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
 						timeAndIdPairs.add( timeAndId );
 					}
-					// CONFSET <t> <ids...>
-					problemWriter.write( String.format( "CONFSET %d ", t.getTime() ) );
+					// CONFSET <t id...>
+					problemWriter.write( "CONFSET " );
+					boolean first = true;
 					for ( final ValuePair< Integer, Integer > timeAndId : timeAndIdPairs ) {
+						if ( !first ) problemWriter.write( " + " );
 						problemWriter.write( String.format( "%3d %4d ", timeAndId.a, timeAndId.b ) );
+						first = false;
 					}
-					problemWriter.write( "\n" );
+					problemWriter.write( " <= 1\n" );
 
-					final Collection< SegmentNode > segments = t.getSegments();
-					for ( final SegmentNode segment : segments ) {
-						final List< ValuePair< Integer, Integer > > leftSegs = new ArrayList<>();
-						for ( final AssignmentNode ass : segment.getInAssignments().getAllAssignments() ) {
-							final ValuePair< Integer, Integer > timeAndId = mapAss2Id.get( ass );
-							if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
-							leftSegs.add( timeAndId );
-						}
-						final ValuePair< Integer, Integer > segTimeAndId = mapSeg2Id.get( segment );
+					// - - - - - - - - - - - - - - - - - - - - -
+					// We agreed with Paul and Bogdan that this
+					// is explicitly clear and therefore not ne-
+					// cessary to be exported.
+					if ( export_continuation_constraints ) {
+						final Collection< SegmentNode > segments = t.getSegments();
+						for ( final SegmentNode segment : segments ) {
+							final List< ValuePair< Integer, Integer > > leftSegs = new ArrayList<>();
+							for ( final AssignmentNode ass : segment.getInAssignments().getAllAssignments() ) {
+								final ValuePair< Integer, Integer > timeAndId = mapAss2Id.get( ass );
+								if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
+								leftSegs.add( timeAndId );
+							}
+							final ValuePair< Integer, Integer > segTimeAndId = mapSeg2Id.get( segment );
 
-						// CONT <time> <seg_id> <left_ass_ids as (time, id) pairs...>
-						problemWriter.write( String.format( "CONT    %3d %4d ", segTimeAndId.a, segTimeAndId.b ) );
-						for ( final ValuePair< Integer, Integer > leftTimeAndId : leftSegs ) {
-							problemWriter.write( String.format( "%3d %4d", leftTimeAndId.a, leftTimeAndId.b ) );
-						}
-						problemWriter.write( "\n" );
+							// CONT <time> <seg_id> <left_ass_ids as (time, id) pairs...>
+							problemWriter.write( String.format( "CONT    %3d %4d ", segTimeAndId.a, segTimeAndId.b ) );
+							for ( final ValuePair< Integer, Integer > leftTimeAndId : leftSegs ) {
+								problemWriter.write( String.format( "%3d %4d", leftTimeAndId.a, leftTimeAndId.b ) );
+							}
+							problemWriter.write( "\n" );
 
-						final List< ValuePair< Integer, Integer > > rightSegs = new ArrayList<>();
-						for ( final AssignmentNode ass : segment.getOutAssignments().getAllAssignments() ) {
-							final ValuePair< Integer, Integer > timeAndId = mapAss2Id.get( ass );
-							if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
-							rightSegs.add( timeAndId );
+							final List< ValuePair< Integer, Integer > > rightSegs = new ArrayList<>();
+							for ( final AssignmentNode ass : segment.getOutAssignments().getAllAssignments() ) {
+								final ValuePair< Integer, Integer > timeAndId = mapAss2Id.get( ass );
+								if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
+								rightSegs.add( timeAndId );
+							}
+							// CONT <time> <seg_id> <right_ass_ids as (time, id) pairs...>
+							problemWriter.write( String.format( "CONT    %3d %4d ", segTimeAndId.a, segTimeAndId.b ) );
+							for ( final ValuePair< Integer, Integer > rightTimeAndId : rightSegs ) {
+								problemWriter.write( String.format( "%3d %4d", rightTimeAndId.a, rightTimeAndId.b ) );
+							}
+							problemWriter.write( "\n" );
 						}
-						// CONT <time> <seg_id> <right_ass_ids as (time, id) pairs...>
-						problemWriter.write( String.format( "CONT    %3d %4d ", segTimeAndId.a, segTimeAndId.b ) );
-						for ( final ValuePair< Integer, Integer > rightTimeAndId : rightSegs ) {
-							problemWriter.write( String.format( "%3d %4d", rightTimeAndId.a, rightTimeAndId.b ) );
-						}
-						problemWriter.write( "\n" );
 					}
 				}
 			}
