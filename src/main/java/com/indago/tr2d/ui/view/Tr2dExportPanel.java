@@ -155,6 +155,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 			final BufferedWriter problemWriter = new BufferedWriter( new FileWriter( exportFile ) );
 			problemWriter.write( "# Tr2d problem export from " + strNow + "\n" );
+			problemWriter.write( String.format( "# objective_value = %.12f\n", model.getTrackingModel().getSolver().getLatestEnergy() ) );
 
 			final List< Tr2dSegmentationProblem > timePoints = model.getTrackingModel().getTrackingProblem().getTimepoints();
 
