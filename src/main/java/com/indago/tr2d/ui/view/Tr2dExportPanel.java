@@ -181,12 +181,12 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 					final Collection< AppearanceHypothesis > apps = segment.getInAssignments().getAppearances();
 					for ( final AppearanceHypothesis app : apps ) {
 						mapAss2Id.put( app, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						writeAppearanceLine( app, next_assignment_id, mapSeg2Id, problemWriter );
+						writeAppearanceLine( app, mapSeg2Id, problemWriter );
 					}
 					final Collection< DisappearanceHypothesis > disapps = segment.getOutAssignments().getDisappearances();
 					for ( final DisappearanceHypothesis disapp : disapps ) {
 						mapAss2Id.put( disapp, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						writeDisappearanceLine( disapp, next_assignment_id, mapSeg2Id, problemWriter );
+						writeDisappearanceLine( disapp, mapSeg2Id, problemWriter );
 					}
 					final Collection< MovementHypothesis > moves = segment.getOutAssignments().getMoves();
 					for ( final MovementHypothesis move : moves ) {
@@ -292,23 +292,20 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 	/**
 	 * @param app
-	 * @param next_assignment_id
 	 * @param mapSeg2Id
 	 * @param writer
 	 * @throws IOException
 	 */
 	private void writeAppearanceLine(
 			final AppearanceHypothesis app,
-			final int next_assignment_id,
 			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
-		// APP <ass_id> <time> <segment_id> <cost>
+		// APP <time> <segment_id> <cost>
 		final ValuePair< Integer, Integer > timeAndId = mapSeg2Id.get( app.getDest() );
 		writer.write(
 				String.format(
-						"APP     %4d %3d %4d %.16f\n",
-						next_assignment_id,
+						"APP     %3d %4d %.16f\n",
 						timeAndId.a,
 						timeAndId.b,
 						app.getCost() ) );
@@ -316,23 +313,20 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 	/**
 	 * @param disapp
-	 * @param next_assignment_id
 	 * @param mapSeg2Id
 	 * @param writer
 	 * @throws IOException
 	 */
 	private void writeDisappearanceLine(
 			final DisappearanceHypothesis disapp,
-			final int next_assignment_id,
 			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
-		// DISAPP <ass_id> <time> <segment_id> <cost>
+		// DISAPP <time> <segment_id> <cost>
 		final ValuePair< Integer, Integer > timeAndId = mapSeg2Id.get( disapp.getSrc() );
 		writer.write(
 				String.format(
-						"DISAPP  %4d %3d %4d %.16f\n",
-						next_assignment_id,
+						"DISAPP  %3d %4d %.16f\n",
 						timeAndId.a,
 						timeAndId.b,
 						disapp.getCost() ) );
