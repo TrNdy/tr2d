@@ -191,12 +191,12 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 					final Collection< MovementHypothesis > moves = segment.getOutAssignments().getMoves();
 					for ( final MovementHypothesis move : moves ) {
 						mapAss2Id.put( move, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						writeMovementLine( move, next_assignment_id, mapSeg2Id, problemWriter );
+						writeMovementLine( move, mapSeg2Id, problemWriter );
 					}
 					final Collection< DivisionHypothesis > divs = segment.getOutAssignments().getDivisions();
 					for ( final DivisionHypothesis div : divs ) {
 						mapAss2Id.put( div, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						writeDivisionLine( div, next_assignment_id, mapSeg2Id, problemWriter );
+						writeDivisionLine( div, mapSeg2Id, problemWriter );
 					}
 					problemWriter.write( "\n" );
 				}
@@ -334,14 +334,12 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 	/**
 	 * @param move
-	 * @param next_assignment_id
 	 * @param mapSeg2Id
 	 * @param writer
 	 * @throws IOException
 	 */
 	private void writeMovementLine(
 			final MovementHypothesis move,
-			final int next_assignment_id,
 			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
@@ -350,8 +348,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 		final ValuePair< Integer, Integer > timeAndId4Dest = mapSeg2Id.get( move.getDest() );
 		writer.write(
 				String.format(
-						"MOVE    %4d %3d %4d %3d %4d %.16f\n",
-						next_assignment_id,
+						"MOVE    %3d %4d %3d %4d %.16f\n",
 						timeAndId4Src.a,
 						timeAndId4Src.b,
 						timeAndId4Dest.a,
@@ -361,14 +358,12 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 	/**
 	 * @param div
-	 * @param next_assignment_id
 	 * @param mapSeg2Id
 	 * @param writer
 	 * @throws IOException
 	 */
 	private void writeDivisionLine(
 			final DivisionHypothesis div,
-			final int next_assignment_id,
 			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
@@ -378,8 +373,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 		final ValuePair< Integer, Integer > timeAndId4Dest2 = mapSeg2Id.get( div.getDest2() );
 		writer.write(
 				String.format(
-						"DIV     %4d %3d %4d %3d %4d %3d %4d %.16f\n",
-						next_assignment_id,
+						"DIV     %3d %4d %3d %4d %3d %4d %.16f\n",
 						timeAndId4Src.a,
 						timeAndId4Src.b,
 						timeAndId4Dest1.a,
