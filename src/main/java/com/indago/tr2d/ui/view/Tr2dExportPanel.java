@@ -28,6 +28,11 @@ import javax.swing.JSplitPane;
 import com.indago.data.Ellipse2D;
 import com.indago.data.PixelCloud2D;
 import com.indago.data.segmentation.LabelingSegment;
+import com.indago.fg.Assignment;
+import com.indago.fg.MappedFactorGraph;
+import com.indago.fg.Variable;
+import com.indago.ilp.SolveGurobi.GurobiResult;
+import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.AssignmentNode;
 import com.indago.pg.assignments.DisappearanceHypothesis;
@@ -42,6 +47,10 @@ import com.indago.tr2d.ui.util.SolutionExporter.Tracklet;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
 import com.indago.util.Bimap;
 
+import gnu.trove.map.TObjectIntMap;
+import gurobi.GRB;
+import gurobi.GRBException;
+import gurobi.GRBVar;
 import net.imglib2.Cursor;
 import net.imglib2.util.ValuePair;
 import net.miginfocom.swing.MigLayout;
@@ -157,6 +166,23 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 			problemWriter.write( "# Tr2d problem export from " + strNow + "\n" );
 			problemWriter.write( String.format( "# objective_value = %.12f\n", model.getTrackingModel().getSolver().getLatestEnergy() ) );
 
+			final MappedFactorGraph mfg = model.getTrackingModel().getMappedFactorGraph();
+			final Bimap< IndicatorNode, Variable > varmap = mfg.getVarmap();
+
+			// Prepare the ability to modify the Gurobi variable names
+			// This is useful in order to debug exported FGs and the corresponding .lp file.
+			boolean modifyGurobiVarNames = false;
+			final Assignment< Variable > fgSolution = model.getTrackingModel().getFgSolution();
+			GurobiResult gurobiResults = null;
+			GRBVar[] grbVars = null;
+			TObjectIntMap< Variable > var2index = null;
+			if ( fgSolution instanceof GurobiResult ) {
+				modifyGurobiVarNames = true;
+				gurobiResults = ( GurobiResult ) fgSolution;
+				grbVars = gurobiResults.getModel().getVars();
+				var2index = gurobiResults.getVariableToIndex();
+			}
+
 			final List< Tr2dSegmentationProblem > timePoints = model.getTrackingModel().getTrackingProblem().getTimepoints();
 
 			problemWriter.write( "\n# === SEGMENT HYPOTHESES =================================================\n" );
@@ -168,7 +194,13 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 				final Collection< SegmentNode > segments = t.getSegments();
 				for ( final SegmentNode segment : segments ) {
 					mapSeg2Id.put( segment, new ValuePair< Integer, Integer >( t.getTime(), ++next_segment_id ) );
-					writeSegmentLine( t.getTime(), segment, next_segment_id, problemWriter );
+					final String shortName = writeSegmentLine( t.getTime(), segment, next_segment_id, problemWriter );
+
+					if ( modifyGurobiVarNames ) {
+						try {
+							grbVars[ var2index.get( varmap.getB( segment ) ) ].set( GRB.StringAttr.VarName, shortName );
+						} catch ( final GRBException e ) {}
+					}
 				}
 			}
 
@@ -182,22 +214,46 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 					final Collection< AppearanceHypothesis > apps = segment.getInAssignments().getAppearances();
 					for ( final AppearanceHypothesis app : apps ) {
 						mapAss2Id.put( app, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						writeAppearanceLine( app, mapSeg2Id, problemWriter );
+						final String shortName = writeAppearanceLine( app, mapSeg2Id, problemWriter );
+
+						if ( modifyGurobiVarNames ) {
+							try {
+								grbVars[ var2index.get( varmap.getB( app ) ) ].set( GRB.StringAttr.VarName, shortName );
+							} catch ( final GRBException e ) {}
+						}
 					}
 					final Collection< DisappearanceHypothesis > disapps = segment.getOutAssignments().getDisappearances();
 					for ( final DisappearanceHypothesis disapp : disapps ) {
 						mapAss2Id.put( disapp, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						writeDisappearanceLine( disapp, mapSeg2Id, problemWriter );
+						final String shortName = writeDisappearanceLine( disapp, mapSeg2Id, problemWriter );
+
+						if ( modifyGurobiVarNames ) {
+							try {
+								grbVars[ var2index.get( varmap.getB( disapp ) ) ].set( GRB.StringAttr.VarName, shortName );
+							} catch ( final GRBException e ) {}
+						}
 					}
 					final Collection< MovementHypothesis > moves = segment.getOutAssignments().getMoves();
 					for ( final MovementHypothesis move : moves ) {
 						mapAss2Id.put( move, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						writeMovementLine( move, mapSeg2Id, problemWriter );
+						final String shortName = writeMovementLine( move, mapSeg2Id, problemWriter );
+
+						if ( modifyGurobiVarNames ) {
+							try {
+								grbVars[ var2index.get( varmap.getB( move ) ) ].set( GRB.StringAttr.VarName, shortName );
+							} catch ( final GRBException e ) {}
+						}
 					}
 					final Collection< DivisionHypothesis > divs = segment.getOutAssignments().getDivisions();
 					for ( final DivisionHypothesis div : divs ) {
 						mapAss2Id.put( div, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						writeDivisionLine( div, mapSeg2Id, problemWriter );
+						final String shortName = writeDivisionLine( div, mapSeg2Id, problemWriter );
+
+						if ( modifyGurobiVarNames ) {
+							try {
+								grbVars[ var2index.get( varmap.getB( div ) ) ].set( GRB.StringAttr.VarName, shortName );
+							} catch ( final GRBException e ) {}
+						}
 					}
 					problemWriter.write( "\n" );
 				}
@@ -279,7 +335,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	 * @param writer
 	 * @throws IOException
 	 */
-	private void writeSegmentLine( final int t, final SegmentNode segment, final int id, final BufferedWriter writer ) throws IOException {
+	private String writeSegmentLine( final int t, final SegmentNode segment, final int id, final BufferedWriter writer ) throws IOException {
 		// H <id> <cost> <com_x_pos> <com_y_pos>
 		writer.write(
 				String.format(
@@ -289,6 +345,11 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						segment.getCost(),
 						segment.getSegment().getCenterOfMass().getFloatPosition( 0 ),
 						segment.getSegment().getCenterOfMass().getFloatPosition( 1 ) ) );
+		return String.format(
+				"H-%d/%d",
+				t,
+				id );
+
 	}
 
 	/**
@@ -297,7 +358,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	 * @param writer
 	 * @throws IOException
 	 */
-	private void writeAppearanceLine(
+	private String writeAppearanceLine(
 			final AppearanceHypothesis app,
 			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
@@ -310,6 +371,10 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						timeAndId.a,
 						timeAndId.b,
 						app.getCost() ) );
+		return String.format(
+				"APP-%d/%d",
+				timeAndId.a,
+				timeAndId.b );
 	}
 
 	/**
@@ -318,7 +383,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	 * @param writer
 	 * @throws IOException
 	 */
-	private void writeDisappearanceLine(
+	private String writeDisappearanceLine(
 			final DisappearanceHypothesis disapp,
 			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
@@ -331,6 +396,10 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						timeAndId.a,
 						timeAndId.b,
 						disapp.getCost() ) );
+		return String.format(
+				"DISAPP-%d/%d",
+				timeAndId.a,
+				timeAndId.b );
 	}
 
 	/**
@@ -339,7 +408,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	 * @param writer
 	 * @throws IOException
 	 */
-	private void writeMovementLine(
+	private String writeMovementLine(
 			final MovementHypothesis move,
 			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
@@ -355,6 +424,12 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						timeAndId4Dest.a,
 						timeAndId4Dest.b,
 						move.getCost() ) );
+		return String.format(
+				"MOVE-%d/%d-%d/%d",
+				timeAndId4Src.a,
+				timeAndId4Src.b,
+				timeAndId4Dest.a,
+				timeAndId4Dest.b );
 	}
 
 	/**
@@ -363,7 +438,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	 * @param writer
 	 * @throws IOException
 	 */
-	private void writeDivisionLine(
+	private String writeDivisionLine(
 			final DivisionHypothesis div,
 			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
@@ -382,6 +457,14 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						timeAndId4Dest2.a,
 						timeAndId4Dest2.b,
 						div.getCost() ) );
+		return String.format(
+				"MOVE-%d/%d-%d/%d-%d/%d",
+				timeAndId4Src.a,
+				timeAndId4Src.b,
+				timeAndId4Dest1.a,
+				timeAndId4Dest1.b,
+				timeAndId4Dest2.a,
+				timeAndId4Dest2.b );
 	}
 
 	/**
