@@ -400,7 +400,6 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		try {
 			SolveGurobi.GRB_PRESOLVE = 0;
 			solver = new SolveGurobi();
-//			fgSolution = SolveGurobi.staticSolve( fg, new DefaultLoggingGurobiCallback( Tr2dLog.gurobilog ) );
 			fgSolution = solver.solve( fg, new DefaultLoggingGurobiCallback( Tr2dLog.gurobilog ) );
 			pgSolution = assMapper.map( fgSolution );
 		} catch ( final GRBException e ) {
@@ -511,6 +510,13 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public List< CostFactory< ? > > getCostFactories() {
 		return costFactories;
+	}
+
+	/**
+	 * @return the fgSolution
+	 */
+	public Assignment< Variable > getFgSolution() {
+		return fgSolution;
 	}
 
 	/**
