@@ -171,7 +171,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 			// Prepare the ability to modify the Gurobi variable names
 			// This is useful in order to debug exported FGs and the corresponding .lp file.
-			boolean modifyGurobiVarNames = false;
+			boolean modifyGurobiVarNames = true;
 			final Assignment< Variable > fgSolution = model.getTrackingModel().getFgSolution();
 			GurobiResult gurobiResults = null;
 			GRBVar[] grbVars = null;
@@ -192,6 +192,20 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 				// write all segment hypotheses
 				final Collection< SegmentNode > segments = t.getSegments();
+//				final ArrayList< SegmentNode > segments = ( ArrayList< SegmentNode > ) t.getSegments();
+//				Collections.sort( segments, new Comparator< SegmentNode >() {
+//
+//					@Override
+//					public int compare( final SegmentNode o1, final SegmentNode o2 ) {
+//						final float x1 = o1.getSegment().getCenterOfMass().getFloatPosition( 0 );
+//						final float x2 = o2.getSegment().getCenterOfMass().getFloatPosition( 0 );
+//						final float y1 = o1.getSegment().getCenterOfMass().getFloatPosition( 1 );
+//						final float y2 = o2.getSegment().getCenterOfMass().getFloatPosition( 1 );
+//						if ( x1 - x2 == 0f ) { return Float.compare( y1, y2 ); }
+//						return Float.compare( x1, x2 );
+//					}
+//				} );
+
 				for ( final SegmentNode segment : segments ) {
 					mapSeg2Id.put( segment, new ValuePair< Integer, Integer >( t.getTime(), ++next_segment_id ) );
 					final String shortName = writeSegmentLine( t.getTime(), segment, next_segment_id, problemWriter );
@@ -345,6 +359,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						segment.getCost(),
 						segment.getSegment().getCenterOfMass().getFloatPosition( 0 ),
 						segment.getSegment().getCenterOfMass().getFloatPosition( 1 ) ) );
+
 		return String.format(
 				"H-%d/%d",
 				t,
@@ -443,7 +458,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
-		// MOVE <ass_id> <source_segment_id> <dest1_segment_id> <dest2_segment_id> <cost>
+		// DIV <ass_id> <source_segment_id> <dest1_segment_id> <dest2_segment_id> <cost>
 		final ValuePair< Integer, Integer > timeAndId4Src = mapSeg2Id.get( div.getSrc() );
 		final ValuePair< Integer, Integer > timeAndId4Dest1 = mapSeg2Id.get( div.getDest1() );
 		final ValuePair< Integer, Integer > timeAndId4Dest2 = mapSeg2Id.get( div.getDest2() );
@@ -458,7 +473,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						timeAndId4Dest2.b,
 						div.getCost() ) );
 		return String.format(
-				"MOVE-%d/%d-%d/%d-%d/%d",
+				"DIV-%d/%d-%d/%d-%d/%d",
 				timeAndId4Src.a,
 				timeAndId4Src.b,
 				timeAndId4Dest1.a,
