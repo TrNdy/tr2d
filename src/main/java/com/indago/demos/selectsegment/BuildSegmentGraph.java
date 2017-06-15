@@ -15,32 +15,37 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import org.mastodon.adapter.FocusAdapter;
+import org.mastodon.adapter.HighlightAdapter;
+import org.mastodon.adapter.NavigationHandlerAdapter;
+import org.mastodon.adapter.RefBimap;
+import org.mastodon.adapter.SelectionAdapter;
 import org.mastodon.graph.GraphIdBimap;
 import org.mastodon.graph.algorithm.ShortestPath;
 import org.mastodon.graph.algorithm.traversal.BreadthFirstIterator;
 import org.mastodon.graph.algorithm.traversal.GraphSearch.SearchDirection;
-import org.mastodon.revised.trackscheme.DefaultModelFocusProperties;
-import org.mastodon.revised.trackscheme.DefaultModelGraphProperties;
-import org.mastodon.revised.trackscheme.DefaultModelHighlightProperties;
-import org.mastodon.revised.trackscheme.DefaultModelNavigationProperties;
-import org.mastodon.revised.trackscheme.DefaultModelSelectionProperties;
-import org.mastodon.revised.trackscheme.ModelGraphProperties;
-import org.mastodon.revised.trackscheme.TrackSchemeFocus;
+import org.mastodon.revised.trackscheme.TrackSchemeEdge;
+import org.mastodon.revised.trackscheme.TrackSchemeEdgeBimap;
 import org.mastodon.revised.trackscheme.TrackSchemeGraph;
-import org.mastodon.revised.trackscheme.TrackSchemeHighlight;
-import org.mastodon.revised.trackscheme.TrackSchemeNavigation;
-import org.mastodon.revised.trackscheme.TrackSchemeSelection;
+import org.mastodon.revised.trackscheme.TrackSchemeVertex;
+import org.mastodon.revised.trackscheme.TrackSchemeVertexBimap;
 import org.mastodon.revised.trackscheme.display.TrackSchemeNavigator.NavigatorEtiquette;
 import org.mastodon.revised.trackscheme.display.TrackSchemeOptions;
 import org.mastodon.revised.trackscheme.display.TrackSchemePanel;
+import org.mastodon.revised.trackscheme.wrap.DefaultModelGraphProperties;
+import org.mastodon.revised.trackscheme.wrap.ModelGraphProperties;
 import org.mastodon.revised.ui.grouping.GroupHandle;
 import org.mastodon.revised.ui.grouping.GroupManager;
 import org.mastodon.revised.ui.selection.FocusListener;
 import org.mastodon.revised.ui.selection.FocusModel;
+import org.mastodon.revised.ui.selection.FocusModelImp;
 import org.mastodon.revised.ui.selection.HighlightListener;
 import org.mastodon.revised.ui.selection.HighlightModel;
+import org.mastodon.revised.ui.selection.HighlightModelImp;
 import org.mastodon.revised.ui.selection.NavigationHandler;
+import org.mastodon.revised.ui.selection.NavigationHandlerImp;
 import org.mastodon.revised.ui.selection.Selection;
+import org.mastodon.revised.ui.selection.SelectionImp;
 import org.mastodon.revised.ui.selection.SelectionListener;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
@@ -86,24 +91,26 @@ public class BuildSegmentGraph
 
 		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
 
-		final Selection< SegmentVertex, SubsetEdge > selectionModel = new Selection<>( modelGraph, idmap );
-		final Selection< SegmentVertex, SubsetEdge > segmentsUnderMouse = new Selection<>( modelGraph, idmap );
-		final HighlightModel< SegmentVertex, SubsetEdge > highlightModel = new HighlightModel<>( idmap );
-		final FocusModel< SegmentVertex, SubsetEdge > focusModel = new FocusModel<>( idmap );
-		final NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler = new NavigationHandler<>( trackSchemeGroupHandle );
+		final Selection< SegmentVertex, SubsetEdge > selectionModel = new SelectionImp<>( modelGraph, idmap );
+		final Selection< SegmentVertex, SubsetEdge > segmentsUnderMouse = new SelectionImp<>( modelGraph, idmap );
+		final HighlightModel< SegmentVertex, SubsetEdge > highlightModel = new HighlightModelImp<>( idmap );
+		final FocusModel< SegmentVertex, SubsetEdge > focusModel = new FocusModelImp<>( idmap );
+		final NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler = new NavigationHandlerImp<>( trackSchemeGroupHandle );
 
 		final InputTriggerConfig inputConf = getKeyConfig( optional );
 
 		// === TrackScheme ===
 
-		final ModelGraphProperties modelGraphProperties = new DefaultModelGraphProperties<>( modelGraph, idmap, selectionModel );
+		final ModelGraphProperties< SegmentVertex, SubsetEdge > modelGraphProperties = new DefaultModelGraphProperties<>( modelGraph );
 		final TrackSchemeGraph< SegmentVertex, SubsetEdge > trackSchemeGraph = new TrackSchemeGraph<>( modelGraph, idmap, modelGraphProperties );
+		final RefBimap< SegmentVertex, TrackSchemeVertex > vertexMap = new TrackSchemeVertexBimap<>( idmap, trackSchemeGraph );
+		final RefBimap< SubsetEdge, TrackSchemeEdge > edgeMap = new TrackSchemeEdgeBimap<>( idmap, trackSchemeGraph );
 		final TrackSchemePanel trackschemePanel = new TrackSchemePanel(
 				trackSchemeGraph,
-				new TrackSchemeHighlight( new DefaultModelHighlightProperties<>( modelGraph, idmap, highlightModel ), trackSchemeGraph ),
-				new TrackSchemeFocus( new DefaultModelFocusProperties<>( modelGraph, idmap, focusModel ), trackSchemeGraph ),
-				new TrackSchemeSelection( new DefaultModelSelectionProperties<>( modelGraph, idmap, selectionModel ) ),
-				new TrackSchemeNavigation( new DefaultModelNavigationProperties<>( modelGraph, idmap, navigationHandler ), trackSchemeGraph ),
+				new HighlightAdapter<>( highlightModel, vertexMap, edgeMap ),
+				new FocusAdapter<>( focusModel, vertexMap, edgeMap ),
+				new SelectionAdapter<>( selectionModel, vertexMap, edgeMap ),
+				new NavigationHandlerAdapter<>( navigationHandler, vertexMap, edgeMap ),
 				optional );
 
 		final JFrame frame = new JFrame( "graph", GuiUtil.getSuitableGraphicsConfiguration( GuiUtil.RGB_COLOR_MODEL ) );
