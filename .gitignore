@@ -5,3 +5,7 @@
 .settings/
 *.log
 tr2d.log.1
+
+# IntelliJ
+.idea/
+*.iml
