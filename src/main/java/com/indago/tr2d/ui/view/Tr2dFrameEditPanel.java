@@ -46,8 +46,6 @@ import org.mastodon.revised.trackscheme.display.TrackSchemeOptions;
 import org.mastodon.revised.trackscheme.display.TrackSchemePanel;
 import org.mastodon.revised.trackscheme.wrap.DefaultModelGraphProperties;
 import org.mastodon.revised.trackscheme.wrap.ModelGraphProperties;
-import org.mastodon.revised.ui.grouping.GroupHandle;
-import org.mastodon.revised.ui.grouping.GroupManager;
 import org.mastodon.revised.ui.selection.FocusListener;
 import org.mastodon.revised.ui.selection.FocusModel;
 import org.mastodon.revised.ui.selection.FocusModelImp;
@@ -59,6 +57,8 @@ import org.mastodon.revised.ui.selection.NavigationHandlerImp;
 import org.mastodon.revised.ui.selection.Selection;
 import org.mastodon.revised.ui.selection.SelectionImp;
 import org.mastodon.revised.ui.selection.SelectionListener;
+import org.mastodon.revised.ui.selection.TimepointModel;
+import org.mastodon.revised.ui.selection.TimepointModelImp;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.InputActionBindings;
@@ -143,8 +143,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private final List< BdvSource > bdvOverlaySources = new ArrayList<>();
 
 	// === Hypotheses browser related stuff ============================================
-	private final GroupManager manager;
-	private final GroupHandle trackSchemeGroupHandle;
 	private final TrackSchemeOptions trackSchemeOptions;
 	private final InputTriggerConfig inputConf;
 
@@ -185,6 +183,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private Selection< SegmentVertex, SubsetEdge > selectionModel;
 	private HighlightModel< SegmentVertex, SubsetEdge > highlightModel;
 	private FocusModel< SegmentVertex, SubsetEdge > focusModel;
+	private TimepointModel timepointModel;
 	private NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler;
 
 	private TrackSchemePanel trackschemePanel;
@@ -237,8 +236,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		this.model.addSolutionChangedListener( this );
 		this.model.addModelInfeasibleListener( this );
 
-		manager = new GroupManager();
-		trackSchemeGroupHandle = manager.createGroupHandle();
 		trackSchemeOptions = TrackSchemeOptions.options();
 		inputConf = getKeyConfig( trackSchemeOptions );
 
@@ -477,18 +474,14 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 */
 	private void display( final SegmentGraph modelGraph, final LabelingPlus labelingPlus ) {
 
-		final GroupManager manager = new GroupManager();
-		final GroupHandle trackSchemeGroupHandle = manager.createGroupHandle();
-
 		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
 
 		selectionModel = new SelectionImp<>( modelGraph, idmap );
 		final Selection< SegmentVertex, SubsetEdge > segmentsUnderMouse = new SelectionImp<>( modelGraph, idmap );
 		highlightModel = new HighlightModelImp<>( idmap );
 		focusModel = new FocusModelImp<>( idmap );
-		if ( navigationHandler != null )
-			trackSchemeGroupHandle.remove( navigationHandler );
-		navigationHandler = new NavigationHandlerImp<>( trackSchemeGroupHandle );
+		timepointModel = new TimepointModelImp();
+		navigationHandler = new NavigationHandlerImp<>();
 
 		// === TrackScheme ===
 
@@ -496,7 +489,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 			segHypothesesTreePanel.remove( trackschemePanel );
 		}
 
-		final ModelGraphProperties< SegmentVertex, SubsetEdge > modelGraphProperties = new DefaultModelGraphProperties<>( modelGraph );
+		final ModelGraphProperties< SegmentVertex, SubsetEdge > modelGraphProperties = new DefaultModelGraphProperties<>();
 		final TrackSchemeGraph< SegmentVertex, SubsetEdge > trackSchemeGraph = new TrackSchemeGraph<>( modelGraph, idmap, modelGraphProperties );
 		final RefBimap< SegmentVertex, TrackSchemeVertex > vertexMap = new TrackSchemeVertexBimap<>( idmap, trackSchemeGraph );
 		final RefBimap< SubsetEdge, TrackSchemeEdge > edgeMap = new TrackSchemeEdgeBimap<>( idmap, trackSchemeGraph );
@@ -504,6 +497,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				trackSchemeGraph,
 				new HighlightAdapter<>( highlightModel, vertexMap, edgeMap ),
 				new FocusAdapter<>( focusModel, vertexMap, edgeMap ),
+				timepointModel,
 				new SelectionAdapter<>( selectionModel, vertexMap, edgeMap ),
 				new NavigationHandlerAdapter<>( navigationHandler, vertexMap, edgeMap ),
 				trackSchemeOptions );
@@ -556,9 +550,9 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				new UnsignedShortType() );
 		this.bdvAdd( segment_rai_overlay, "focused segments", 0, 1, new ARGBType( 0x0000FF ), true );
 
-		highlightModel.addHighlightListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
-		selectionModel.addSelectionListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
-		focusModel.addFocusListener( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
+		highlightModel.listeners().add( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
+		selectionModel.listeners().add( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
+		focusModel.listeners().add( () -> bdvHandlePanel.getBdvHandle().getViewerPanel().requestRepaint() );
 
 		// --- segment selection in BDV start ---
 
@@ -679,7 +673,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				final Selection< SegmentVertex, SubsetEdge > selectionModel ) {
 			this.labelingPlus = labelingPlus;
 			this.selectionModel = selectionModel;
-			selectionModel.addSelectionListener( this );
+			selectionModel.listeners().add( this );
 			selectionChanged();
 		}
 
@@ -721,7 +715,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				final HighlightModel< SegmentVertex, SubsetEdge > highlightModel ) {
 			this.labelingPlus = labelingPlus;
 			this.highlightModel = highlightModel;
-			highlightModel.addHighlightListener( this );
+			highlightModel.listeners().add( this );
 			highlightChanged();
 		}
 
@@ -759,7 +753,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				final FocusModel< SegmentVertex, SubsetEdge > focusModel ) {
 			this.labelingPlus = labelingPlus;
 			this.focusModel = focusModel;
-			focusModel.addFocusListener( this );
+			focusModel.listeners().add( this );
 			focusChanged();
 		}
 
@@ -1360,7 +1354,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				final Selection< SegmentVertex, SubsetEdge > selectionModel ) {
 			super( labelingPlus, converter );
 			this.selectionModel = selectionModel;
-			selectionModel.addSelectionListener( this );
+			selectionModel.listeners().add( this );
 			update();
 		}
 
@@ -1391,7 +1385,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				final HighlightModel< SegmentVertex, SubsetEdge > highlightModel ) {
 			super( labelingPlus, converter );
 			this.highlightModel = highlightModel;
-			highlightModel.addHighlightListener( this );
+			highlightModel.listeners().add( this );
 			update();
 		}
 
@@ -1422,7 +1416,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				final FocusModel< SegmentVertex, SubsetEdge > focusModel ) {
 			super( labelingPlus, converter );
 			this.focusModel = focusModel;
-			focusModel.addFocusListener( this );
+			focusModel.listeners().add( this );
 			update();
 		}
 

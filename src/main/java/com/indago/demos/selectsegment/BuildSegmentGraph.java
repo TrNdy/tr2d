@@ -34,8 +34,6 @@ import org.mastodon.revised.trackscheme.display.TrackSchemeOptions;
 import org.mastodon.revised.trackscheme.display.TrackSchemePanel;
 import org.mastodon.revised.trackscheme.wrap.DefaultModelGraphProperties;
 import org.mastodon.revised.trackscheme.wrap.ModelGraphProperties;
-import org.mastodon.revised.ui.grouping.GroupHandle;
-import org.mastodon.revised.ui.grouping.GroupManager;
 import org.mastodon.revised.ui.selection.FocusListener;
 import org.mastodon.revised.ui.selection.FocusModel;
 import org.mastodon.revised.ui.selection.FocusModelImp;
@@ -47,6 +45,8 @@ import org.mastodon.revised.ui.selection.NavigationHandlerImp;
 import org.mastodon.revised.ui.selection.Selection;
 import org.mastodon.revised.ui.selection.SelectionImp;
 import org.mastodon.revised.ui.selection.SelectionListener;
+import org.mastodon.revised.ui.selection.TimepointModel;
+import org.mastodon.revised.ui.selection.TimepointModelImp;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
@@ -86,8 +86,6 @@ public class BuildSegmentGraph
 			final SegmentGraph modelGraph,
 			final LabelingPlus labelingPlus,
 			final TrackSchemeOptions optional ) {
-		final GroupManager manager = new GroupManager();
-		final GroupHandle trackSchemeGroupHandle = manager.createGroupHandle();
 
 		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
 
@@ -95,13 +93,14 @@ public class BuildSegmentGraph
 		final Selection< SegmentVertex, SubsetEdge > segmentsUnderMouse = new SelectionImp<>( modelGraph, idmap );
 		final HighlightModel< SegmentVertex, SubsetEdge > highlightModel = new HighlightModelImp<>( idmap );
 		final FocusModel< SegmentVertex, SubsetEdge > focusModel = new FocusModelImp<>( idmap );
-		final NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler = new NavigationHandlerImp<>( trackSchemeGroupHandle );
+		final TimepointModel timepointModel = new TimepointModelImp();
+		final NavigationHandler< SegmentVertex, SubsetEdge > navigationHandler = new NavigationHandlerImp<>();
 
 		final InputTriggerConfig inputConf = getKeyConfig( optional );
 
 		// === TrackScheme ===
 
-		final ModelGraphProperties< SegmentVertex, SubsetEdge > modelGraphProperties = new DefaultModelGraphProperties<>( modelGraph );
+		final ModelGraphProperties< SegmentVertex, SubsetEdge > modelGraphProperties = new DefaultModelGraphProperties<>();
 		final TrackSchemeGraph< SegmentVertex, SubsetEdge > trackSchemeGraph = new TrackSchemeGraph<>( modelGraph, idmap, modelGraphProperties );
 		final RefBimap< SegmentVertex, TrackSchemeVertex > vertexMap = new TrackSchemeVertexBimap<>( idmap, trackSchemeGraph );
 		final RefBimap< SubsetEdge, TrackSchemeEdge > edgeMap = new TrackSchemeEdgeBimap<>( idmap, trackSchemeGraph );
@@ -109,6 +108,7 @@ public class BuildSegmentGraph
 				trackSchemeGraph,
 				new HighlightAdapter<>( highlightModel, vertexMap, edgeMap ),
 				new FocusAdapter<>( focusModel, vertexMap, edgeMap ),
+				timepointModel,
 				new SelectionAdapter<>( selectionModel, vertexMap, edgeMap ),
 				new NavigationHandlerAdapter<>( navigationHandler, vertexMap, edgeMap ),
 				optional );
@@ -328,7 +328,7 @@ public class BuildSegmentGraph
 				final Selection< SegmentVertex, SubsetEdge > selectionModel ) {
 			super( labelingPlus, converter );
 			this.selectionModel = selectionModel;
-			selectionModel.addSelectionListener( this );
+			selectionModel.listeners().add( this );
 			update();
 		}
 
@@ -358,7 +358,7 @@ public class BuildSegmentGraph
 				final HighlightModel< SegmentVertex, SubsetEdge > highlightModel ) {
 			super( labelingPlus, converter );
 			this.highlightModel = highlightModel;
-			highlightModel.addHighlightListener( this );
+			highlightModel.listeners().add( this );
 			update();
 		}
 
@@ -391,7 +391,7 @@ public class BuildSegmentGraph
 				final FocusModel< SegmentVertex, SubsetEdge > focusModel ) {
 			super( labelingPlus, converter );
 			this.focusModel = focusModel;
-			focusModel.addFocusListener( this );
+			focusModel.listeners().add( this );
 			update();
 		}
 
