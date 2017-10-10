@@ -51,7 +51,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	private JPanel tabData;
 	private JPanel tabSegmentation;
 	private JPanel tabFlow;
-	private JPanel tabTracking;
+	private Tr2dTrackingPanel tabTracking;
 	private Tr2dExportPanel tabExport;
 
 	private BdvHandlePanel bdvData;
@@ -201,10 +201,26 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		return logPanel;
 	}
 
+	public void selectTab( final JPanel tab ) {
+		for ( int i = 0; i < tabs.getTabCount(); ++i ) {
+			if ( tabs.getComponentAt( i ) == tab ) {
+				tabs.setSelectedIndex( i );
+				break;
+			}
+		}
+	}
+
 	/**
 	 * @return the tabExport
 	 */
 	public Tr2dExportPanel getTabExport() {
 		return tabExport;
+	}
+
+	/**
+	 * @return the tabTracking
+	 */
+	public Tr2dTrackingPanel getTabTracking() {
+		return tabTracking;
 	}
 }
