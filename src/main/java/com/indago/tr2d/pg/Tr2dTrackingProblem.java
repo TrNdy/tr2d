@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.pg.TrackingProblem;
@@ -141,7 +143,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					pos.getDoublePosition( 0 ) + flow_vec.getA(),
 					pos.getDoublePosition( 1 ) + flow_vec.getB() );
 
-			final double radius = 35; //TODO make this some user configurable parameter
+			final double radius = 50; //TODO make this some user configurable parameter
 			final PriorityQueue< MovementHypothesis > prioQueue = new PriorityQueue<>( 100, Util.getCostComparatorForMovementHypothesis() );
 
 			search.search( flow_pos, radius, false );
@@ -195,7 +197,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
 			final RealLocalizable pos = segVarL.getSegment().getCenterOfMass();
 
-			final double radius = 40; //TODO make this some user configurable parameter
+			final double radius = 50; //TODO make this some user configurable parameter
 			final PriorityQueue< DivisionHypothesis > prioQueue = new PriorityQueue<>( 100, Util.getCostComparatorForDivisionHypothesis() );
 
 			search.search( pos, radius, true );
@@ -233,9 +235,11 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	 * @param file
 	 */
 	public void saveToFile( final File file ) throws IOException {
-		for ( final Tr2dSegmentationProblem segProblem : timepoints ) {
-
-		}
+//		for ( final Tr2dSegmentationProblem segProblem : timepoints ) {
+//
+//		}
+		//TODO implement! :)
+		throw new NotImplementedException();
 	}
 
 }
