@@ -10,15 +10,12 @@ import java.util.List;
 import com.indago.data.segmentation.Segment;
 import com.indago.data.segmentation.fg.FactorGraphPlus;
 import com.indago.data.segmentation.fg.SegmentHypothesisVariable;
-import com.indago.old_fg.FactorGraph;
-import com.indago.old_fg.domain.BooleanFunctionDomain;
-import com.indago.old_fg.factor.BooleanFactor;
-import com.indago.old_fg.factor.Factor;
-import com.indago.old_fg.function.BooleanWeightedIndexSumConstraint;
-import com.indago.old_fg.function.Function;
-import com.indago.old_fg.function.WeightedIndexSumConstraint.Relation;
-import com.indago.old_fg.variable.BooleanVariable;
-import com.indago.old_fg.variable.Variable;
+import com.indago.fg.BooleanVariable;
+import com.indago.fg.Factor;
+import com.indago.fg.FactorGraph;
+import com.indago.fg.Factors;
+import com.indago.fg.Function;
+import com.indago.fg.Variable;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.fg.factor.AppearanceFactor;
 import com.indago.tr2d.fg.factor.DisappearanceFactor;
@@ -34,9 +31,9 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	private int factorId = 0;
 	private int functionId = 0;
 
-	private final Collection< Variable< ? > > variables;
-	private final Collection< Factor< ?, ?, ? > > factors;
-	private final Collection< Function< ?, ? > > functions;
+	private final Collection< Variable > variables;
+	private final Collection< Factor > factors;
+	private final Collection< Function > functions;
 
 	// the sub factor graphs
 	private final List< FactorGraphPlus< Segment > > frameFGs;
@@ -60,32 +57,32 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 		frameFGs = new ArrayList< FactorGraphPlus< Segment > >();
 		transFGs = new ArrayList< FactorGraphPlus< Segment > >();
 
-		variables = new ArrayList< Variable< ? > >();
-		factors = new ArrayList< Factor< ?, ?, ? > >();
-		functions = new ArrayList< Function< ?, ? > >();
+		variables = new ArrayList< Variable >();
+		factors = new ArrayList< Factor >();
+		functions = new ArrayList< Function >();
 	}
 
 	/**
-	 * @see com.indago.old_fg.FactorGraph#getVariables()
+	 * @see com.indago.fg.FactorGraph#getVariables()
 	 */
 	@Override
-	public Collection< ? extends Variable< ? > > getVariables() {
+	public Collection< ? extends Variable > getVariables() {
 		return variables;
 	}
 
 	/**
-	 * @see com.indago.old_fg.FactorGraph#getFactors()
+	 * @see com.indago.fg.FactorGraph#getFactors()
 	 */
 	@Override
-	public Collection< ? extends Factor< ?, ?, ? > > getFactors() {
+	public Collection< ? extends Factor > getFactors() {
 		return factors;
 	}
 
 	/**
-	 * @see com.indago.old_fg.FactorGraph#getFunctions()
+	 * @see com.indago.fg.FactorGraph#getFunctions()
 	 */
 	@Override
-	public Collection< ? extends Function< ?, ? > > getFunctions() {
+	public Collection< ? extends Function > getFunctions() {
 		return functions;
 	}
 
@@ -110,28 +107,26 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 		mergeFG( frameFG );
 		mergeFG( transFG );
 
-		for ( final Factor< ?, ?, ? > factor : transFG.getFactorGraph().getFactors() ) {
-			final BooleanVariable factorIndicatorVariable = ( BooleanVariable ) factor.getVariable( 0 );
+		for ( final Factor factor : transFG.getFactorGraph().getFactors() ) {
+			final BooleanVariable factorIndicatorVariable = ( BooleanVariable ) factor.getVariables().get( 0 );
 			if ( factor instanceof MappingFactor ) {
-				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 1 ) )
+				( ( SegmentHypothesisVariable< Segment > ) factor.getVariables().get( 1 ) )
 						.addRightNeighbor( factorIndicatorVariable );
-				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 2 ) )
+				( ( SegmentHypothesisVariable< Segment > ) factor.getVariables().get( 2 ) )
 						.addLeftNeighbor( factorIndicatorVariable );
 			} else if ( factor instanceof DivisionFactor ) {
-				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 1 ) )
+				( ( SegmentHypothesisVariable< Segment > ) factor.getVariables().get( 1 ) )
 						.addRightNeighbor( factorIndicatorVariable );
-				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 2 ) )
+				( ( SegmentHypothesisVariable< Segment > ) factor.getVariables().get( 2 ) )
 						.addLeftNeighbor( factorIndicatorVariable );
-				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 3 ) )
+				( ( SegmentHypothesisVariable< Segment > ) factor.getVariables().get( 3 ) )
 						.addLeftNeighbor( factorIndicatorVariable );
 			} else if ( factor instanceof AppearanceFactor ) {
-				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 1 ) )
+				( ( SegmentHypothesisVariable< Segment > ) factor.getVariables().get( 1 ) )
 						.addLeftNeighbor( factorIndicatorVariable );
 			} else if ( factor instanceof DisappearanceFactor ) {
-				( ( SegmentHypothesisVariable< Segment > ) factor.getVariable( 1 ) )
+				( ( SegmentHypothesisVariable< Segment > ) factor.getVariables().get( 1 ) )
 						.addRightNeighbor( factorIndicatorVariable );
-			} else if ( factor instanceof BooleanFactor ) {
-				// BooleanFactors are NOT used to connect SegmentHypothesisVariables
 			} else {
 				throw new IllegalArgumentException( "Unknown factor class " + factor
 						.getClass()
@@ -163,25 +158,10 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	 * @param factorGraphPlus
 	 */
 	private void addRightContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
-		BooleanFactor factor;
 		int numRightContinuationConstraints = 0;
 
 		for ( final SegmentHypothesisVariable< Segment > segVar : frameFG.getSegmentVariables() ) {
-			final int sizeRN = segVar.getRightNeighbors().size();
-
-			// add constraint to right neighbors
-			final BooleanFunctionDomain bfd2 = new BooleanFunctionDomain( sizeRN + 1 );
-			factor = new BooleanFactor( bfd2, consumeNextFactorId() );
-			final double[] coeffs2 = new double[ sizeRN + 1 ];
-			coeffs2[ sizeRN ] = -1;
-			factor.setVariable( sizeRN, segVar );
-			for ( int i = 0; i < sizeRN; i++ ) {
-				coeffs2[ i ] = 1;
-				factor.setVariable( i, segVar.getRightNeighbors().get( i ) );
-			}
-			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs2, Relation.EQ, 0 ) );
-			factors.add( factor );
-
+			final Factor factor = Factors.firstEqualsSumOfOthersConstraint( segVar.getRightNeighbors() );
 			numRightContinuationConstraints++;
 		}
 		Tr2dLog.log.trace(
@@ -197,26 +177,10 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	 * @param factorGraphPlus
 	 */
 	private void addLeftContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
-		BooleanFactor factor;
 		int numLeftContinuationConstraints = 0;
 
 		for ( final SegmentHypothesisVariable< Segment > segVar : frameFG.getSegmentVariables() ) {
-			final int sizeLN = segVar.getLeftNeighbors().size();
-
-
-			// add constraint to left neighbors
-			final BooleanFunctionDomain bfd1 = new BooleanFunctionDomain( sizeLN + 1 );
-			factor = new BooleanFactor( bfd1, consumeNextFactorId() );
-			final double[] coeffs1 = new double[ sizeLN + 1 ];
-			coeffs1[ sizeLN ] = -1;
-			factor.setVariable( sizeLN, segVar );
-			for ( int i = 0; i < sizeLN; i++ ) {
-				coeffs1[ i ] = 1;
-				factor.setVariable( i, segVar.getLeftNeighbors().get( i ) );
-			}
-			factor.setFunction( new BooleanWeightedIndexSumConstraint( coeffs1, Relation.EQ, 0 ) );
-			factors.add( factor );
-
+			final Factor factor = Factors.firstEqualsSumOfOthersConstraint( segVar.getLeftNeighbors() );
 			numLeftContinuationConstraints++;
 		}
 		Tr2dLog.log.trace(

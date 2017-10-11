@@ -5,7 +5,7 @@ package com.indago.tr2d.fg.variables;
 
 import com.indago.data.segmentation.Segment;
 import com.indago.data.segmentation.fg.SegmentHypothesisVariable;
-import com.indago.old_fg.variable.BooleanVariable;
+import com.indago.fg.BooleanVariable;
 
 /**
  * @author jug

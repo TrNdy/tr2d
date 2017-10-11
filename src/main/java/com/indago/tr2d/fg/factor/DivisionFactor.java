@@ -3,21 +3,20 @@
  */
 package com.indago.tr2d.fg.factor;
 
-import com.indago.old_fg.domain.BooleanFunctionDomain;
-import com.indago.old_fg.factor.BooleanFactor;
+import java.util.Arrays;
+
+import com.indago.fg.Factor;
+import com.indago.fg.Function;
+import com.indago.fg.Variable;
 
 
 /**
  * @author jug
  */
-public class DivisionFactor extends BooleanFactor {
+public class DivisionFactor extends Factor {
 
-	/**
-	 * @param domain
-	 * @param id
-	 */
-	public DivisionFactor( final BooleanFunctionDomain domain, final int id ) {
-		super( domain, id );
+	public DivisionFactor( final Function function, final Variable... variables ) {
+		super( function, Arrays.asList( variables ) );
 	}
 
 }
