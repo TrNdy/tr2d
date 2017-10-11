@@ -101,6 +101,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private final List< ProgressListener > progressListeners = new ArrayList<>();
 
+	private SolveGurobi solver;
+
 	/**
 	 * @param model
 	 */
@@ -397,7 +399,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		fgSolution = null;
 		try {
 			SolveGurobi.GRB_PRESOLVE = 0;
-			fgSolution = SolveGurobi.staticSolve( fg, new DefaultLoggingGurobiCallback( Tr2dLog.gurobilog ) );
+			solver = new SolveGurobi();
+			fgSolution = solver.solve( fg, new DefaultLoggingGurobiCallback( Tr2dLog.gurobilog ) );
 			pgSolution = assMapper.map( fgSolution );
 		} catch ( final GRBException e ) {
 			e.printStackTrace();
@@ -507,6 +510,13 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public List< CostFactory< ? > > getCostFactories() {
 		return costFactories;
+	}
+
+	/**
+	 * @return the fgSolution
+	 */
+	public Assignment< Variable > getFgSolution() {
+		return fgSolution;
 	}
 
 	/**
@@ -643,5 +653,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public void removeProgressListener( final DialogProgress progress ) {
 		this.progressListeners.remove( progress );
+	}
+
+	/**
+	 * @return the solver
+	 */
+	public SolveGurobi getSolver() {
+		return solver;
 	}
 }

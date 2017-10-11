@@ -29,11 +29,11 @@ public class HernanDivisionCostFactory
 	private CostParams params;
 
 	/**
-    * @param destFrameId
-    * @param sourceImage
-    */
-	public HernanDivisionCostFactory(
-			final RandomAccessibleInterval< DoubleType > sourceImage ) {
+	 * @param sourceImage
+	 *            The original image these costs are computed for (by far not
+	 *            all costs depend on this image).
+	 */
+	public HernanDivisionCostFactory( final RandomAccessibleInterval< DoubleType > sourceImage ) {
 		this.sourceImage = sourceImage;
 
 		params = new CostParams();
@@ -82,24 +82,44 @@ public class HernanDivisionCostFactory
 	}
 
 	/**
-	 * @param segments
-	 * @return
+	 * For movements.
+	 *
+	 * @param s1
+	 *            A <code>LabelingSegment</code> at time <code>t</code>.
+	 * @param s2
+	 *            A <code>LabelingSegment</code> at time <code>t+1</code>.
+	 * @return computed size difference.
 	 */
 	private double deltaSize( final LabelingSegment s1, final LabelingSegment s2 ) {
 		return Math.abs( s1.getArea() - s2.getArea() );
 	}
 
 	/**
-	 * @param segments
-	 * @return
+	 * For divisions.
+	 *
+	 * @param s1
+	 *            A <code>LabelingSegment</code> at time <code>t</code>.
+	 * @param s2_1
+	 *            First of the two <code>LabelingSegment</code> at time
+	 *            <code>t+1</code>.
+	 * @param s2_2
+	 *            Second of the two <code>LabelingSegment</code> at time
+	 *            <code>t+1</code>.
+	 * @return the computed size difference.
 	 */
 	private double deltaSize( final LabelingSegment s1, final LabelingSegment s2_1, final LabelingSegment s2_2 ) {
 		return Math.abs( s1.getArea() - s2_1.getArea() - s2_2.getArea() );
 	}
 
 	/**
-	 * @param segments
-	 * @return
+	 * For movements.
+	 *
+	 * @param s1
+	 *            A <code>LabelingSegment</code> at time <code>t</code>.
+	 * @param s2
+	 *            A <code>LabelingSegment</code> at time
+	 *            <code>t+1</code>.
+	 * @return the squared centroid distance.
 	 */
 	private double deltaPosSquared( final LabelingSegment s1, final LabelingSegment s2 ) {
 		final RealLocalizable pos1 = s1.getCenterOfMass();
@@ -113,8 +133,18 @@ public class HernanDivisionCostFactory
 	}
 
 	/**
-	 * @param segments
-	 * @return
+	 * For divisions.
+	 *
+	 * @param s1
+	 *            A <code>LabelingSegment</code> at time <code>t</code>.
+	 * @param s2_1
+	 *            First <code>LabelingSegment</code> at time
+	 *            <code>t+1</code>.
+	 * @param s2_2
+	 *            First <code>LabelingSegment</code> at time
+	 *            <code>t+1</code>.
+	 * @return the mean squared centroid distance between s1 and either of the
+	 *         two s2_x.
 	 */
 	private double avgDeltaPosSquared( final LabelingSegment s1, final LabelingSegment s2_1, final LabelingSegment s2_2 ) {
 		final RealLocalizable pos1 = s1.getCenterOfMass();
@@ -134,9 +164,16 @@ public class HernanDivisionCostFactory
 	}
 
 	/**
+	 * For divisions.
+	 *
 	 * @param s1
+	 *            A <code>LabelingSegment</code> at time <code>t</code>.
 	 * @param s2_1
+	 *            First <code>LabelingSegment</code> at time
+	 *            <code>t+1</code>.
 	 * @param s2_2
+	 *            First <code>LabelingSegment</code> at time
+	 *            <code>t+1</code>.
 	 * @return Values between 0 and 90 (degrees)
 	 */
 	private double offElongationPenalty( final LabelingSegment s1, final LabelingSegment s2_1, final LabelingSegment s2_2 ) {
