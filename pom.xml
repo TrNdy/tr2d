@@ -45,6 +45,7 @@
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>Indago</artifactId>
+			<version>0.1.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.indago</groupId>
@@ -156,10 +157,10 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin> 
+			</plugin>
 		</plugins>
 	</build>
- 
+
 	<developers>
 		<developer>
 			<id>jug</id>

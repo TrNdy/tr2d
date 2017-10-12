@@ -385,7 +385,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void buildFactorGraph() {
 		final TicToc tictoc = new TicToc();
 		tictoc.tic( "Constructing FactorGraph for created Tr2dTrackingProblem..." );
-		mfg = FactorGraphFactory.createFactorGraph( tr2dTraProblem, progressListeners );
+		mfg = FactorGraphFactory.createFactorGraph( tr2dTraProblem, 25, progressListeners );
 		tictoc.toc( "done!" );
 	}
 

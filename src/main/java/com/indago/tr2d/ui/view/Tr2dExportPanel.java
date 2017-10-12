@@ -169,7 +169,9 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 			problemWriter.write( String.format( "# objective_value = %.12f\n", model.getTrackingModel().getSolver().getLatestEnergy() ) );
 
 			final MappedFactorGraph mfg = model.getTrackingModel().getMappedFactorGraph();
-			final Bimap< IndicatorNode, Variable > varmap = mfg.getVarmap();
+
+			// TODO: fix transitively (was Bimap)
+			final BimapOneToMany< IndicatorNode, Variable > varmap = mfg.getVarmap();
 
 			// Prepare the ability to modify the Gurobi variable names
 			// This is useful in order to debug exported FGs and the corresponding .lp file.
