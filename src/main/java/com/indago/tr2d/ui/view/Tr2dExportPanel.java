@@ -215,9 +215,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 					final String shortName = writeSegmentLine( t.getTime(), segment, next_segment_id, problemWriter );
 
 					if ( modifyGurobiVarNames ) {
-						try {
-							grbVars[ var2index.get( varmap.getB( segment ) ) ].set( GRB.StringAttr.VarName, shortName );
-						} catch ( final GRBException e ) {}
+						renameGurobiVariables( varmap, grbVars, var2index, segment, shortName );
 					}
 				}
 			}
@@ -235,9 +233,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						final String shortName = writeAppearanceLine( app, mapSeg2Id, problemWriter );
 
 						if ( modifyGurobiVarNames ) {
-							try {
-								grbVars[ var2index.get( varmap.getB( app ) ) ].set( GRB.StringAttr.VarName, shortName );
-							} catch ( final GRBException e ) {}
+							renameGurobiVariables( varmap, grbVars, var2index, app, shortName );
 						}
 					}
 					final Collection< DisappearanceHypothesis > disapps = segment.getOutAssignments().getDisappearances();
@@ -246,9 +242,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						final String shortName = writeDisappearanceLine( disapp, mapSeg2Id, problemWriter );
 
 						if ( modifyGurobiVarNames ) {
-							try {
-								grbVars[ var2index.get( varmap.getB( disapp ) ) ].set( GRB.StringAttr.VarName, shortName );
-							} catch ( final GRBException e ) {}
+							renameGurobiVariables( varmap, grbVars, var2index, disapp, shortName );
 						}
 					}
 					final Collection< MovementHypothesis > moves = segment.getOutAssignments().getMoves();
@@ -257,9 +251,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						final String shortName = writeMovementLine( move, mapSeg2Id, problemWriter );
 
 						if ( modifyGurobiVarNames ) {
-							try {
-								grbVars[ var2index.get( varmap.getB( move ) ) ].set( GRB.StringAttr.VarName, shortName );
-							} catch ( final GRBException e ) {}
+							renameGurobiVariables( varmap, grbVars, var2index, move, shortName );
 						}
 					}
 					final Collection< DivisionHypothesis > divs = segment.getOutAssignments().getDivisions();
@@ -268,9 +260,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 						final String shortName = writeDivisionLine( div, mapSeg2Id, problemWriter );
 
 						if ( modifyGurobiVarNames ) {
-							try {
-								grbVars[ var2index.get( varmap.getB( div ) ) ].set( GRB.StringAttr.VarName, shortName );
-							} catch ( final GRBException e ) {}
+							renameGurobiVariables( varmap, grbVars, var2index, div, shortName );
 						}
 					}
 					problemWriter.write( "\n" );
@@ -344,6 +334,31 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 					.showMessageDialog( this, "Cannot write in selected export folder... cancel export!", "File Error", JOptionPane.ERROR_MESSAGE );
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * @param varmap
+	 * @param grbVars
+	 * @param var2index
+	 * @param node
+	 * @param shortName
+	 */
+	private void renameGurobiVariables(
+			final BimapOneToMany< IndicatorNode, Variable > varmap,
+			final GRBVar[] grbVars,
+			final TObjectIntMap< Variable > var2index,
+			final IndicatorNode node,
+			final String shortName ) {
+		try {
+			final List< Variable > bs = varmap.getBs( node );
+			if ( bs.size() == 1 ) {
+				grbVars[ var2index.get( bs.get( 0 ) ) ].set( GRB.StringAttr.VarName, shortName );
+			} else {
+				for ( int delta = 0; delta < bs.size(); delta++ ) {
+					grbVars[ var2index.get( bs.get( delta ) ) ].set( GRB.StringAttr.VarName, shortName + "_delta" + delta );
+				}
+			}
+		} catch ( final GRBException e ) {}
 	}
 
 	/**
