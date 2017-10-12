@@ -46,6 +46,7 @@ import com.indago.tr2d.ui.util.SolutionExporter;
 import com.indago.tr2d.ui.util.SolutionExporter.Tracklet;
 import com.indago.tr2d.ui.util.UniversalFileChooser;
 import com.indago.util.Bimap;
+import com.indago.util.BimapOneToMany;
 
 import gnu.trove.map.TObjectIntMap;
 import gurobi.GRB;
@@ -57,7 +58,8 @@ import net.miginfocom.swing.MigLayout;
 
 
 /**
- * @author jug
+ * @author Tobias Pietzsch
+ * @author Florian Jug
  */
 public class Tr2dExportPanel extends JPanel implements ActionListener {
 

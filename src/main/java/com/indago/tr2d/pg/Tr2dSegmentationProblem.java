@@ -15,6 +15,10 @@ import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.levedit.EditState;
 import com.indago.util.Bimap;
 
+/**
+ * @author Tobias Pietzsch
+ * @author Florian Jug
+ */
 public class Tr2dSegmentationProblem implements SegmentationProblem {
 
 	private final int time;
@@ -37,7 +41,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 			final ConflictGraph< LabelingSegment > conflictGraph ) {
 		inAssignments = new AssignmentNodes();
 		outAssignments = new AssignmentNodes();
-		segmentBimap = new Bimap< >();
+		segmentBimap = new Bimap<>();
 
 		this.time = time;
 		this.segmentCosts = segmentCosts;
@@ -49,7 +53,6 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 
 	/**
 	 * @param labelingSegments
-	 * @param segmentCosts
 	 */
 	private void createSegmentVars( final List< LabelingSegment > labelingSegments ) {
 		for ( final LabelingSegment labelingSegment : labelingSegments ) {

@@ -26,7 +26,8 @@ import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 
 /**
- * @author jug
+ * @author Tobias Pietzsch
+ * @author Florian Jug
  */
 public class Tr2dTrackingProblem implements TrackingProblem {
 
