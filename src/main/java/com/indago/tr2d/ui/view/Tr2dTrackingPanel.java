@@ -9,10 +9,12 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 
 import com.indago.tr2d.ui.model.Tr2dSolDiffModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
@@ -35,6 +37,9 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 	private final Tr2dTrackingModel model;
 
 	private JTabbedPane tabs;
+
+	private JTextField txtMaxDelta;
+
 	private JButton bRun;
 	private JButton bRestart;
 	private JButton bRefetch;
@@ -87,6 +92,11 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		final JPanel controls = new JPanel( new MigLayout() );
 		final JPanel viewer = new JPanel( new BorderLayout() );
 
+		final JPanel panelMinDivDist = new JPanel( new MigLayout() );
+		txtMaxDelta = new JTextField( "0", 3 );
+		panelMinDivDist.add( txtMaxDelta, "growx, wrap" );
+		panelMinDivDist.setBorder( BorderFactory.createTitledBorder( "Divistion dist." ) );
+
 		bRun = new JButton( "track" );
 		bRun.addActionListener( this );
 		bRestart = new JButton( "restart" );
@@ -99,6 +109,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 						.options()
 						.is2D()
 						.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) ) );
+
+		controls.add( panelMinDivDist, "growx, wrap" );
 
 		controls.add( bRun, "growx, wrap" );
 		controls.add( bRestart, "growx, wrap" );
