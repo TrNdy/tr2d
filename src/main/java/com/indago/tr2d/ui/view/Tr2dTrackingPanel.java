@@ -8,6 +8,8 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -30,7 +32,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * @author jug
  */
-public class Tr2dTrackingPanel extends JPanel implements ActionListener {
+public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusListener {
 
 	private static final long serialVersionUID = -500536787731292765L;
 
@@ -94,6 +96,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 
 		final JPanel panelMinDivDist = new JPanel( new MigLayout() );
 		txtMaxDelta = new JTextField( "0", 3 );
+		txtMaxDelta.addActionListener( this );
+		txtMaxDelta.addFocusListener( this );
 		panelMinDivDist.add( txtMaxDelta, "growx, wrap" );
 		panelMinDivDist.setBorder( BorderFactory.createTitledBorder( "Divistion dist." ) );
 
@@ -134,20 +138,53 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		}
 
 		if ( e.getSource().equals( bRun ) ) {
-			model.runInThread( false );
+			parseAndSetMaxDeltaValueInModel();
+			model.runInThread( false, false );
 		} else if ( e.getSource().equals( bRestart ) ) {
 			this.frameEditPanel.emptyUndoRedoStacks();
+			parseAndSetMaxDeltaValueInModel();
 			model.runInThread( true, true );
 		} else if ( e.getSource().equals( bRefetch ) ) {
+			parseAndSetMaxDeltaValueInModel();
 			final Thread t = new Thread( new Runnable() {
 
 				@Override
 				public void run() {
 					model.reset();
-					model.runInThread( true );
+					model.runInThread( true, false );
 				}
 			} );
 			t.start();
+		} else if ( e.getSource().equals( txtMaxDelta ) ) {
+			parseAndSetMaxDeltaValueInModel();
+		}
+	}
+
+	/**
+	 * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusGained( final FocusEvent e ) {}
+
+	/**
+	 * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusLost( final FocusEvent e ) {
+		if ( e.getSource().equals( txtMaxDelta ) ) {
+			parseAndSetMaxDeltaValueInModel();
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void parseAndSetMaxDeltaValueInModel() {
+		try {
+			final int maxDelta = Integer.parseInt( txtMaxDelta.getText() );
+			model.setMaxDelta( maxDelta );
+		} catch ( final NumberFormatException e ) {
+			txtMaxDelta.setText( "" + model.getMaxDelta() );
 		}
 	}
 }

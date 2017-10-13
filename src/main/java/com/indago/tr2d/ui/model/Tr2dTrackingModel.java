@@ -103,6 +103,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private SolveGurobi solver;
 
+	private int maxDelta = 0;
+
 	/**
 	 * @param model
 	 */
@@ -243,7 +245,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			fireProgressEvent();
 			int i = 0;
 			while ( true ) {
-				Tr2dLog.log.info( "ITERATION " + i++ );
+				Tr2dLog.log.info( "FDD ITERATION " + i++ );
 				Tr2dLog.log.info( "=======================");
 
 				solveFactorGraph();
@@ -264,28 +266,13 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	/**
 	 * (Re)runs the trackins problem in a thread of it's own.
 	 * Additionally also takes care of the BDV.
-	 *
-	 * @param forceResolve
-	 * @return
 	 */
-	public Thread runInThread( final boolean forceResolve ) {
-		return this.runInThread( forceResolve, false );
-	}
-
 	public Thread runInThread( final boolean forceResolve, final boolean forceRebuildPG ) {
-		return this.runInThread( forceResolve, forceRebuildPG, 25 );
-	}
-
-	/**
-	 * (Re)runs the trackins problem in a thread of it's own.
-	 * Additionally also takes care of the BDV.
-	 */
-	public Thread runInThread( final boolean forceResolve, final boolean forceRebuildPG, final int maxDelta ) {
 		final Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
-				Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG, maxDelta );
+				Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG, Tr2dTrackingModel.this.maxDelta );
 
 				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
 				bdvRemoveAll();
@@ -675,5 +662,19 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public SolveGurobi getSolver() {
 		return solver;
+	}
+
+	/**
+	 * @param maxDelta
+	 */
+	public void setMaxDelta( final int maxDelta ) {
+		this.maxDelta = maxDelta;
+	}
+
+	/**
+	 * @return
+	 */
+	public int getMaxDelta() {
+		return this.maxDelta;
 	}
 }

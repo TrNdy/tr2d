@@ -889,7 +889,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		// Since this is the same for all LevEdits, I put it here
 		if ( reprepAndRun ) {
 			model.prepareFG();
-			model.runInThread( true );
+			model.runInThread( true, false );
 		}
 	}
 
@@ -960,7 +960,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				setFrameToShow( editTime );
 			}
 			model.prepareFG();
-			model.runInThread( true );
+			model.runInThread( true, false );
 		}
 	}
 
@@ -988,7 +988,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 				setFrameToShow( editTime );
 			}
 			model.prepareFG();
-			model.runInThread( true );
+			model.runInThread( true, false );
 		}
 	}
 
@@ -1478,7 +1478,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		case 0:
 			callUndo();
 			model.prepareFG();
-			model.runInThread( true );
+			model.runInThread( true, false );
 			break;
 		case 1:
 			SwingUtilities.invokeLater( new Runnable() {
