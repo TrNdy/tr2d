@@ -207,7 +207,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * Does not force resolving. If wanted: call <code>run(true)</code>.
 	 */
 	public void run() {
-		run( false, false );
+		run( false, false, 0 );
 	}
 
 	/**
@@ -222,8 +222,10 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * @param forceRebuildPG
 	 *            true, force problem graph rebuild (drops all leveraged editing
 	 *            constraints etc.)
+	 * @param maxDelta
+	 *            forced division distance.
 	 */
-	public void run( final boolean forceSolving, final boolean forceRebuildPG ) {
+	public void run( final boolean forceSolving, final boolean forceRebuildPG, final int maxDelta ) {
 		boolean doSolving = forceSolving;
 
 		if ( tr2dTraProblem == null || forceRebuildPG ) {
@@ -239,7 +241,16 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		if (doSolving) {
 			fireNextProgressPhaseEvent( "Solving tracking with GUROBI...", 3 );
 			fireProgressEvent();
-    		solveFactorGraph();
+			int i = 0;
+			while ( true ) {
+				Tr2dLog.log.info( "ITERATION " + i++ );
+				Tr2dLog.log.info( "=======================");
+
+				solveFactorGraph();
+				if ( tr2dTraProblem.forceViolatedDivisionDistances( pgSolution, maxDelta ) )
+					prepareFG();
+				else break;
+			}
 			fireProgressEvent();
 			imgSolution = SolutionVisulizer.drawSolutionSegmentImages( this, pgSolution );
     		saveSolution();
@@ -261,17 +272,20 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		return this.runInThread( forceResolve, false );
 	}
 
+	public Thread runInThread( final boolean forceResolve, final boolean forceRebuildPG ) {
+		return this.runInThread( forceResolve, forceRebuildPG, 25 );
+	}
+
 	/**
 	 * (Re)runs the trackins problem in a thread of it's own.
 	 * Additionally also takes care of the BDV.
 	 */
-	public Thread runInThread( final boolean forceResolve, final boolean forceRebuildPG ) {
-//		final Tr2dTrackingModel self = this;
+	public Thread runInThread( final boolean forceResolve, final boolean forceRebuildPG, final int maxDelta ) {
 		final Runnable runnable = new Runnable() {
 
 			@Override
 			public void run() {
-				Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG );
+				Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG, maxDelta );
 
 				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
 				bdvRemoveAll();
@@ -385,7 +399,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void buildFactorGraph() {
 		final TicToc tictoc = new TicToc();
 		tictoc.tic( "Constructing FactorGraph for created Tr2dTrackingProblem..." );
-		mfg = FactorGraphFactory.createFactorGraph( tr2dTraProblem, 25, progressListeners );
+		mfg = FactorGraphFactory.createFactorGraph( tr2dTraProblem, progressListeners );
 		tictoc.toc( "done!" );
 	}
 
