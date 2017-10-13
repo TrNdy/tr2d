@@ -4,6 +4,9 @@
 package com.indago.tr2d.ui.model;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +44,8 @@ import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.util.SolutionVisulizer;
 import com.indago.ui.bdv.BdvWithOverlaysOwner;
 import com.indago.util.TicToc;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOverlay;
@@ -64,6 +69,7 @@ import net.imglib2.util.ValuePair;
  */
 public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
+	private final String FILENAME_STATE = "state.csv";
 	private final ProjectFolder dataFolder;
 
 	private final String FOLDER_LABELING_FRAMES = "labeling_frames";
@@ -103,7 +109,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private SolveGurobi solver;
 
-	private int maxDelta = 0;
+	private int maxDelta;
 
 	/**
 	 * @param model
@@ -153,6 +159,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		} catch ( final IOException ioe ) {
 			ioe.printStackTrace();
 		}
+
+		loadStateFromProjectFolder();
 	}
 
 	/**
@@ -206,18 +214,6 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * Does not take care of the BDV.
 	 * For a threaded version us <code>runInThread</code>, which also takes care
 	 * of BDV.
-	 * Does not force resolving. If wanted: call <code>run(true)</code>.
-	 */
-	public void run() {
-		run( false, false, 0 );
-	}
-
-	/**
-	 * Runs the optimization for the prepared tracking (in <code>prepare</code>
-	 * was never called, this function will call it).
-	 * Does not take care of the BDV.
-	 * For a threaded version us <code>runInThread</code>, which also takes care
-	 * of BDV.
 	 *
 	 * @param forceSolving
 	 *            true, force resolve in any case.
@@ -227,7 +223,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * @param maxDelta
 	 *            forced division distance.
 	 */
-	public void run( final boolean forceSolving, final boolean forceRebuildPG, final int maxDelta ) {
+	public void run( final boolean forceSolving, final boolean forceRebuildPG ) {
 		boolean doSolving = forceSolving;
 
 		if ( tr2dTraProblem == null || forceRebuildPG ) {
@@ -240,7 +236,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			doSolving = true;
 		}
 
-		if (doSolving) {
+		if ( doSolving || tr2dTraProblem.forceViolatedDivisionDistances( pgSolution, this.maxDelta ) ) {
 			fireNextProgressPhaseEvent( "Solving tracking with GUROBI...", 3 );
 			fireProgressEvent();
 			int i = 0;
@@ -249,8 +245,9 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				Tr2dLog.log.info( "=======================");
 
 				solveFactorGraph();
-				if ( tr2dTraProblem.forceViolatedDivisionDistances( pgSolution, maxDelta ) )
+				if ( tr2dTraProblem.forceViolatedDivisionDistances( pgSolution, this.maxDelta ) ) {
 					prepareFG();
+				}
 				else break;
 			}
 			fireProgressEvent();
@@ -272,7 +269,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 			@Override
 			public void run() {
-				Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG, Tr2dTrackingModel.this.maxDelta );
+				Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG );
 
 				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
 				bdvRemoveAll();
@@ -676,5 +673,38 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public int getMaxDelta() {
 		return this.maxDelta;
+	}
+
+	/**
+	 *
+	 */
+	public void saveStateToFile() {
+		try {
+			final FileWriter writer = new FileWriter( new File( dataFolder.getFolder(), FILENAME_STATE ) );
+			writer.append( "" + this.maxDelta );
+			writer.append( ", " );
+			writer.flush();
+			writer.close();
+		} catch ( final IOException e ) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void loadStateFromProjectFolder() {
+		final CsvParser parser = new CsvParser( new CsvParserSettings() );
+
+		final File guiState = dataFolder.addFile( FILENAME_STATE ).getFile();
+		try {
+			final List< String[] > rows = parser.parseAll( new FileReader( guiState ) );
+			final String[] strings = rows.get( 0 );
+			try {
+				this.maxDelta = Integer.parseInt( strings[ 0 ] );
+			} catch ( final NumberFormatException e ) {
+				this.maxDelta = 0;
+			}
+		} catch ( final FileNotFoundException e ) {}
 	}
 }

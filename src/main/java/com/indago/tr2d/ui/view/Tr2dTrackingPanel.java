@@ -95,7 +95,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		final JPanel viewer = new JPanel( new BorderLayout() );
 
 		final JPanel panelMinDivDist = new JPanel( new MigLayout() );
-		txtMaxDelta = new JTextField( "0", 3 );
+		txtMaxDelta = new JTextField( "" + model.getMaxDelta(), 3 );
 		txtMaxDelta.addActionListener( this );
 		txtMaxDelta.addFocusListener( this );
 		panelMinDivDist.add( txtMaxDelta, "growx, wrap" );
@@ -132,10 +132,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	 */
 	@Override
 	public void actionPerformed( final ActionEvent e ) {
-		if ( trackingProgressDialog == null ) {
-			trackingProgressDialog = new DialogProgress( this, "Starting tracking...", 10 );
-			model.addProgressListener( trackingProgressDialog );
-		}
+		createProgressDialog();
 
 		if ( e.getSource().equals( bRun ) ) {
 			parseAndSetMaxDeltaValueInModel();
@@ -157,6 +154,17 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 			t.start();
 		} else if ( e.getSource().equals( txtMaxDelta ) ) {
 			parseAndSetMaxDeltaValueInModel();
+			model.saveStateToFile();
+		}
+	}
+
+	/**
+	 * 
+	 */
+	public void createProgressDialog() {
+		if ( trackingProgressDialog == null ) {
+			trackingProgressDialog = new DialogProgress( this, "Starting tracking...", 10 );
+			model.addProgressListener( trackingProgressDialog );
 		}
 	}
 
@@ -173,6 +181,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	public void focusLost( final FocusEvent e ) {
 		if ( e.getSource().equals( txtMaxDelta ) ) {
 			parseAndSetMaxDeltaValueInModel();
+			model.saveStateToFile();
 		}
 	}
 
