@@ -58,6 +58,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		for ( final LabelingSegment labelingSegment : labelingSegments ) {
 			final SegmentNode segVar =
 					new SegmentNode( labelingSegment, segmentCosts.getCost( labelingSegment ) );
+			segVar.setSegmentationProblem( this );
 			segments.add( segVar );
 			segmentBimap.add( segVar, labelingSegment );
 		}
@@ -96,16 +97,17 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	}
 
 	public ConflictSet getConflictSetFor( final SegmentNode node ) {
+		final ConflictSet cs = new ConflictSet();
 		for ( final Collection< LabelingSegment > clique : conflictGraph.getConflictGraphCliques() ) {
 			if ( clique.contains( node.getSegment() ) ) {
-				final ConflictSet cs = new ConflictSet();
 				for ( final LabelingSegment ls : clique ) {
 					cs.add( segmentBimap.getA( ls ) );
 				}
 				return cs;
 			}
 		}
-		return new ConflictSet();
+		cs.add( node );
+		return cs;
 	}
 
 	public SegmentNode getSegmentVar( final LabelingSegment segment ) {
