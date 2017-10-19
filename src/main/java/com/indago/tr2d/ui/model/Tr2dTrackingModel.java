@@ -110,6 +110,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private SolveGurobi solver;
 
 	private int maxDelta;
+	private boolean iterativeMinDivDistEnforcing;
 
 	/**
 	 * @param model
@@ -367,7 +368,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			// add it to Tr2dTrackingProblem
 			// =============================
 			tictoc.tic( "Connect it to Tr2dTrackingProblem..." );
-			tr2dTraProblem.addSegmentationProblem( segmentationProblem );
+			// while adding a segmentation problem we decide if to set a global maxDelta (enforcing a minimum division distance)
+			tr2dTraProblem.addSegmentationProblem( segmentationProblem, isIterativelySolvingMinDivDist() ? 0 : getMaxDelta() );
 			tictoc.toc( "done!" );
 
 			fireProgressEvent();
@@ -683,6 +685,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			final FileWriter writer = new FileWriter( new File( dataFolder.getFolder(), FILENAME_STATE ) );
 			writer.append( "" + this.maxDelta );
 			writer.append( ", " );
+			writer.append( "" + this.iterativeMinDivDistEnforcing );
+			writer.append( ", " );
 			writer.flush();
 			writer.close();
 		} catch ( final IOException e ) {
@@ -702,9 +706,25 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			final String[] strings = rows.get( 0 );
 			try {
 				this.maxDelta = Integer.parseInt( strings[ 0 ] );
+				this.iterativeMinDivDistEnforcing = Boolean.parseBoolean( strings[ 1 ] );
 			} catch ( final NumberFormatException e ) {
 				this.maxDelta = 0;
+				this.iterativeMinDivDistEnforcing = true;
 			}
 		} catch ( final FileNotFoundException e ) {}
+	}
+
+	/**
+	 * @param b
+	 */
+	public void setIterativelySolvingMinDivDist( final boolean b ) {
+		this.iterativeMinDivDistEnforcing = b;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean isIterativelySolvingMinDivDist() {
+		return this.iterativeMinDivDistEnforcing;
 	}
 }

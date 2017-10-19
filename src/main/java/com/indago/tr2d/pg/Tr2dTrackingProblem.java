@@ -1,5 +1,17 @@
 package com.indago.tr2d.pg;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang.NotImplementedException;
+
 import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.fg.Assignment;
@@ -12,23 +24,13 @@ import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.ui.model.Tr2dFlowModel;
+
 import net.imglib2.KDTree;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.neighborsearch.RadiusNeighborSearchOnKDTree;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
-import org.apache.commons.lang.NotImplementedException;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Tobias Pietzsch
@@ -69,7 +71,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	/**
 	 * @param segmentationProblem
 	 */
-	public void addSegmentationProblem( final Tr2dSegmentationProblem segmentationProblem ) {
+	public void addSegmentationProblem( final Tr2dSegmentationProblem segmentationProblem, final int defaultMaxDelta ) {
 		if ( timepoints.size() == 0 ) {
 			timepoints.add( segmentationProblem );
 			addAppearanceToLatestFrame( true );
@@ -77,6 +79,12 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			addDisappearanceToLatestFrame();
 			timepoints.add( segmentationProblem );
 			addAppearanceToLatestFrame( false );
+		}
+
+		if ( defaultMaxDelta > 0 ) {
+			for ( final SegmentNode node : segmentationProblem.getSegments() ) {
+				node.setMaxDelta( defaultMaxDelta );
+			}
 		}
 
 		if ( timepoints.size() >= 2 ) {
@@ -251,10 +259,10 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	/**
 	 * @return {@code true} if any violating paths were found.
 	 */
-	public boolean forceViolatedDivisionDistances( Assignment<IndicatorNode> pgSolution, final int maxDelta ) {
+	public boolean forceViolatedDivisionDistances( final Assignment<IndicatorNode> pgSolution, final int maxDelta ) {
 
 		// find active divisions
-		Set< DivisionHypothesis > activeDivisions = timepoints.stream()
+		final Set< DivisionHypothesis > activeDivisions = timepoints.stream()
 				.flatMap( segProblem -> segProblem.getSegments().stream() )
 				.filter( segNode -> pgSolution.getAssignment( segNode ) == 1 )
 				.flatMap( segNode -> segNode.getOutAssignments().getDivisions().stream() )
@@ -262,16 +270,16 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 				.collect( Collectors.toSet() );
 
 		// find violating paths
-		Set< List< SegmentNode > > violationPaths = new HashSet<>();
-		for ( DivisionHypothesis divNode : activeDivisions ) {
+		final Set< List< SegmentNode > > violationPaths = new HashSet<>();
+		for ( final DivisionHypothesis divNode : activeDivisions ) {
 			// trace backwards to check whether the previous division is at least maxDelta steps in the past
 
-			List< SegmentNode > path = new ArrayList<>();
+			final List< SegmentNode > path = new ArrayList<>();
 			path.add( divNode.getSrc() );
 
 			for( int delta = 1; delta <= maxDelta; ++delta ) {
 				final SegmentNode segNode = path.get( path.size() - 1 );
-				Optional< DivisionHypothesis > maybeDiv = segNode.getInAssignments().getDivisions()
+				final Optional< DivisionHypothesis > maybeDiv = segNode.getInAssignments().getDivisions()
 						.stream().filter( d -> pgSolution.getAssignment( d ) == 1 ).findFirst();
 				if ( maybeDiv.isPresent() ) {
 					path.add( maybeDiv.get().getSrc() );
@@ -279,7 +287,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					violationPaths.add( path );
 					break;
 				} else {
-					Optional< MovementHypothesis > maybeMove = segNode.getInAssignments().getMoves()
+					final Optional< MovementHypothesis > maybeMove = segNode.getInAssignments().getMoves()
 							.stream().filter( m -> pgSolution.getAssignment( m ) == 1 ).findFirst();
 					if ( maybeMove.isPresent() ) {
 						path.add( maybeMove.get().getSrc() );
@@ -291,7 +299,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			}
 		}
 
-		violationPaths.forEach( ( List< SegmentNode > path ) -> {
+		violationPaths.forEach( ( final List< SegmentNode > path ) -> {
 				Tr2dLog.log.info( "violating path: " +
 							path.stream().map( s -> String.valueOf( s.hashCode() ) ).collect( Collectors.reducing("", ( a, b ) -> a + ", " + b ) ) );
 				} );

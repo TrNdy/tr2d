@@ -13,6 +13,7 @@ import java.awt.event.FocusListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -40,6 +41,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 
 	private JTabbedPane tabs;
 
+	private JCheckBox cbIterativeFixing;
 	private JTextField txtMaxDelta;
 
 	private JButton bRun;
@@ -98,12 +100,16 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		txtMaxDelta = new JTextField( "" + model.getMaxDelta(), 3 );
 		txtMaxDelta.addActionListener( this );
 		txtMaxDelta.addFocusListener( this );
+		cbIterativeFixing = new JCheckBox( "only when violated" );
+		cbIterativeFixing.setSelected( model.isIterativelySolvingMinDivDist() );
+		cbIterativeFixing.addActionListener( this );
 		panelMinDivDist.add( txtMaxDelta, "growx, wrap" );
-		panelMinDivDist.setBorder( BorderFactory.createTitledBorder( "Divistion dist." ) );
+		panelMinDivDist.add( cbIterativeFixing, "growx, wrap" );
+		panelMinDivDist.setBorder( BorderFactory.createTitledBorder( "Min division dist." ) );
 
-		bRun = new JButton( "track" );
+		bRun = new JButton( "track again" );
 		bRun.addActionListener( this );
-		bRestart = new JButton( "restart" );
+		bRestart = new JButton( "track" );
 		bRestart.addActionListener( this );
 		bRefetch = new JButton( "fetch & track" );
 		bRefetch.addActionListener( this );
@@ -135,14 +141,15 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		createProgressDialog();
 
 		if ( e.getSource().equals( bRun ) ) {
-			parseAndSetMaxDeltaValueInModel();
+			parseAndSetDivisionDistanceSettingsInModel();
 			model.runInThread( false, false );
 		} else if ( e.getSource().equals( bRestart ) ) {
 			this.frameEditPanel.emptyUndoRedoStacks();
-			parseAndSetMaxDeltaValueInModel();
+			parseAndSetDivisionDistanceSettingsInModel();
 			model.runInThread( true, true );
+			bRun.setEnabled( true );
 		} else if ( e.getSource().equals( bRefetch ) ) {
-			parseAndSetMaxDeltaValueInModel();
+			parseAndSetDivisionDistanceSettingsInModel();
 			final Thread t = new Thread( new Runnable() {
 
 				@Override
@@ -152,14 +159,21 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 				}
 			} );
 			t.start();
+			bRun.setEnabled( true );
 		} else if ( e.getSource().equals( txtMaxDelta ) ) {
-			parseAndSetMaxDeltaValueInModel();
+			parseAndSetDivisionDistanceSettingsInModel();
 			model.saveStateToFile();
+		} else if ( e.getSource().equals( cbIterativeFixing ) ) {
+			parseAndSetDivisionDistanceSettingsInModel();
+			model.saveStateToFile();
+			if ( !model.isIterativelySolvingMinDivDist() ) {
+				bRun.setEnabled( false );
+			}
 		}
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public void createProgressDialog() {
 		if ( trackingProgressDialog == null ) {
@@ -180,20 +194,28 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	@Override
 	public void focusLost( final FocusEvent e ) {
 		if ( e.getSource().equals( txtMaxDelta ) ) {
-			parseAndSetMaxDeltaValueInModel();
+			parseAndSetDivisionDistanceSettingsInModel();
 			model.saveStateToFile();
+			if ( !model.isIterativelySolvingMinDivDist() ) {
+				bRun.setEnabled( false );
+			}
 		}
 	}
 
 	/**
 	 *
 	 */
-	private void parseAndSetMaxDeltaValueInModel() {
+	private void parseAndSetDivisionDistanceSettingsInModel() {
 		try {
 			final int maxDelta = Integer.parseInt( txtMaxDelta.getText() );
 			model.setMaxDelta( maxDelta );
 		} catch ( final NumberFormatException e ) {
 			txtMaxDelta.setText( "" + model.getMaxDelta() );
+		}
+		try {
+			model.setIterativelySolvingMinDivDist( cbIterativeFixing.isSelected() );
+		} catch ( final NumberFormatException e ) {
+			cbIterativeFixing.setSelected( true );
 		}
 	}
 }
