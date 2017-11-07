@@ -7,7 +7,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
-import org.slf4j.Logger;
+import org.scijava.log.Logger;
 
 import com.indago.tr2d.ui.model.Tr2dModel;
 
@@ -28,5 +28,5 @@ public interface Tr2dSegmentationPlugin extends ImageJPlugin {
 
 	String getUiName();
 
-	Logger getLogger();
+	public void setLogger( Logger logger );
 }

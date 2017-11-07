@@ -45,14 +45,11 @@
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>Indago</artifactId>
+			<version>0.1.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>indago-ui-elements</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.indago</groupId>
-			<artifactId>IndagoLoggingWrapper</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>
@@ -90,6 +87,11 @@
 		<dependency>
 			<groupId>nz.ac.waikato.cms.weka</groupId>
 			<artifactId>weka-dev</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
+			<version>2.66.1</version>
 		</dependency>
 	</dependencies>
 
