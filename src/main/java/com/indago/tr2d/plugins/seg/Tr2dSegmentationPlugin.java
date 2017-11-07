@@ -13,7 +13,6 @@ import com.indago.tr2d.ui.model.Tr2dModel;
 
 import net.imagej.ImageJPlugin;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.integer.IntType;
 
 /**
@@ -21,17 +20,13 @@ import net.imglib2.type.numeric.integer.IntType;
  */
 public interface Tr2dSegmentationPlugin extends ImageJPlugin {
 
-	public JPanel getInteractionPanel();
+	JPanel getInteractionPanel();
 
-	public < T extends NativeType< T > > void addInput( RandomAccessibleInterval< T > rai );
+	List< RandomAccessibleInterval< IntType > > getOutputs();
 
-	public < T extends NativeType< T > > List< RandomAccessibleInterval< T > > getInputs();
+	void setTr2dModel( Tr2dModel model );
 
-	public List< RandomAccessibleInterval< IntType > > getOutputs();
+	String getUiName();
 
-	public void setTr2dModel( Tr2dModel model );
-
-	public String getUiName();
-
-	public Logger getLogger();
+	Logger getLogger();
 }
