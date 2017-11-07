@@ -3,16 +3,15 @@ package com.indago.tr2d;
  *
  */
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.indago.IndagoLog;
+import org.scijava.log.Logger;
 
 /**
  * @author jug
  */
 public class Tr2dLog {
 
-	public static Logger log = LoggerFactory.getLogger( "tr2d" );
-	public static Logger gurobilog = LoggerFactory.getLogger( "gurobi" );
+	public static Logger log = IndagoLog.stderrLogger().subLogger("tr2d");
+	public static Logger gurobilog = IndagoLog.stderrLogger().subLogger("gurobi");
 
 }

@@ -3,15 +3,16 @@ package com.indago.tr2d.plugins.seg;
 import java.util.HashMap;
 import java.util.Set;
 
+import com.indago.tr2d.Tr2dLog;
 import org.scijava.plugin.AbstractPTService;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.PluginInfo;
 import org.scijava.service.Service;
 
-import com.indago.log.LoggingPanel;
 import com.indago.tr2d.ui.model.Tr2dModel;
 
 import net.imagej.ImageJService;
+import com.indago.log.LoggingPanel;
 
 @Plugin(type = Service.class)
 public class Tr2dSegmentationPluginService extends AbstractPTService< Tr2dSegmentationPlugin >
@@ -37,7 +38,7 @@ public class Tr2dSegmentationPluginService extends AbstractPTService< Tr2dSegmen
 
 		// Next, we use the plugin service to create an animal of that kind.
 		final Tr2dSegmentationPlugin segPlugin = getPluginService().createInstance( info );
-		logPanel.addAcceptedLogger( segPlugin.getLogger() );
+		segPlugin.setLogger( Tr2dLog.log.subLogger(name) );
 		segPlugin.setTr2dModel( model );
 
 		return segPlugin;

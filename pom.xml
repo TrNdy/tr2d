@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>sc.fiji</groupId>
 		<artifactId>pom-indago</artifactId>
-		<version>2.2.2</version>
+		<version>2.2.4-SNAPSHOT</version>
 	</parent>
 
  	<properties>
@@ -52,10 +52,6 @@
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>indago-ui-elements</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.indago</groupId>
-			<artifactId>IndagoLoggingWrapper</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
