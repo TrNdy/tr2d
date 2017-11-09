@@ -26,7 +26,6 @@ public class HernanMovementCostFactory
 	private CostParams params;
 
 	/**
-	 * @param destFrameId
 	 * @param sourceImage
 	 */
 	public HernanMovementCostFactory(
@@ -70,7 +69,9 @@ public class HernanMovementCostFactory
 	}
 
 	/**
-	 * @param segments
+	 *
+	 * @param s1
+	 * @param s2
 	 * @return
 	 */
 	private double deltaSize( final LabelingSegment s1, final LabelingSegment s2 ) {
@@ -78,7 +79,10 @@ public class HernanMovementCostFactory
 	}
 
 	/**
-	 * @param segments
+	 *
+	 * @param s1
+	 * @param s2
+	 * @param flow
 	 * @return
 	 */
 	private double deltaPosSquared( final LabelingSegment s1, final LabelingSegment s2, final Pair< Double, Double > flow ) {

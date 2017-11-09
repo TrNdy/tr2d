@@ -12,7 +12,8 @@ import com.indago.fg.Relation;
 public class BooleanAssignmentConstraint extends BooleanWeightedIndexSumConstraint {
 
 	/**
-	 * @param mappingConstraintDomain
+	 *
+	 * @param dimensions
 	 */
 	public BooleanAssignmentConstraint( final int dimensions ) {
 		// Encode the constraint: ((D-1) * c_1) - c_2 - ... - c_D <= 0

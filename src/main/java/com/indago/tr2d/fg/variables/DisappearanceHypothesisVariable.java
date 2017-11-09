@@ -17,7 +17,7 @@ public class DisappearanceHypothesisVariable< S extends Segment, T extends Segme
 	private final T segVar;
 
 	/**
-	 * @param value
+	 * @param segment
 	 */
 	public DisappearanceHypothesisVariable( final T segment ) {
 		this.segVar = segment;

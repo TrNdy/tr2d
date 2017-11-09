@@ -1154,7 +1154,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	/**
 	 * Switches to the given frame.
-	 * Switches to frame 0 if a number <0 is given and to the last frame if the
+	 * Switches to frame 0 if a number &lt;0 is given and to the last frame if the
 	 * given number exceeds the number of frames.
 	 */
 	public void setFrameToShow( final int frameNumToShow ) {

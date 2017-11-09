@@ -25,7 +25,6 @@ public class Tr2dProjectFolder extends ProjectFolder {
 	public static String RAW_DATA = "RAW_DATA";
 
 	/**
-	 * @param id
 	 * @param baseFolder
 	 * @throws IOException
 	 */
@@ -43,7 +42,7 @@ public class Tr2dProjectFolder extends ProjectFolder {
 	}
 
 	/**
-	 * @param absolutePath
+	 * @param pathToRawDataFile
 	 */
 	public void restartWithRawDataFile( final String pathToRawDataFile ) {
 		try {

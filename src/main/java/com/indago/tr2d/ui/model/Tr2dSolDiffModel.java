@@ -85,7 +85,7 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 	}
 
 	/**
-	 * @see com.indago.ui.bdv.BdvOwner#setBdvHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvSetHandlePanel(BdvHandlePanel)
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {

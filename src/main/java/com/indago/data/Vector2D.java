@@ -32,8 +32,9 @@ public class Vector2D extends Point2D {
 	}
 
 	/**
-	 * @param vector
-	 *            the vector to set
+	 *
+	 * @param x
+	 * @param y
 	 */
 	public void setVector( final double x, final double y ) {
 		super.setX( x );

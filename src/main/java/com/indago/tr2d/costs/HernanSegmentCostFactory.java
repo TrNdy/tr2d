@@ -33,8 +33,6 @@ public class HernanSegmentCostFactory implements CostFactory< LabelingSegment > 
 	private CostParams params;
 
 	/**
-	 * @param frameId
-	 * @param segments
 	 * @param sourceImage
 	 */
 	public HernanSegmentCostFactory(

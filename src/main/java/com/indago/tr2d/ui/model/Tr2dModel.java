@@ -46,7 +46,7 @@ public class Tr2dModel {
 
 	/**
 	 *
-	 * @param projectFolderBasePath
+	 * @param projectFolder
 	 * @param imgPlus
 	 */
 	public Tr2dModel( final ProjectFolder projectFolder, final ImagePlus imgPlus ) {
@@ -65,7 +65,7 @@ public class Tr2dModel {
 
 	/**
 	 * Sets the ref to the main UI panel of Tr2d.
-	 * 
+	 *
 	 * @param mainPanel
 	 */
 	public void setRefToMainPanel( final Tr2dMainPanel mainPanel ) {

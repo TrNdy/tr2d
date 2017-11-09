@@ -61,7 +61,9 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	private final LoggingPanel logPanel;
 
 	/**
-	 * @param imgPlus
+	 *
+	 * @param frame
+	 * @param model
 	 */
 	public Tr2dMainPanel( final Frame frame, final Tr2dModel model ) {
 		super( new BorderLayout( 5, 5 ) );

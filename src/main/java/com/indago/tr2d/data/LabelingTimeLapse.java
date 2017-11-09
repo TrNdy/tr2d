@@ -52,7 +52,8 @@ public class LabelingTimeLapse {
 	private boolean processedOrLoaded;
 
 	/**
-	 * @param tr2dSegModel2
+	 *
+	 * @param model
 	 */
 	public LabelingTimeLapse( final Tr2dSegmentationCollectionModel model ) {
 		this.model = model;

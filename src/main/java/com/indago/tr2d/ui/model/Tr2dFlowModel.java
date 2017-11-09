@@ -166,7 +166,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.ui.bdv.BdvOwner#setBdvHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvSetHandlePanel(BdvHandlePanel)
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {
@@ -327,7 +327,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @param parseDouble
+	 * @param factor
 	 */
 	public void setScaleFactor( final double factor ) {
 		this.scaleFactor = factor;

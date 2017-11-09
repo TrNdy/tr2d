@@ -18,7 +18,9 @@ public class MovementHypothesisVariable< S extends Segment, T extends SegmentHyp
 	private final T destSegVar;
 
 	/**
-	 * @param value
+	 *
+	 * @param sourceSegment
+	 * @param destSegment
 	 */
 	public MovementHypothesisVariable( final T sourceSegment, final T destSegment ) {
 		this.sourceSegVar = sourceSegment;

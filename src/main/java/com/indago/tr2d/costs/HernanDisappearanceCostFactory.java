@@ -21,7 +21,6 @@ public class HernanDisappearanceCostFactory implements CostFactory< LabelingSegm
 	private CostParams params;
 
 	/**
-	 * @param frameId
 	 * @param imgOrig
 	 */
 	public HernanDisappearanceCostFactory(

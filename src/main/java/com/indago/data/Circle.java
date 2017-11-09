@@ -27,10 +27,6 @@ public class Circle {
 	 *            ellipse.
 	 * @param radius
 	 *            counter-clockwise rotation fo the ellipse -- given in rad!
-	 * @param a
-	 *            length of major axis.
-	 * @param b
-	 *            length of minor axis.
 	 */
 	public Circle( final Point2D offset, final double radius ) {
 		this.setCenter( offset );
@@ -82,7 +78,7 @@ public class Circle {
 	}
 
 	/**
-	 * @param point2d
+	 * @param p
 	 * @return
 	 */
 	public boolean contains( final Point2D p ) {

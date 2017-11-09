@@ -24,7 +24,7 @@ public class PixelCloud2D< T > {
 	}
 
 	/**
-	 * @param points2
+	 * @param cloud
 	 */
 	public PixelCloud2D( final List< Pixel2D< T >> cloud ) {
 		points = new ArrayList< Pixel2D< T > >();
@@ -40,7 +40,6 @@ public class PixelCloud2D< T > {
 
 	/**
 	 * @param p
-	 * @param weight
 	 */
 	public void addPoint( final Pixel2D< T > p ) {
 		getPoints().add( p );
@@ -185,7 +184,7 @@ public class PixelCloud2D< T > {
 
 	/**
 	 * Currently this needs linear running time (in the size of the cloud)! :(
-	 * 
+	 *
 	 * @param p
 	 *            Point2D
 	 * @return returns the point from the cloud that is closest to p. (Null if

@@ -21,7 +21,7 @@ public class Tr2dSegmentationPluginService extends AbstractPTService< Tr2dSegmen
 
 	/**
 	 * Gets the list of available plugin types.
-	 * The names on this list can be passed to {@link #createTr2dPlugin(String)}
+	 * The names on this list can be passed to {@link #createPlugin(String, Tr2dModel, LoggingPanel)}}
 	 * to create instances of that animal.
 	 */
 	public Set< String > getPluginNames() {

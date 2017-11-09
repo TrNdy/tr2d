@@ -22,7 +22,10 @@ public class DivisionHypothesisVariable< S extends Segment, T extends SegmentHyp
 	private final T destSegVar2;
 
 	/**
-	 * @param value
+	 *
+	 * @param sourceSegment
+	 * @param destSegment1
+	 * @param destSegment2
 	 */
 	public DivisionHypothesisVariable(
 			final T sourceSegment,

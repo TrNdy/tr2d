@@ -254,7 +254,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * (Re)runs the trackins problem in a thread of it's own.
 	 * Additionally also takes care of the BDV.
 	 *
-	 * @param progress
+	 * @param forceResolve
 	 */
 	public Thread runInThread( final boolean forceResolve ) {
 		return this.runInThread( forceResolve, false );
@@ -428,7 +428,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * @see com.indago.ui.bdv.BdvOwner#setBdvHandlePanel()
+	 * @see com.indago.ui.bdv.BdvOwner#bdvSetHandlePanel(BdvHandlePanel)
 	 */
 	@Override
 	public void bdvSetHandlePanel( final BdvHandlePanel bdvHandlePanel ) {

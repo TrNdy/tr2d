@@ -37,16 +37,18 @@ public class PlotData {
 	}
 
 	/**
-	 * @param projected_x
-	 * @param d
+	 *
+	 * @param x
+	 * @param y
 	 */
 	public void addValueToXValue( final int x, final double y ) {
 		data[ x ] += y;
 	}
 
 	/**
-	 * @param projected_x
-	 * @param d
+	 *
+	 * @param x
+	 * @param y
 	 */
 	public void addValueToXValue( final double x, final double y ) {
 		final int x1 = ( int ) Math.round( Math.floor( x ) );
@@ -62,7 +64,7 @@ public class PlotData {
 
 	/**
 	 * @param path
-	 * @param format
+	 * @param filename
 	 */
 	public void saveToFile( final File path, final String filename ) {
 		final File file = new File( path, filename );

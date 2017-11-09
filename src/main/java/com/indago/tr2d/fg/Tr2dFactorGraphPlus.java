@@ -42,7 +42,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	/**
 	 * Creates an empty Tr2d Factor Graph object.
 	 *
-	 * @param perFrameLabelingForests
+	 * @param firstFrameFG
 	 */
 	public Tr2dFactorGraphPlus(
 			final FactorGraphPlus< Segment > firstFrameFG ) {
@@ -143,7 +143,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	}
 
 	/**
-	 * @param frameFG
+	 * @param fg
 	 */
 	private void mergeFG( final FactorGraphPlus< Segment > fg ) {
 		this.variables.addAll( fg.getFactorGraph().getVariables() );
@@ -155,7 +155,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	 * Add constraint requesting that all right adjacent assignment variables
 	 * sum to the same value as the segmentation variable.
 	 *
-	 * @param factorGraphPlus
+	 * @param frameFG
 	 */
 	private void addRightContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
 		int numRightContinuationConstraints = 0;
@@ -174,7 +174,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	 * Add constraint requesting that all left adjacent assignment variables
 	 * sum to the same value as the segmentation variable.
 	 *
-	 * @param factorGraphPlus
+	 * @param frameFG
 	 */
 	private void addLeftContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
 		int numLeftContinuationConstraints = 0;

@@ -22,10 +22,11 @@ public class Rectangle2D {
 	}
 
 	/**
-	 * @param i
-	 * @param j
-	 * @param k
-	 * @param l
+	 *
+	 * @param x
+	 * @param y
+	 * @param w
+	 * @param h
 	 */
 	public Rectangle2D( final double x, final double y, final double w, final double h ) {
 		this.setX( x );

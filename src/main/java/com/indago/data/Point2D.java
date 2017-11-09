@@ -89,7 +89,7 @@ public class Point2D {
 	}
 
 	/**
-	 * @param d
+	 * @param p
 	 */
 	public void add( final Point2D p ) {
 		this.x += p.x;
@@ -109,8 +109,8 @@ public class Point2D {
 	}
 
 	/**
-	 * @param p
-	 * @param candidate
+	 * @param p1
+	 * @param p2
 	 * @return
 	 */
 	public static double distanceSq( final Point2D p1, final Point2D p2 ) {
