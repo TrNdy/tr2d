@@ -18,7 +18,7 @@
 
 	<groupId>com.indago</groupId>
 	<artifactId>tr2d</artifactId>
-	<version>0.1.3-SNAPSHOT</version>
+	<version>0.1.3</version>
 
 	<name>tr2d</name>
 	<description>Tracking 2D [tr2d]</description>
@@ -117,7 +117,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/TrNdy/tr2d</connection>
 		<developerConnection>scm:git:git@github.com:TrNdy/tr2d</developerConnection>
-		<tag>HEAD</tag>
+		<tag>tr2d-0.1.3</tag>
 		<url>https://github.com/TrNdy/tr2d</url>
 	</scm>
 	<issueManagement>
