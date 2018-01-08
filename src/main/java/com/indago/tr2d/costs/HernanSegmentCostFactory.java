@@ -73,17 +73,13 @@ public class HernanSegmentCostFactory implements CostFactory< LabelingSegment > 
 	 */
 	private double getNonConvexityPenalty( final LabelingSegment segment ) {
 		final HashMap< Integer, Pair< Integer, Integer > > minmaxPerLine = new HashMap<>();
-		final RandomAccess< DoubleType > ra = sourceImage.randomAccess();
-
-		final IterableInterval< DoubleType > pixels = Regions.sample( segment.getRegion(), sourceImage );
 
 		final Cursor< ? > cSegment = segment.getRegion().cursor();
 		while ( cSegment.hasNext() ) {
 			cSegment.fwd();
-			ra.setPosition( cSegment );
 
-			final int xCoordinate = ra.getIntPosition( 0 );
-			final int yCoordinate = ra.getIntPosition( 1 );
+			final int xCoordinate = cSegment.getIntPosition( 0 );
+			final int yCoordinate = cSegment.getIntPosition( 1 );
 
 			final Pair< Integer, Integer > minmax = minmaxPerLine.get( yCoordinate );
 			if ( minmax == null ) {
