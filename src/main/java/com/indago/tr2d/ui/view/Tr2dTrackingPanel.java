@@ -8,11 +8,18 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.indago.tr2d.ui.model.Tr2dSolDiffModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
@@ -28,7 +35,7 @@ import net.miginfocom.swing.MigLayout;
 /**
  * @author jug
  */
-public class Tr2dTrackingPanel extends JPanel implements ActionListener {
+public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusListener, ChangeListener {
 
 	private static final long serialVersionUID = -500536787731292765L;
 
@@ -43,9 +50,15 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 
 	private DialogProgress trackingProgressDialog;
 
+	private JTextField txtMaxMovementsPerNode;
+	private JTextField txtMaxDivisionsPerNode;
+	private JTextField txtMaxMovementSearchRadius;
+	private JTextField txtMaxDivisionSearchRadius;
+
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
 		this.model = trackingModel;
+		model.addStateChangedListener( this );
 
 		buildGui();
 
@@ -87,6 +100,30 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 		final JPanel controls = new JPanel( new MigLayout() );
 		final JPanel viewer = new JPanel( new BorderLayout() );
 
+		final JPanel panelGraphConstructionParams = new JPanel( new MigLayout() );
+		txtMaxMovementSearchRadius = new JTextField( "" + model.getMaxMovementSearchRadius(), 3 );
+		txtMaxMovementSearchRadius.addActionListener( this );
+		txtMaxMovementSearchRadius.addFocusListener( this );
+		txtMaxMovementsPerNode = new JTextField( "" + model.getMaxMovementsToAddPerHypothesis(), 3 );
+		txtMaxMovementsPerNode.addActionListener( this );
+		txtMaxMovementsPerNode.addFocusListener( this );
+		txtMaxDivisionSearchRadius = new JTextField( "" + model.getMaxDivisionSearchRadius(), 3 );
+		txtMaxDivisionSearchRadius.addActionListener( this );
+		txtMaxDivisionSearchRadius.addFocusListener( this );
+		txtMaxDivisionsPerNode = new JTextField( "" + model.getMaxDivisionsToAddPerHypothesis(), 3 );
+		txtMaxDivisionsPerNode.addActionListener( this );
+		txtMaxDivisionsPerNode.addFocusListener( this );
+
+		panelGraphConstructionParams.setBorder( BorderFactory.createTitledBorder( "graph parameters" ) );
+		panelGraphConstructionParams.add( new JLabel( "Max move radius:" ), "growx" );
+		panelGraphConstructionParams.add( txtMaxMovementSearchRadius, "growx, wrap" );
+		panelGraphConstructionParams.add( new JLabel( "Max move assmts:" ), "growx" );
+		panelGraphConstructionParams.add( txtMaxMovementsPerNode, "growx, wrap" );
+		panelGraphConstructionParams.add( new JLabel( "Max division radius:" ), "growx" );
+		panelGraphConstructionParams.add( txtMaxDivisionSearchRadius, "growx, wrap" );
+		panelGraphConstructionParams.add( new JLabel( "Max division assmts:" ), "growx" );
+		panelGraphConstructionParams.add( txtMaxDivisionsPerNode, "growx, wrap" );
+
 		bRun = new JButton( "track" );
 		bRun.addActionListener( this );
 		bRestart = new JButton( "restart" );
@@ -99,6 +136,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 						.options()
 						.is2D()
 						.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) ) );
+
+		controls.add( panelGraphConstructionParams, "growx, wrap" );
 
 		controls.add( bRun, "growx, wrap" );
 		controls.add( bRestart, "growx, wrap" );
@@ -137,5 +176,62 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener {
 			} );
 			t.start();
 		}
+	}
+
+	/**
+	 * @see java.awt.event.FocusListener#focusGained(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusGained( final FocusEvent e ) {}
+
+	/**
+	 * @see java.awt.event.FocusListener#focusLost(java.awt.event.FocusEvent)
+	 */
+	@Override
+	public void focusLost( final FocusEvent e ) {
+		if ( e.getSource().equals( txtMaxMovementSearchRadius ) ||
+			 e.getSource().equals( txtMaxMovementsPerNode ) ||
+			 e.getSource().equals( txtMaxDivisionSearchRadius ) ||
+			 e.getSource().equals( txtMaxDivisionsPerNode ) ) {
+			parseAndSetGraphParametersInModel();
+			model.saveStateToFile();
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void parseAndSetGraphParametersInModel() {
+		try {
+			model.setMaxMovementSearchRadius( Integer.parseInt( txtMaxMovementSearchRadius.getText() ) );
+		} catch ( final NumberFormatException e ) {
+			txtMaxMovementSearchRadius.setText( "" + model.getMaxMovementSearchRadius() );
+		}
+		try {
+			model.setMaxMovementsToAddPerHypothesis( Integer.parseInt( txtMaxMovementsPerNode.getText() ) );
+		} catch ( final NumberFormatException e ) {
+			txtMaxMovementsPerNode.setText( "" + model.getMaxMovementsToAddPerHypothesis() );
+		}
+		try {
+			model.setMaxDivisionSearchRadius( Integer.parseInt( txtMaxDivisionSearchRadius.getText() ) );
+		} catch ( final NumberFormatException e ) {
+			txtMaxDivisionSearchRadius.setText( "" + model.getMaxDivisionSearchRadius() );
+		}
+		try {
+			model.setMaxDivisionsToAddPerHypothesis( Integer.parseInt( txtMaxDivisionsPerNode.getText() ) );
+		} catch ( final NumberFormatException e ) {
+			txtMaxDivisionsPerNode.setText( "" + model.getMaxDivisionsToAddPerHypothesis() );
+		}
+	}
+
+	/**
+	 * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
+	 */
+	@Override
+	public void stateChanged( final ChangeEvent e ) {
+		this.txtMaxMovementSearchRadius.setText( "" + model.getMaxMovementSearchRadius() );
+		this.txtMaxMovementsPerNode.setText( "" + model.getMaxMovementsToAddPerHypothesis() );
+		this.txtMaxDivisionSearchRadius.setText( "" + model.getMaxDivisionSearchRadius() );
+		this.txtMaxDivisionsPerNode.setText( "" + model.getMaxDivisionsToAddPerHypothesis() );
 	}
 }

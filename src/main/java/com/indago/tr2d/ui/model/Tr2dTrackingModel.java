@@ -4,11 +4,15 @@
 package com.indago.tr2d.ui.model;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.event.ChangeListener;
 
 import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.ConflictGraph;
@@ -41,6 +45,8 @@ import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.util.SolutionVisulizer;
 import com.indago.ui.bdv.BdvWithOverlaysOwner;
 import com.indago.util.TicToc;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvOverlay;
@@ -64,6 +70,7 @@ import net.imglib2.util.ValuePair;
  */
 public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
+	private final String FILENAME_STATE = "state.csv";
 	private final ProjectFolder dataFolder;
 
 	private final String FOLDER_LABELING_FRAMES = "labeling_frames";
@@ -74,6 +81,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private final Tr2dModel tr2dModel;
 	private final Tr2dSegmentationCollectionModel tr2dSegModel;
+
+	private double maxMovementSearchRadius = 50;
+	private double maxDivisionSearchRadius = 50;
+	private int maxMovementsToAddPerHypothesis = 4;
+	private int maxDivisionsToAddPerHypothesis = 8;
 
 	private final List< CostFactory< ? > > costFactories = new ArrayList<>();
 	private final CostFactory< LabelingSegment > segmentCosts;
@@ -102,6 +114,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private final List< ProgressListener > progressListeners = new ArrayList<>();
 
 	private SolveGurobi solver;
+	private final List< ChangeListener > stateChangedListeners;
 
 	/**
 	 * @param model
@@ -114,6 +127,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
 			final CostFactory< LabelingSegment > disappearanceCosts ) {
 		this.tr2dModel = model;
+
+		stateChangedListeners = new ArrayList<>();
 
 		dataFolder = model.getProjectFolder().getFolder( Tr2dProjectFolder.TRACKING_FOLDER );
 		dataFolder.mkdirs();
@@ -151,6 +166,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		} catch ( final IOException ioe ) {
 			ioe.printStackTrace();
 		}
+
+		loadStateFromProjectFolder();
 	}
 
 	/**
@@ -341,6 +358,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 		this.tr2dTraProblem =
 				new Tr2dTrackingProblem(
+						this,
 						tr2dModel.getFlowModel(),
 						appearanceCosts,
 						moveCosts,
@@ -660,5 +678,122 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public SolveGurobi getSolver() {
 		return solver;
+	}
+
+	/**
+	 * @return the maxMovementToAddRadius
+	 */
+	public double getMaxMovementSearchRadius() {
+		return maxMovementSearchRadius;
+	}
+
+	/**
+	 * @param maxMovementToAddRadius
+	 *            the maxMovementToAddRadius to set
+	 */
+	public void setMaxMovementSearchRadius( final double maxMovementToAddRadius ) {
+		this.maxMovementSearchRadius = maxMovementToAddRadius;
+	}
+
+	/**
+	 * @return the maxDivisionToAddRadius
+	 */
+	public double getMaxDivisionSearchRadius() {
+		return maxDivisionSearchRadius;
+	}
+
+	/**
+	 * @param maxDivisionToAddRadius
+	 *            the maxDivisionToAddRadius to set
+	 */
+	public void setMaxDivisionSearchRadius( final double maxDivisionToAddRadius ) {
+		this.maxDivisionSearchRadius = maxDivisionToAddRadius;
+	}
+
+	/**
+	 * @return the maxMovementsToAddPerHypothesis
+	 */
+	public int getMaxMovementsToAddPerHypothesis() {
+		return maxMovementsToAddPerHypothesis;
+	}
+
+	/**
+	 * @param maxMovementsToAddPerHypothesis
+	 *            the maxMovementsToAddPerHypothesis to set
+	 */
+	public void setMaxMovementsToAddPerHypothesis( final int maxMovementsToAddPerHypothesis ) {
+		this.maxMovementsToAddPerHypothesis = maxMovementsToAddPerHypothesis;
+	}
+
+	/**
+	 * @return the maxDivisionsToAddPerHypothesis
+	 */
+	public int getMaxDivisionsToAddPerHypothesis() {
+		return maxDivisionsToAddPerHypothesis;
+	}
+
+	/**
+	 * @param maxDivisionsToAddPerHypothesis
+	 *            the maxDivisionsToAddPerHypothesis to set
+	 */
+	public void setMaxDivisionsToAddPerHypothesis( final int maxDivisionsToAddPerHypothesis ) {
+		this.maxDivisionsToAddPerHypothesis = maxDivisionsToAddPerHypothesis;
+	}
+
+	/**
+	 *
+	 */
+	public void saveStateToFile() {
+		try {
+			final FileWriter writer = new FileWriter( new File( dataFolder.getFolder(), FILENAME_STATE ) );
+			writer.append( "" + this.maxMovementSearchRadius );
+			writer.append( ", " );
+			writer.append( "" + this.maxMovementsToAddPerHypothesis );
+			writer.append( ", " );
+			writer.append( "" + this.maxDivisionSearchRadius );
+			writer.append( ", " );
+			writer.append( "" + this.maxDivisionsToAddPerHypothesis );
+			writer.append( ", " );
+			writer.flush();
+			writer.close();
+		} catch ( final IOException e ) {
+			e.printStackTrace();
+		}
+	}
+
+	private void loadStateFromProjectFolder() {
+		final CsvParser parser = new CsvParser( new CsvParserSettings() );
+
+		final File guiState = dataFolder.addFile( FILENAME_STATE ).getFile();
+		try {
+			final List< String[] > rows = parser.parseAll( new FileReader( guiState ) );
+			final String[] strings = rows.get( 0 );
+			try {
+				this.maxMovementSearchRadius = Double.parseDouble( strings[ 0 ] );
+				this.maxMovementsToAddPerHypothesis = Integer.parseInt( strings[ 1 ] );
+				this.maxDivisionSearchRadius = Double.parseDouble( strings[ 2 ] );
+				this.maxDivisionsToAddPerHypothesis = Integer.parseInt( strings[ 3 ] );
+			} catch ( final NumberFormatException e ) {
+				this.maxMovementSearchRadius = 25;
+				this.maxMovementsToAddPerHypothesis = 5;
+				this.maxDivisionSearchRadius = 25;
+				this.maxDivisionsToAddPerHypothesis = 5;
+			}
+		} catch ( final FileNotFoundException e ) {}
+		fireStateChangedEvent();
+	}
+
+	public void addStateChangedListener( final ChangeListener listener ) {
+		if ( !stateChangedListeners.contains( listener ) )
+			stateChangedListeners.add( listener );
+	}
+
+	public void removeStateChangedListener( final ChangeListener listener ) {
+		if ( stateChangedListeners.contains( listener ) )
+			stateChangedListeners.remove( listener );
+	}
+
+	public void fireStateChangedEvent() {
+		stateChangedListeners.forEach( l -> l.stateChanged( null ) );
 	}
 }

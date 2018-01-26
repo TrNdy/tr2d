@@ -17,6 +17,7 @@ import com.indago.pg.assignments.DivisionHypothesis;
 import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.ui.model.Tr2dFlowModel;
+import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 
 import net.imglib2.KDTree;
 import net.imglib2.RealLocalizable;
@@ -30,6 +31,7 @@ import net.imglib2.util.ValuePair;
  */
 public class Tr2dTrackingProblem implements TrackingProblem {
 
+	private final Tr2dTrackingModel trackingModel;
 	private final Tr2dFlowModel flowModel;
 
 	private final List< Tr2dSegmentationProblem > timepoints;
@@ -38,15 +40,14 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	private final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts;
 	private final CostFactory< LabelingSegment > disappearanceCosts;
 
-	private final int maxMovementsToAddPerHypothesis = 4; //TODO make this some user configurable parameter
-	private final int maxDivisionsToAddPerHypothesis = 8; //TODO make this some user configurable parameter
-
 	public Tr2dTrackingProblem(
+			final Tr2dTrackingModel trackingModel,
 			final Tr2dFlowModel flowModel,
 			final CostFactory< LabelingSegment > appearanceCosts,
 			final CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > movementCosts,
 			final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
 			final CostFactory< LabelingSegment > disappearanceCosts ) {
+		this.trackingModel = trackingModel;
 		this.flowModel = flowModel;
 		timepoints = new ArrayList< >();
 		this.appearanceCosts = appearanceCosts;
@@ -143,10 +144,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					pos.getDoublePosition( 0 ) + flow_vec.getA(),
 					pos.getDoublePosition( 1 ) + flow_vec.getB() );
 
-			final double radius = 50; //TODO make this some user configurable parameter
 			final PriorityQueue< MovementHypothesis > prioQueue = new PriorityQueue<>( 100, Util.getCostComparatorForMovementHypothesis() );
 
-			search.search( flow_pos, radius, false );
+			search.search( flow_pos, trackingModel.getMaxMovementSearchRadius(), false );
 			final int numNeighbors = search.numNeighbors();
 			for ( int i = 0; i < numNeighbors; ++i ) {
 				final SegmentNode segVarR = search.getSampler( i ).get();
@@ -159,7 +159,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 							flow_vec ) );
 				prioQueue.add( new MovementHypothesis( cost_flow, segVarL, segVarR ) );
 			}
-			for ( int i = 0; i < Math.min( maxMovementsToAddPerHypothesis, prioQueue.size() ); i++ ) {
+			for ( int i = 0; i < Math.min( trackingModel.getMaxMovementsToAddPerHypothesis(), prioQueue.size() ); i++ ) {
 				final MovementHypothesis moveHyp = prioQueue.poll();
 				moveHyp.getSrc().getOutAssignments().add( moveHyp );
 				moveHyp.getDest().getInAssignments().add( moveHyp );
@@ -197,10 +197,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		for ( final SegmentNode segVarL : segProblemL.getSegments() ) {
 			final RealLocalizable pos = segVarL.getSegment().getCenterOfMass();
 
-			final double radius = 50; //TODO make this some user configurable parameter
 			final PriorityQueue< DivisionHypothesis > prioQueue = new PriorityQueue<>( 100, Util.getCostComparatorForDivisionHypothesis() );
 
-			search.search( pos, radius, true );
+			search.search( pos, trackingModel.getMaxDivisionSearchRadius(), true );
 			final int numNeighbors = search.numNeighbors();
 			for ( int i = 0; i < numNeighbors; ++i ) {
 				for ( int j = i + 1; j < numNeighbors; ++j ) {
@@ -220,7 +219,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					prioQueue.add( new DivisionHypothesis( cost, segVarL, segVarR1, segVarR2 ) );
 				}
 			}
-			for ( int i = 0; i < Math.min( maxDivisionsToAddPerHypothesis, prioQueue.size() ); i++ ) {
+			for ( int i = 0; i < Math.min( trackingModel.getMaxDivisionsToAddPerHypothesis(), prioQueue.size() ); i++ ) {
 				final DivisionHypothesis divHyp = prioQueue.poll();
 				divHyp.getSrc().getOutAssignments().add( divHyp );
 				divHyp.getDest1().getInAssignments().add( divHyp );

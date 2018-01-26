@@ -73,6 +73,11 @@
 			<groupId>nz.ac.waikato.cms.weka</groupId>
 			<artifactId>weka-dev</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.univocity</groupId>
+			<artifactId>univocity-parsers</artifactId>
+			<type>jar</type>
+		</dependency>
 	</dependencies>
 
 	<developers>
