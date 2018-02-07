@@ -39,14 +39,12 @@ public class Tr2dSegmentationCollectionPanel extends JPanel {
 		for ( final String name : Tr2dContext.segPlugins.getPluginNames() ) {
 			final Tr2dSegmentationPlugin segPlugin =
 					Tr2dContext.segPlugins.createPlugin( name, model.getModel(), model.getModel().getMainPanel().getLogPanel() );
-			model.addPlugin( segPlugin );
-			tabs.add( segPlugin.getUiName(), segPlugin.getInteractionPanel() );
+			if(segPlugin.isUsable()) {
+				model.addPlugin( segPlugin );
+				tabs.add( segPlugin.getUiName(), segPlugin.getInteractionPanel() );
+			}
 		}
 
-//		final JPanel tabFile = new Tr2dImportedSegmentationPanel( model.getImportedSegmentationModel() );
-//		final JPanel tabWeka = new Tr2dWekaSegmentationPanel( model.getWekaModel() );
-//		tabs.add( "imported segments", tabFile );
-//		tabs.add( "weka segmentation", tabWeka );
 		add( tabs, BorderLayout.CENTER );
 	}
 

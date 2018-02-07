@@ -29,4 +29,6 @@ public interface Tr2dSegmentationPlugin extends ImageJPlugin {
 	String getUiName();
 
 	public void setLogger( Logger logger );
+
+	default boolean isUsable() { return true; };
 }
