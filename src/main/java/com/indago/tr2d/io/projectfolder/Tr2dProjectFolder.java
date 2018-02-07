@@ -9,6 +9,7 @@ import java.nio.file.Files;
 
 import com.indago.io.ProjectFolder;
 import com.indago.tr2d.Tr2dLog;
+import org.apache.commons.io.FileUtils;
 
 /**
  * @author jug
@@ -41,18 +42,12 @@ public class Tr2dProjectFolder extends ProjectFolder {
 		}
 	}
 
-	/**
-	 * @param pathToRawDataFile
-	 */
-	public void restartWithRawDataFile( final String pathToRawDataFile ) {
-		try {
-			deleteContent();
-			Files.copy( new File( pathToRawDataFile ).toPath(), getFile( RAW_DATA ).getFile().toPath() );
-		} catch ( final IOException e ) {
-			Tr2dLog.log.error( String.format( "Project folder (%s) could not be set up.", super.getAbsolutePath() ) );
-			e.printStackTrace();
-			System.exit( 3 );
-		}
+	public void restartWithRawDataFile( final String pathToRawDataFile ) throws IOException
+	{
+		if( FileUtils.directoryContains(getFolder(), new File(pathToRawDataFile)) )
+			throw new IllegalArgumentException( "The data file (" + pathToRawDataFile  + ") must not be in the project directory (" + getFolder().getPath() + ")" );
+		deleteContent();
+		Files.copy( new File( pathToRawDataFile ).toPath(), getFile( RAW_DATA ).getFile().toPath() );
 	}
 
 }

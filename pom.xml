@@ -78,6 +78,10 @@
 			<artifactId>univocity-parsers</artifactId>
 			<type>jar</type>
 		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
 	</dependencies>
 
 	<developers>
