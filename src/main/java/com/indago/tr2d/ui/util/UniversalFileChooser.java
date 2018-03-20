@@ -6,6 +6,9 @@ package com.indago.tr2d.ui.util;
 import java.awt.Component;
 import java.awt.FileDialog;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -262,6 +265,42 @@ public class UniversalFileChooser {
 		}
 	}
 
+	public static List< File > showLoadMultipleFilesChooser(
+			final Component parent,
+			final String path,
+			final String title,
+			final ExtensionFileFilter fileFilter ) {
+
+		JFrame frame = null;
+		try {
+			if ( parent instanceof JFrame ) {
+				frame = ( JFrame ) parent;
+			} else {
+				frame = ( JFrame ) SwingUtilities.getWindowAncestor( parent );
+			}
+		} catch ( final ClassCastException e ) {
+			frame = null;
+		}
+
+		if ( ( OSValidator.isMac() || OSValidator.isWindows() ) && frame != null ) {
+
+			if ( showOptionPaneWithTitleOnMac )
+				JOptionPane.showMessageDialog( parent, "Next: " + title, "Select a file...", JOptionPane.INFORMATION_MESSAGE );
+
+			final FileDialog fd = new FileDialog( frame, title, FileDialog.LOAD );
+			fd.setDirectory( path );
+			fd.setFilenameFilter( fileFilter );
+			fd.setMultipleMode( true );
+			if ( OSValidator.isMac() ) fd.setLocation( frame.getBounds().x + 50, frame.getBounds().y + 50 );
+
+			fd.setVisible( true );
+			return new ArrayList<>( Arrays.asList( fd.getFiles() ) );
+
+		} else {
+			return showSwingLoadMultipleFilesChooser( parent, path, title, fileFilter );
+		}
+	}
+
 	private static File showSwingLoadFileChooser(
 			final Component parent,
 			final String path,
@@ -282,6 +321,32 @@ public class UniversalFileChooser {
 
 		if ( chooser.showOpenDialog( parent ) == JFileChooser.APPROVE_OPTION ) {
 			return chooser.getSelectedFile();
+		} else {
+			return null;
+		}
+	}
+
+	private static List< File > showSwingLoadMultipleFilesChooser(
+			final Component parent,
+			final String path,
+			final String title,
+			final FileFilter fileFilter ) {
+		final JFileChooser chooser = new JFileChooser();
+		if ( path != null ) {
+			chooser.setCurrentDirectory( new java.io.File( path ) );
+		}
+		chooser.setDialogTitle( title );
+		if ( fileFilter != null ) {
+			chooser.setFileFilter( fileFilter );
+			chooser.setAcceptAllFileFilterUsed( false );
+		} else {
+			chooser.setAcceptAllFileFilterUsed( true );
+		}
+		chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+		chooser.setMultiSelectionEnabled( true );
+
+		if ( chooser.showOpenDialog( parent ) == JFileChooser.APPROVE_OPTION ) {
+			return new ArrayList<>( Arrays.asList( chooser.getSelectedFiles() ) );
 		} else {
 			return null;
 		}
