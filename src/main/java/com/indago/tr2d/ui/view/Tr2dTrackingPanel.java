@@ -44,7 +44,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	private JTabbedPane tabs;
 	private JButton bRun;
 	private JButton bRestart;
-	private JButton bRefetch;
+	private JButton bFetch;
 
 	private Tr2dFrameEditPanel frameEditPanel;
 
@@ -54,6 +54,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	private JTextField txtMaxDivisionsPerNode;
 	private JTextField txtMaxMovementSearchRadius;
 	private JTextField txtMaxDivisionSearchRadius;
+	private JTextField txtMaxComponentSize;
+	private JTextField txtMinComponentSize;
 
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
@@ -113,6 +115,9 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		txtMaxDivisionsPerNode = new JTextField( "" + model.getMaxDivisionsToAddPerHypothesis(), 3 );
 		txtMaxDivisionsPerNode.addActionListener( this );
 		txtMaxDivisionsPerNode.addFocusListener( this );
+		txtMaxComponentSize = new JTextField( "" + model.getMaxMovementsToAddPerHypothesis(), 3 );
+		txtMaxComponentSize.addActionListener( this );
+		txtMaxComponentSize.addFocusListener( this );
 
 		panelGraphConstructionParams.setBorder( BorderFactory.createTitledBorder( "graph parameters" ) );
 		panelGraphConstructionParams.add( new JLabel( "Max move radius:" ), "growx" );
@@ -123,13 +128,22 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		panelGraphConstructionParams.add( txtMaxDivisionSearchRadius, "growx, wrap" );
 		panelGraphConstructionParams.add( new JLabel( "Max division assmts:" ), "growx" );
 		panelGraphConstructionParams.add( txtMaxDivisionsPerNode, "growx, wrap" );
+		
+		panelGraphConstructionParams.setBorder( BorderFactory.createTitledBorder( "fetch parameters" ) );
+		panelGraphConstructionParams.add( new JLabel( "Min component size:" ), "growx" );
+		panelGraphConstructionParams.add( txtMaxMovementSearchRadius, "growx, wrap" );
+		panelGraphConstructionParams.add( new JLabel( "Max componet size:" ), "growx" );
+		panelGraphConstructionParams.add( txtMaxMovementsPerNode, "growx, wrap" );
+		
 
 		bRun = new JButton( "track" );
 		bRun.addActionListener( this );
 		bRestart = new JButton( "restart" );
 		bRestart.addActionListener( this );
-		bRefetch = new JButton( "fetch & track" );
-		bRefetch.addActionListener( this );
+		bFetch = new JButton( "fetch" );
+		bFetch.addActionListener( this );
+		
+		
 
 		model.bdvSetHandlePanel(
 				new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
@@ -141,7 +155,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 
 		controls.add( bRun, "growx, wrap" );
 		controls.add( bRestart, "growx, wrap" );
-		controls.add( bRefetch, "growx, wrap" );
+		controls.add( bFetch, "growx, wrap" );
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
@@ -165,7 +179,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		} else if ( e.getSource().equals( bRestart ) ) {
 			this.frameEditPanel.emptyUndoRedoStacks();
 			model.runInThread( true, true );
-		} else if ( e.getSource().equals( bRefetch ) ) {
+		} else if ( e.getSource().equals( bFetch ) ) {
 			final Thread t = new Thread( new Runnable() {
 
 				@Override
