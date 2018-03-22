@@ -54,8 +54,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	private JTextField txtMaxDivisionsPerNode;
 	private JTextField txtMaxMovementSearchRadius;
 	private JTextField txtMaxDivisionSearchRadius;
-	private JTextField txtMaxComponentSize;
-	private JTextField txtMinComponentSize;
+	private JTextField txtMaxPixelComponentSize;
+	private JTextField txtMinPixelComponentSize;
 
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
@@ -115,10 +115,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		txtMaxDivisionsPerNode = new JTextField( "" + model.getMaxDivisionsToAddPerHypothesis(), 3 );
 		txtMaxDivisionsPerNode.addActionListener( this );
 		txtMaxDivisionsPerNode.addFocusListener( this );
-		txtMaxComponentSize = new JTextField( "" + model.getMaxMovementsToAddPerHypothesis(), 3 );
-		txtMaxComponentSize.addActionListener( this );
-		txtMaxComponentSize.addFocusListener( this );
-
+		
+		
 		panelGraphConstructionParams.setBorder( BorderFactory.createTitledBorder( "graph parameters" ) );
 		panelGraphConstructionParams.add( new JLabel( "Max move radius:" ), "growx" );
 		panelGraphConstructionParams.add( txtMaxMovementSearchRadius, "growx, wrap" );
@@ -129,13 +127,6 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		panelGraphConstructionParams.add( new JLabel( "Max division assmts:" ), "growx" );
 		panelGraphConstructionParams.add( txtMaxDivisionsPerNode, "growx, wrap" );
 		
-		panelGraphConstructionParams.setBorder( BorderFactory.createTitledBorder( "fetch parameters" ) );
-		panelGraphConstructionParams.add( new JLabel( "Min component size:" ), "growx" );
-		panelGraphConstructionParams.add( txtMaxMovementSearchRadius, "growx, wrap" );
-		panelGraphConstructionParams.add( new JLabel( "Max componet size:" ), "growx" );
-		panelGraphConstructionParams.add( txtMaxMovementsPerNode, "growx, wrap" );
-		
-
 		bRun = new JButton( "track" );
 		bRun.addActionListener( this );
 		bRestart = new JButton( "restart" );
@@ -143,8 +134,33 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		bFetch = new JButton( "fetch" );
 		bFetch.addActionListener( this );
 		
+		//MigLayout layout = new MigLayout();
+		final JPanel panelFetch = new JPanel( new MigLayout() );
+		
+		txtMaxPixelComponentSize = new JTextField( "" + model.getMaxMovementSearchRadius(), 3 );
+		txtMaxPixelComponentSize.addActionListener( this );
+		txtMaxPixelComponentSize.addFocusListener( this );
+		txtMinPixelComponentSize = new JTextField( "" + model.getMaxMovementSearchRadius(), 3 );
+		txtMinPixelComponentSize.addActionListener( this );
+		txtMinPixelComponentSize.addFocusListener( this );
+		
+		panelFetch.setBorder( BorderFactory.createTitledBorder( "Fetch parameters" ) );
+		
+		panelFetch.add( new JLabel( "Max component size:" ), "growx" );
+		panelFetch.add( txtMaxPixelComponentSize, "growx, wrap" );
+		panelFetch.add( new JLabel( "Min component size:" ), "growx" );
+		panelFetch.add( txtMinPixelComponentSize, "growx, wrap" );
 		
 
+//
+//		layout = new MigLayout();
+//		final JPanel panelSelection = new JPanel( layout );
+//		panelSelection.setBorder( BorderFactory.createTitledBorder( "selection" ) );
+//		bSelectionFromSolution = new JButton( "from solution" );
+//		bSelectionFromSolution.addActionListener( this );
+//		panelSelection.add( bSelectionFromSolution, "growx,wrap" );
+
+		
 		model.bdvSetHandlePanel(
 				new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
 						.options()
@@ -152,6 +168,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 						.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) ) );
 
 		controls.add( panelGraphConstructionParams, "growx, wrap" );
+		controls.add( panelFetch, "growx, wrap" );
 
 		controls.add( bRun, "growx, wrap" );
 		controls.add( bRestart, "growx, wrap" );
@@ -163,6 +180,9 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 
 		return panel;
 	}
+	
+
+
 
 	/**
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
