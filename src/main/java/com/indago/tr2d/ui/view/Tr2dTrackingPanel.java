@@ -117,6 +117,15 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		txtMaxDivisionsPerNode.addFocusListener( this );
 		
 		
+		
+		
+		bRun = new JButton( "track" );
+		bRun.addActionListener( this );
+		bRestart = new JButton( "restart" );
+		bRestart.addActionListener( this );
+		bFetch = new JButton( "fetch" );
+		bFetch.addActionListener( this );
+		
 		panelGraphConstructionParams.setBorder( BorderFactory.createTitledBorder( "graph parameters" ) );
 		panelGraphConstructionParams.add( new JLabel( "Max move radius:" ), "growx" );
 		panelGraphConstructionParams.add( txtMaxMovementSearchRadius, "growx, wrap" );
@@ -126,13 +135,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		panelGraphConstructionParams.add( txtMaxDivisionSearchRadius, "growx, wrap" );
 		panelGraphConstructionParams.add( new JLabel( "Max division assmts:" ), "growx" );
 		panelGraphConstructionParams.add( txtMaxDivisionsPerNode, "growx, wrap" );
-		
-		bRun = new JButton( "track" );
-		bRun.addActionListener( this );
-		bRestart = new JButton( "restart" );
-		bRestart.addActionListener( this );
-		bFetch = new JButton( "fetch" );
-		bFetch.addActionListener( this );
+		panelGraphConstructionParams.add( bRun, "growx, wrap" );
+		panelGraphConstructionParams.add( bRestart, "growx, wrap" );
 		
 		//MigLayout layout = new MigLayout();
 		final JPanel panelFetch = new JPanel( new MigLayout() );
@@ -150,6 +154,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		panelFetch.add( txtMaxPixelComponentSize, "growx, wrap" );
 		panelFetch.add( new JLabel( "Min component size:" ), "growx" );
 		panelFetch.add( txtMinPixelComponentSize, "growx, wrap" );
+		panelFetch.add( bFetch, "growx, wrap" );
 		
 
 //
@@ -170,9 +175,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		controls.add( panelGraphConstructionParams, "growx, wrap" );
 		controls.add( panelFetch, "growx, wrap" );
 
-		controls.add( bRun, "growx, wrap" );
-		controls.add( bRestart, "growx, wrap" );
-		controls.add( bFetch, "growx, wrap" );
+		
+		//controls.add( bFetch, "growx, wrap" );
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
