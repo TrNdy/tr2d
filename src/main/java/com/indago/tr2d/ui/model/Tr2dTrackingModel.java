@@ -160,7 +160,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		imgs.add( imgSolution );
 
 		// Loading hypotheses labeling frames if exist in project folder
-		this.labelingFrames = new LabelingTimeLapse( tr2dSegModel );
+		this.labelingFrames = new LabelingTimeLapse( tr2dSegModel, this.getMinPixelComponentSize(), this.getMaxPixelComponentSize() );
 		try {
 			hypothesesFolder = dataFolder.addFolder( FOLDER_LABELING_FRAMES );
 			hypothesesFolder.loadFiles();
@@ -182,7 +182,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			dataFolder.getFolder( FOLDER_LABELING_FRAMES ).deleteContent();
 		} catch ( final IOException e ) {
 			if ( dataFolder.getFolder( FOLDER_LABELING_FRAMES ).exists() ) {
-				Tr2dLog.log.error( "Labeling frames could not be deleted." );
+				Tr2dLog.log.error( "Labeling frames exist but cannot be deleted." );
 			}
 		}
 		// recollect segmentation data
@@ -340,7 +340,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 *         no segmentation was found.
 	 */
 	public boolean processSegmentationInputs( final boolean forceHypothesesRefetch ) {
+
 		if ( forceHypothesesRefetch || labelingFrames.needProcessing() ) {
+
+			labelingFrames.setMinSegmentSize( getMinPixelComponentSize() );
+			labelingFrames.setMaxSegmentSize( getMaxPixelComponentSize() );
+
 			if ( !labelingFrames.processFrames() ) {
 				final String msg = "Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!";
 				Tr2dLog.log.error( msg );
@@ -741,15 +746,15 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void setMaxDivisionsToAddPerHypothesis( final int maxDivisionsToAddPerHypothesis ) {
 		this.maxDivisionsToAddPerHypothesis = maxDivisionsToAddPerHypothesis;
 	}
-	
+
 	/**
 	 * @return the maximum size (in pixels) a component can be in order
 	 *         to count as a valid segmentation hypothesis.
 	 */
-	public double getMaxPixelComponentSize() {
+	public int getMaxPixelComponentSize() {
 		return maxPixelComponentSize;
 	}
-	
+
 	/**
 	 * @param maxPixelComponentSize
 	 *            the maximum size (in pixels) a component can be in order
@@ -758,12 +763,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void setMaxPixelComponentSize( final int maxPixelComponentSize ) {
 		this.maxPixelComponentSize = maxPixelComponentSize;
 	}
-	
+
 	/**
 	 * @return the minimum size (in pixels) a component needs to be in order
 	 *         to count as a valid segmentation hypothesis.
 	 */
-	public double getMinPixelComponentSize() {
+	public int getMinPixelComponentSize() {
 		return minPixelComponentSize;
 	}
 
@@ -775,7 +780,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void setMinPixelComponentSize( final int minPixelComponentSize ) {
 		this.minPixelComponentSize = minPixelComponentSize;
 	}
-	
+
 	/**
 	 *
 	 */

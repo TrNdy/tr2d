@@ -41,8 +41,8 @@ public class LabelingTimeLapse {
 	private final Tr2dSegmentationCollectionModel model;
 
 	// Parameters for FilteredComponentTrees
-	private final int minComponentSize;
-	private final int maxComponentSize;
+	private int minHypothesisSize;
+	private int maxHypothesisSize;
 	private final Filter maxGrowthPerStep;
 	private final boolean darkToBright = false;
 
@@ -55,13 +55,13 @@ public class LabelingTimeLapse {
 	 *
 	 * @param model
 	 */
-	public LabelingTimeLapse( final Tr2dSegmentationCollectionModel model ) {
+	public LabelingTimeLapse( final Tr2dSegmentationCollectionModel model, final int minHypothesisSize, final int maxHypothesisSize ) {
 		this.model = model;
 
 		// this should be a parameter
-		minComponentSize = 25;
-		maxComponentSize = ( int ) ( model.getModel().getRawData().dimension( 0 ) * model.getModel().getRawData().dimension( 1 ) - 1 );
-		maxGrowthPerStep = new MaxGrowthPerStep( maxComponentSize );
+		this.minHypothesisSize = minHypothesisSize;
+		this.maxHypothesisSize = maxHypothesisSize;
+		maxGrowthPerStep = new MaxGrowthPerStep( maxHypothesisSize );
 
 		frameLabelingBuilders = new ArrayList<>();
 		processedOrLoaded = false;
@@ -97,8 +97,8 @@ public class LabelingTimeLapse {
 							FilteredComponentTree.buildComponentTree(
 									frame,
 									new IntType(),
-									minComponentSize,
-									maxComponentSize,
+									minHypothesisSize,
+									maxHypothesisSize,
 									maxGrowthPerStep,
 									darkToBright );
 					labelingBuilder.buildLabelingForest( tree );
@@ -218,6 +218,20 @@ public class LabelingTimeLapse {
 				progressListener.hasProgressed();
 			}
 		}
+	}
+
+	/**
+	 * @param minPixelComponentSize
+	 */
+	public void setMinSegmentSize( final int minHypothesisSize ) {
+		this.minHypothesisSize = minHypothesisSize;
+	}
+
+	/**
+	 * @param maxPixelComponentSize
+	 */
+	public void setMaxSegmentSize( final int maxHypothesisSize ) {
+		this.maxHypothesisSize = maxHypothesisSize;
 	}
 
 }

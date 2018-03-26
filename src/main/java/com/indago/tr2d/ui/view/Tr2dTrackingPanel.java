@@ -63,6 +63,17 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		model.addStateChangedListener( this );
 
 		buildGui();
+		resetBdv();
+
+		trackingProgressDialog = null;
+	}
+
+	/**
+	 *
+	 */
+	private void resetBdv() {
+		model.bdvRemoveAll();
+		model.bdvRemoveAllOverlays();
 
 		model.bdvAdd( model.getTr2dModel().getRawData(), "RAW" );
 		if ( model.getImgSolution() != null ) {
@@ -70,8 +81,6 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		}
 		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay_tracking" );
 		model.bdvAdd( new Tr2dFlowOverlay( model.getTr2dModel().getFlowModel() ), "overlay_flow", false );
-
-		trackingProgressDialog = null;
 	}
 
 	/**
@@ -187,14 +196,15 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 			this.frameEditPanel.emptyUndoRedoStacks();
 			model.runInThread( true, true );
 		} else if ( e.getSource().equals( bFetch ) ) {
-			final Thread t = new Thread( new Runnable() {
-
-				@Override
-				public void run() {
-					model.refetch();
-				}
-			} );
-			t.start();
+//			final Thread t = new Thread( new Runnable() {
+//
+//				@Override
+//				public void run() {
+			model.refetch();
+			resetBdv();
+//				}
+//			} );
+//			t.start();
 		}
 	}
 
