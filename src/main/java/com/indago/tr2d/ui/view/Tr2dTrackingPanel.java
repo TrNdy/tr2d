@@ -102,30 +102,44 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		final JPanel controls = new JPanel( new MigLayout() );
 		final JPanel viewer = new JPanel( new BorderLayout() );
 
+		final JPanel panelFetch = new JPanel( new MigLayout() );
+		panelFetch.setBorder( BorderFactory.createTitledBorder( "segmentation fetching" ) );
+
+		txtMaxPixelComponentSize = new JTextField( 3 );
+		txtMaxPixelComponentSize.addActionListener( this );
+		txtMaxPixelComponentSize.addFocusListener( this );
+		txtMinPixelComponentSize = new JTextField( 3 );
+		txtMinPixelComponentSize.addActionListener( this );
+		txtMinPixelComponentSize.addFocusListener( this );
+
+		bFetch = new JButton( "fetch" );
+		bFetch.addActionListener( this );
+
+		panelFetch.add( new JLabel( "Max component size:" ), "growx" );
+		panelFetch.add( txtMaxPixelComponentSize, "growx, wrap" );
+		panelFetch.add( new JLabel( "Min component size:" ), "growx" );
+		panelFetch.add( txtMinPixelComponentSize, "growx, wrap" );
+		panelFetch.add( bFetch, "growx, wrap" );
+
 		final JPanel panelGraphConstructionParams = new JPanel( new MigLayout() );
-		txtMaxMovementSearchRadius = new JTextField( "" + model.getMaxMovementSearchRadius(), 3 );
+		txtMaxMovementSearchRadius = new JTextField( 3 );
 		txtMaxMovementSearchRadius.addActionListener( this );
 		txtMaxMovementSearchRadius.addFocusListener( this );
-		txtMaxMovementsPerNode = new JTextField( "" + model.getMaxMovementsToAddPerHypothesis(), 3 );
+		txtMaxMovementsPerNode = new JTextField( 3 );
 		txtMaxMovementsPerNode.addActionListener( this );
 		txtMaxMovementsPerNode.addFocusListener( this );
-		txtMaxDivisionSearchRadius = new JTextField( "" + model.getMaxDivisionSearchRadius(), 3 );
+		txtMaxDivisionSearchRadius = new JTextField( 3 );
 		txtMaxDivisionSearchRadius.addActionListener( this );
 		txtMaxDivisionSearchRadius.addFocusListener( this );
-		txtMaxDivisionsPerNode = new JTextField( "" + model.getMaxDivisionsToAddPerHypothesis(), 3 );
+		txtMaxDivisionsPerNode = new JTextField( 3 );
 		txtMaxDivisionsPerNode.addActionListener( this );
 		txtMaxDivisionsPerNode.addFocusListener( this );
-		
-		
-		
-		
+
 		bRun = new JButton( "track" );
 		bRun.addActionListener( this );
 		bRestart = new JButton( "restart" );
 		bRestart.addActionListener( this );
-		bFetch = new JButton( "fetch" );
-		bFetch.addActionListener( this );
-		
+
 		panelGraphConstructionParams.setBorder( BorderFactory.createTitledBorder( "graph parameters" ) );
 		panelGraphConstructionParams.add( new JLabel( "Max move radius:" ), "growx" );
 		panelGraphConstructionParams.add( txtMaxMovementSearchRadius, "growx, wrap" );
@@ -137,56 +151,25 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		panelGraphConstructionParams.add( txtMaxDivisionsPerNode, "growx, wrap" );
 		panelGraphConstructionParams.add( bRun, "growx, wrap" );
 		panelGraphConstructionParams.add( bRestart, "growx, wrap" );
-		
-		//MigLayout layout = new MigLayout();
-		final JPanel panelFetch = new JPanel( new MigLayout() );
-		
-		txtMaxPixelComponentSize = new JTextField( "" + model.getMaxMovementSearchRadius(), 3 );
-		txtMaxPixelComponentSize.addActionListener( this );
-		txtMaxPixelComponentSize.addFocusListener( this );
-		txtMinPixelComponentSize = new JTextField( "" + model.getMaxMovementSearchRadius(), 3 );
-		txtMinPixelComponentSize.addActionListener( this );
-		txtMinPixelComponentSize.addFocusListener( this );
-		
-		panelFetch.setBorder( BorderFactory.createTitledBorder( "Fetch parameters" ) );
-		
-		panelFetch.add( new JLabel( "Max component size:" ), "growx" );
-		panelFetch.add( txtMaxPixelComponentSize, "growx, wrap" );
-		panelFetch.add( new JLabel( "Min component size:" ), "growx" );
-		panelFetch.add( txtMinPixelComponentSize, "growx, wrap" );
-		panelFetch.add( bFetch, "growx, wrap" );
-		
 
-//
-//		layout = new MigLayout();
-//		final JPanel panelSelection = new JPanel( layout );
-//		panelSelection.setBorder( BorderFactory.createTitledBorder( "selection" ) );
-//		bSelectionFromSolution = new JButton( "from solution" );
-//		bSelectionFromSolution.addActionListener( this );
-//		panelSelection.add( bSelectionFromSolution, "growx,wrap" );
-
-		
 		model.bdvSetHandlePanel(
 				new BdvHandlePanel( ( Frame ) this.getTopLevelAncestor(), Bdv
 						.options()
 						.is2D()
 						.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) ) );
 
-		controls.add( panelGraphConstructionParams, "growx, wrap" );
 		controls.add( panelFetch, "growx, wrap" );
+		controls.add( panelGraphConstructionParams, "growx, wrap" );
 
-		
-		//controls.add( bFetch, "growx, wrap" );
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
 		panel.add( splitPane, BorderLayout.CENTER );
 
+		populateTextFieldsViaModelValues();
+
 		return panel;
 	}
-	
-
-
 
 	/**
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
@@ -208,8 +191,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 
 				@Override
 				public void run() {
-					model.reset();
-					model.runInThread( true );
+					model.refetch();
 				}
 			} );
 			t.start();
@@ -227,11 +209,10 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	 */
 	@Override
 	public void focusLost( final FocusEvent e ) {
-		if ( e.getSource().equals( txtMaxMovementSearchRadius ) ||
-			 e.getSource().equals( txtMaxMovementsPerNode ) ||
-			 e.getSource().equals( txtMaxDivisionSearchRadius ) ||
-			 e.getSource().equals( txtMaxDivisionsPerNode ) ) {
-			parseAndSetGraphParametersInModel();
+		if ( e.getSource().equals( txtMaxMovementSearchRadius ) || e.getSource().equals( txtMaxMovementsPerNode ) || e.getSource().equals(
+				txtMaxDivisionSearchRadius ) || e.getSource().equals( txtMaxDivisionsPerNode ) || e.getSource().equals(
+						txtMaxPixelComponentSize ) || e.getSource().equals( txtMinPixelComponentSize ) ) {
+			parseAndSetParametersInModel();
 			model.saveStateToFile();
 		}
 	}
@@ -239,7 +220,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	/**
 	 *
 	 */
-	private void parseAndSetGraphParametersInModel() {
+	private void parseAndSetParametersInModel() {
 		try {
 			model.setMaxMovementSearchRadius( Integer.parseInt( txtMaxMovementSearchRadius.getText() ) );
 		} catch ( final NumberFormatException e ) {
@@ -260,6 +241,20 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		} catch ( final NumberFormatException e ) {
 			txtMaxDivisionsPerNode.setText( "" + model.getMaxDivisionsToAddPerHypothesis() );
 		}
+		try {
+			if ( txtMaxPixelComponentSize.getText().trim().isEmpty() ) {
+				model.setMaxPixelComponentSize( Integer.MAX_VALUE );
+			} else {
+				model.setMaxPixelComponentSize( Integer.parseInt( txtMaxPixelComponentSize.getText() ) );
+			}
+		} catch ( final NumberFormatException e ) {
+			txtMaxPixelComponentSize.setText( "" + model.getMaxPixelComponentSize() );
+		}
+		try {
+			model.setMinPixelComponentSize( Integer.parseInt( txtMinPixelComponentSize.getText() ) );
+		} catch ( final NumberFormatException e ) {
+			txtMinPixelComponentSize.setText( "" + model.getMinPixelComponentSize() );
+		}
 	}
 
 	/**
@@ -267,9 +262,19 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	 */
 	@Override
 	public void stateChanged( final ChangeEvent e ) {
+		populateTextFieldsViaModelValues();
+	}
+
+	private void populateTextFieldsViaModelValues() {
 		this.txtMaxMovementSearchRadius.setText( "" + model.getMaxMovementSearchRadius() );
 		this.txtMaxMovementsPerNode.setText( "" + model.getMaxMovementsToAddPerHypothesis() );
 		this.txtMaxDivisionSearchRadius.setText( "" + model.getMaxDivisionSearchRadius() );
 		this.txtMaxDivisionsPerNode.setText( "" + model.getMaxDivisionsToAddPerHypothesis() );
+		if ( model.getMaxPixelComponentSize() == Integer.MAX_VALUE ) {
+			this.txtMaxPixelComponentSize.setText( "" );
+		} else {
+			this.txtMaxPixelComponentSize.setText( "" + model.getMaxPixelComponentSize() );
+		}
+		this.txtMinPixelComponentSize.setText( "" + model.getMinPixelComponentSize() );
 	}
 }
