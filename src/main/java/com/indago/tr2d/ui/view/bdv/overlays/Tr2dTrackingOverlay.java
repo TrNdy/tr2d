@@ -70,22 +70,29 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		final Tr2dTrackingProblem tr2dPG = trackingModel.getTrackingProblem();
 		final Assignment< IndicatorNode > pgSolution = trackingModel.getSolution();
 
-		final AffineTransform2D trans = new AffineTransform2D();
-		getCurrentTransform2D( trans );
-		final Tr2dSegmentationProblem tp1 = tr2dPG.getTimepoints().get( cur_t );
-		for ( final SegmentNode segvar : tp1.getSegments() ) {
-			if ( pgSolution.getAssignment( segvar ) == 1 ) {
-				for ( final MovementHypothesis move : segvar.getInAssignments().getMoves() ) {
-					if ( pgSolution.getAssignment( move ) == 1 ) {
-						drawCOMTailSegment( g, trans, cur_t - 1, move.getSrc(), segvar, Color.GREEN, 0, length );
+		// exit if pointless
+		if ( tr2dPG == null || pgSolution == null || tr2dPG.getTimepoints().size() < cur_t ) return;
+
+		try {
+			final AffineTransform2D trans = new AffineTransform2D();
+			getCurrentTransform2D( trans );
+			final Tr2dSegmentationProblem tp1 = tr2dPG.getTimepoints().get( cur_t );
+			for ( final SegmentNode segvar : tp1.getSegments() ) {
+				if ( pgSolution.getAssignment( segvar ) == 1 ) {
+					for ( final MovementHypothesis move : segvar.getInAssignments().getMoves() ) {
+						if ( pgSolution.getAssignment( move ) == 1 ) {
+							drawCOMTailSegment( g, trans, cur_t - 1, move.getSrc(), segvar, Color.GREEN, 0, length );
+						}
 					}
-				}
-				for ( final DivisionHypothesis div : segvar.getInAssignments().getDivisions() ) {
-					if ( pgSolution.getAssignment( div ) == 1 ) {
-						drawCOMTailSegment( g, trans, cur_t - 1, div.getSrc(), segvar, Color.ORANGE, 0, length );
+					for ( final DivisionHypothesis div : segvar.getInAssignments().getDivisions() ) {
+						if ( pgSolution.getAssignment( div ) == 1 ) {
+							drawCOMTailSegment( g, trans, cur_t - 1, div.getSrc(), segvar, Color.ORANGE, 0, length );
+						}
 					}
 				}
 			}
+		} catch ( final ArrayIndexOutOfBoundsException aioobe ) {
+			// do not bother, this happens only during threaded re-computations while the UI would love to point something that is currently invalid
 		}
 	}
 
@@ -167,35 +174,42 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		final Tr2dTrackingProblem tr2dPG = trackingModel.getTrackingProblem();
 		final Assignment< IndicatorNode > pgSolution = trackingModel.getSolution();
 
-		final AffineTransform2D trans = new AffineTransform2D();
-		getCurrentTransform2D( trans );
-		final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( cur_t );
-		for ( final SegmentNode segvar : tp0.getSegments() ) {
-			if ( pgSolution.getAssignment( segvar ) == 1 || tp0.getEditState().isAvoided( segvar ) ) {
-				final RealLocalizable com = segvar.getSegment().getCenterOfMass();
-				final double[] lpos = new double[ 2 ];
-				final double[] gpos = new double[ 2 ];
-				com.localize( lpos );
-				trans.apply( lpos, gpos );
+		// exit if pointless
+		if ( tr2dPG == null || pgSolution == null || tr2dPG.getTimepoints().size() < cur_t ) return;
 
-				if ( tp0.getEditState().isForced( segvar ) ) {
-					g.setColor( theForcedColor );
-					g2.setStroke( new BasicStroke( ( float ) 3.5 ) );
-					len = 8;
-					g.drawOval( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, len * 2, len * 2 );
-				} else if ( tp0.getEditState().isAvoided( segvar ) ) {
-					g.setColor( theAvoidedColor );
-					g2.setStroke( new BasicStroke( 4 ) );
-					len = 8;
-					g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] + len );
-					g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] + len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] - len );
-				} else {
-					g.setColor( theRegularColor );
-					g2.setStroke( new BasicStroke( ( float ) 2.0 ) );
-					len = 4;
-					g.drawOval( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, len * 2, len * 2 );
+		try {
+			final AffineTransform2D trans = new AffineTransform2D();
+			getCurrentTransform2D( trans );
+			final Tr2dSegmentationProblem tp0 = tr2dPG.getTimepoints().get( cur_t );
+			for ( final SegmentNode segvar : tp0.getSegments() ) {
+				if ( pgSolution.getAssignment( segvar ) == 1 || tp0.getEditState().isAvoided( segvar ) ) {
+					final RealLocalizable com = segvar.getSegment().getCenterOfMass();
+					final double[] lpos = new double[ 2 ];
+					final double[] gpos = new double[ 2 ];
+					com.localize( lpos );
+					trans.apply( lpos, gpos );
+
+					if ( tp0.getEditState().isForced( segvar ) ) {
+						g.setColor( theForcedColor );
+						g2.setStroke( new BasicStroke( ( float ) 3.5 ) );
+						len = 8;
+						g.drawOval( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, len * 2, len * 2 );
+					} else if ( tp0.getEditState().isAvoided( segvar ) ) {
+						g.setColor( theAvoidedColor );
+						g2.setStroke( new BasicStroke( 4 ) );
+						len = 8;
+						g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] + len );
+						g.drawLine( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] + len, ( int ) gpos[ 0 ] + len, ( int ) gpos[ 1 ] - len );
+					} else {
+						g.setColor( theRegularColor );
+						g2.setStroke( new BasicStroke( ( float ) 2.0 ) );
+						len = 4;
+						g.drawOval( ( int ) gpos[ 0 ] - len, ( int ) gpos[ 1 ] - len, len * 2, len * 2 );
+					}
 				}
 			}
+		} catch ( final ArrayIndexOutOfBoundsException aioobe ) {
+			// do not bother, this happens only during threaded re-computations while the UI would love to point something that is currently invalid
 		}
 	}
 

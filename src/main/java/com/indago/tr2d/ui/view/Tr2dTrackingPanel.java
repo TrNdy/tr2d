@@ -23,13 +23,10 @@ import javax.swing.event.ChangeListener;
 
 import com.indago.tr2d.ui.model.Tr2dSolDiffModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
-import com.indago.tr2d.ui.view.bdv.overlays.Tr2dFlowOverlay;
-import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 
 import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;
 import indago.ui.progress.DialogProgress;
-import net.imglib2.type.numeric.ARGBType;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -63,24 +60,9 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		model.addStateChangedListener( this );
 
 		buildGui();
-		resetBdv();
+		model.populateBdv();
 
 		trackingProgressDialog = null;
-	}
-
-	/**
-	 *
-	 */
-	private void resetBdv() {
-		model.bdvRemoveAll();
-		model.bdvRemoveAllOverlays();
-
-		model.bdvAdd( model.getTr2dModel().getRawData(), "RAW" );
-		if ( model.getImgSolution() != null ) {
-			model.bdvAdd( model.getImgSolution(), "solution", 0, 5, new ARGBType( 0x00FF00 ), true );
-		}
-		model.bdvAdd( new Tr2dTrackingOverlay( model ), "overlay_tracking" );
-		model.bdvAdd( new Tr2dFlowOverlay( model.getTr2dModel().getFlowModel() ), "overlay_flow", false );
 	}
 
 	/**
@@ -196,15 +178,15 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 			this.frameEditPanel.emptyUndoRedoStacks();
 			model.runInThread( true, true );
 		} else if ( e.getSource().equals( bFetch ) ) {
-//			final Thread t = new Thread( new Runnable() {
-//
-//				@Override
-//				public void run() {
-			model.refetch();
-			resetBdv();
-//				}
-//			} );
-//			t.start();
+			final Thread t = new Thread( new Runnable() {
+
+				@Override
+				public void run() {
+					model.fetch();
+					model.populateBdv();
+				}
+			} );
+			t.start();
 		}
 	}
 

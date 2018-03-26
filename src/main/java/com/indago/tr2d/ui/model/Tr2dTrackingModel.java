@@ -43,6 +43,8 @@ import com.indago.tr2d.pg.Tr2dTrackingProblem;
 import com.indago.tr2d.ui.listener.ModelInfeasibleListener;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
 import com.indago.tr2d.ui.util.SolutionVisulizer;
+import com.indago.tr2d.ui.view.bdv.overlays.Tr2dFlowOverlay;
+import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 import com.indago.ui.bdv.BdvWithOverlaysOwner;
 import com.indago.util.TicToc;
 import com.univocity.parsers.csv.CsvParser;
@@ -175,7 +177,19 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	/**
 	 * (Re-)fetches all hypotheses and marks this tracking model as 'reset'.
 	 */
-	public void refetch() {
+	public void fetch() {
+		for ( final ProgressListener progressListener : progressListeners ) {
+			progressListener.resetProgress( "Purging currently fetched segment hypotheses... (1/3)", 3 );
+		}
+
+		// clear BDV content
+		bdvRemoveAll();
+		bdvRemoveAllOverlays();
+
+		for ( final ProgressListener progressListener : progressListeners ) {
+			progressListener.hasProgressed( "Purging currently fetched segment hypotheses... (2/3)" );
+		}
+
 		// purge segmentation data
 		dataFolder.getFile( FILENAME_TRACKING ).getFile().delete();
 		try {
@@ -185,10 +199,16 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				Tr2dLog.log.error( "Labeling frames exist but cannot be deleted." );
 			}
 		}
+
 		// recollect segmentation data
 		processSegmentationInputs( true );
+
 		// purge problem graph
 		tr2dTraProblem = null;
+
+		for ( final ProgressListener progressListener : progressListeners ) {
+			progressListener.hasCompleted();
+		}
 	}
 
 	/**
@@ -289,21 +309,32 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 			@Override
 			public void run() {
+				bdvRemoveAllOverlays();
+				bdvRemoveAll();
+
 				Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG );
 
 				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
-				bdvRemoveAll();
-				bdvAdd( getTr2dModel().getRawData(), "RAW" );
+				populateBdv();
 				bdvHandlePanel.getViewerPanel().setTimepoint( bdvTime );
-
-				if ( imgSolution != null )
-					bdvAdd( imgSolution, "solution", 0, 5, new ARGBType( 0x00FF00 ), true );
 			}
 
 		};
 		final Thread t = new Thread( runnable );
 		t.start();
 		return t;
+	}
+
+	public void populateBdv() {
+		bdvRemoveAll();
+		bdvRemoveAllOverlays();
+
+		bdvAdd( getTr2dModel().getRawData(), "RAW" );
+		if ( getImgSolution() != null ) {
+			bdvAdd( getImgSolution(), "solution", 0, 5, new ARGBType( 0x00FF00 ), true );
+		}
+		bdvAdd( new Tr2dTrackingOverlay( this ), "overlay_tracking" );
+		bdvAdd( new Tr2dFlowOverlay( getTr2dModel().getFlowModel() ), "overlay_flow", false );
 	}
 
 	/**
@@ -346,7 +377,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			labelingFrames.setMinSegmentSize( getMinPixelComponentSize() );
 			labelingFrames.setMaxSegmentSize( getMaxPixelComponentSize() );
 
-			if ( !labelingFrames.processFrames() ) {
+			if ( !labelingFrames.processFrames( progressListeners ) ) {
 				final String msg = "Segmentation Hypotheses could not be accessed!\nYou must create a segmentation prior to starting the tracking!";
 				Tr2dLog.log.error( msg );
 				JOptionPane.showMessageDialog( Tr2dContext.guiFrame, msg, "No segmentation found...", JOptionPane.ERROR_MESSAGE );

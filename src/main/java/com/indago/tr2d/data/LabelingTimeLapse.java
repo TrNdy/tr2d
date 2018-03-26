@@ -71,12 +71,16 @@ public class LabelingTimeLapse {
 	 * @return <code>true</code>, if any sum images for processing where found,
 	 *         <code>false</code> otherwise
 	 */
-	public boolean processFrames() {
+	public boolean processFrames( final List< ProgressListener > progressListeners ) {
 		try {
 			if ( getSegmentHypothesesImages().size() == 0 ) { return false; }
+			final RandomAccessibleInterval< IntType > firstSumImg = getSegmentHypothesesImages().get( 0 );
+
+			for ( final ProgressListener progressListener : progressListeners ) {
+				progressListener.resetProgress( "Computing segment hypotheses labelings...", ( int ) firstSumImg.dimension( 2 ) );
+			}
 
 			frameLabelingBuilders = new ArrayList<>();
-			final RandomAccessibleInterval< IntType > firstSumImg = getSegmentHypothesesImages().get( 0 );
 
 			for ( int frameId = 0; frameId < firstSumImg.dimension( 2 ); frameId++ ) {
 
@@ -102,9 +106,18 @@ public class LabelingTimeLapse {
 									maxGrowthPerStep,
 									darkToBright );
 					labelingBuilder.buildLabelingForest( tree );
+
+				}
+				for ( final ProgressListener progressListener : progressListeners ) {
+					progressListener.hasProgressed();
 				}
 			}
+
+			for ( final ProgressListener progressListener : progressListeners ) {
+				progressListener.hasCompleted();
+			}
 			processedOrLoaded = true;
+
 		} catch ( final IllegalAccessException e ) {
 			// This happens if getSegmentHypothesesImages() is called but none are there yet...
 			processedOrLoaded = false;
