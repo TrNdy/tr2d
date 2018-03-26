@@ -14,10 +14,7 @@ import com.indago.data.segmentation.LabelingSegment;
 import com.indago.geometry.GrahamScan;
 
 import net.imglib2.Cursor;
-import net.imglib2.IterableInterval;
-import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.roi.Regions;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
@@ -40,8 +37,10 @@ public class HernanSegmentCostFactory implements CostFactory< LabelingSegment > 
 		this.sourceImage = sourceImage;
 
 		params = new CostParams();
-		params.add( "area", 1 );
-		params.add( "non convexity penalty", 1 );
+		params.add( "area (a)", -1 );
+		params.add( "|conv_hull(segm)-segm|", 1 );
+		params.add( "value of max_a", 100 );
+		params.add( "max(0, (size-max_area))²", 1 );
 	}
 
 	/**
@@ -57,10 +56,15 @@ public class HernanSegmentCostFactory implements CostFactory< LabelingSegment > 
 	 */
 	@Override
 	public double getCost( final LabelingSegment segment ) {
-		final double a_1 = params.get( 0 );
-		final double a_2 = params.get( 1 );
+		final double area = params.get( 0 );
+		final double ncp = params.get( 1 );
 
-		return -( a_1 * segment.getArea() - a_2 * getNonConvexityPenalty( segment ) );
+		final double maxa = params.get( 2 );
+		final double maxa_factor = params.get( 3 );
+
+		return area * segment.getArea()
+				+ ncp * getNonConvexityPenalty( segment )
+				+ maxa_factor * Math.pow( Math.max(0, segment.getArea()-maxa), 2);
 	}
 
 	/**
