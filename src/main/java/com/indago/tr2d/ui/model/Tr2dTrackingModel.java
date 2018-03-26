@@ -86,6 +86,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private double maxDivisionSearchRadius = 50;
 	private int maxMovementsToAddPerHypothesis = 4;
 	private int maxDivisionsToAddPerHypothesis = 8;
+	private int maxPixelComponentSize = Integer.MAX_VALUE;
+	private int minPixelComponentSize = 1;
 
 	private final List< CostFactory< ? > > costFactories = new ArrayList<>();
 	private final CostFactory< LabelingSegment > segmentCosts;
@@ -173,7 +175,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	/**
 	 * (Re-)fetches all hypotheses and marks this tracking model as 'reset'.
 	 */
-	public void reset() {
+	public void refetch() {
 		// purge segmentation data
 		dataFolder.getFile( FILENAME_TRACKING ).getFile().delete();
 		try {
@@ -739,7 +741,41 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void setMaxDivisionsToAddPerHypothesis( final int maxDivisionsToAddPerHypothesis ) {
 		this.maxDivisionsToAddPerHypothesis = maxDivisionsToAddPerHypothesis;
 	}
+	
+	/**
+	 * @return the maximum size (in pixels) a component can be in order
+	 *         to count as a valid segmentation hypothesis.
+	 */
+	public double getMaxPixelComponentSize() {
+		return maxPixelComponentSize;
+	}
+	
+	/**
+	 * @param maxPixelComponentSize
+	 *            the maximum size (in pixels) a component can be in order
+	 *            to count as a valid segmentation hypothesis.
+	 */
+	public void setMaxPixelComponentSize( final int maxPixelComponentSize ) {
+		this.maxPixelComponentSize = maxPixelComponentSize;
+	}
+	
+	/**
+	 * @return the minimum size (in pixels) a component needs to be in order
+	 *         to count as a valid segmentation hypothesis.
+	 */
+	public double getMinPixelComponentSize() {
+		return minPixelComponentSize;
+	}
 
+	/**
+	 * @param minPixelComponentSize
+	 *            the minimum size (in pixels) a component needs to be in order
+	 *            to count as a valid segmentation hypothesis.
+	 */
+	public void setMinPixelComponentSize( final int minPixelComponentSize ) {
+		this.minPixelComponentSize = minPixelComponentSize;
+	}
+	
 	/**
 	 *
 	 */
