@@ -3,12 +3,16 @@
  */
 package com.indago.tr2d.ui.model;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -73,6 +77,7 @@ import net.imglib2.util.ValuePair;
 public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private final String FILENAME_STATE = "state.csv";
+	private final String FILENAME_COST_PARAMS = "cost_params.tr2dcosts";
 	private final ProjectFolder dataFolder;
 
 	private final String FOLDER_LABELING_FRAMES = "labeling_frames";
@@ -172,6 +177,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		}
 
 		loadStateFromProjectFolder();
+		loadCostParametersFromProjectFolder();
 	}
 
 	/**
@@ -863,6 +869,16 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		fireStateChangedEvent();
 	}
 
+	private void loadCostParametersFromProjectFolder() {
+		final File costParamsFile = dataFolder.addFile( FILENAME_COST_PARAMS ).getFile();
+		try {
+			importCostParametrization( costParamsFile );
+			fireStateChangedEvent();
+		} catch ( final IOException e ) {
+			Tr2dLog.log.warn( "No cost parameter file found in project folder. Falling back to default values." );
+		}
+	}
+
 	public void addStateChangedListener( final ChangeListener listener ) {
 		if ( !stateChangedListeners.contains( listener ) )
 			stateChangedListeners.add( listener );
@@ -876,4 +892,64 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void fireStateChangedEvent() {
 		stateChangedListeners.forEach( l -> l.stateChanged( null ) );
 	}
+
+	/**
+	 * Saves all cost parameters to a file called
+	 * <code>FILENAME_COST_PARAMS</code> using
+	 * <code>exportCostParametrization(...)</code>.
+	 */
+	public void saveCostParametersToProjectFolder() {
+		try {
+			exportCostParametrization( dataFolder.getFile( FILENAME_COST_PARAMS ).getFile() );
+		} catch ( final IOException e ) {
+			Tr2dLog.log.error( "Cannot save cost parameters to file '" + dataFolder.getFile( FILENAME_COST_PARAMS ).getAbsolutePath() + "'." );
+		}
+	}
+
+	/**
+	 * @param costsFile
+	 */
+	public void importCostParametrization( final File costsFile ) throws IOException {
+		final BufferedReader costReader = new BufferedReader( new FileReader( costsFile ) );
+
+		String line = "";
+		for ( final CostFactory< ? > cf : getCostFactories() ) {
+			final double[] params = cf.getParameters().getAsArray();
+			for ( int j = 0; j < params.length; j++ ) {
+				do {
+					line = costReader.readLine();
+				}
+				while ( line.trim().startsWith( "#" ) || line.trim().isEmpty() );
+
+				params[ j ] = Double.parseDouble( line );
+			}
+			cf.getParameters().setFromArray( params );
+		}
+		costReader.close();
+	}
+
+	/**
+	 * @param costsFile
+	 * @throws IOException
+	 */
+	public void exportCostParametrization( final File costsFile ) throws IOException {
+		final SimpleDateFormat sdfDate = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+		final Date now = new Date();
+		final String strNow = sdfDate.format( now );
+
+		final BufferedWriter costWriter = new BufferedWriter( new FileWriter( costsFile ) );
+		costWriter.write( "# Tr2d cost parameters export from " + strNow + "\n" );
+
+		for ( final CostFactory< ? > cf : getCostFactories() ) {
+			costWriter.write( String.format( "# PARAMS FOR: %s\n", cf.getName() ) );
+			final double[] params = cf.getParameters().getAsArray();
+			for ( int j = 0; j < params.length; j++ ) {
+				costWriter.write( String.format( "# >> %s\n", cf.getParameters().getName( j ) ) );
+				costWriter.write( String.format( "%f\n", params[ j ] ) );
+			}
+		}
+		costWriter.flush();
+		costWriter.close();
+	}
+
 }

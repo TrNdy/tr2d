@@ -9,14 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -154,6 +148,7 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 		try {
 			params.set( index, Double.parseDouble( txtValue.getText() ) );
 			Tr2dLog.log.trace( "SET " + name + " TO " + params.get( index ) );
+			model.saveCostParametersToProjectFolder();
 		} catch ( final NumberFormatException nfe ) {
 			Tr2dLog.log.error( "NOPE! :)" );
 		}
@@ -173,7 +168,7 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 					"Choose file for tr2d cost parameter...",
 					new ExtensionFileFilter( "tr2dcosts", "Tr2d cost parametrization file" ) );
 			try {
-				exportCostParametrization( costsFile );
+				model.exportCostParametrization( costsFile );
 			} catch ( final IOException e1 ) {
 				JOptionPane.showMessageDialog( this, "Cannot write to selected file.", "File Error", JOptionPane.ERROR_MESSAGE );
 			}
@@ -184,57 +179,11 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 					"Choose tr2d cost parameters file...",
 					new ExtensionFileFilter( "tr2dcosts", "Tr2d cost parametrization file" ) );
 			try {
-				importCostParametrization( costsFile );
+				model.importCostParametrization( costsFile );
+				fillCostEditPanel();
 			} catch ( final IOException e1 ) {
 				JOptionPane.showMessageDialog( this, "Cannot write to selected file.", "File Error", JOptionPane.ERROR_MESSAGE );
 			}
 		}
-	}
-
-	/**
-	 * @param costsFile
-	 */
-	private void importCostParametrization( final File costsFile ) throws IOException {
-		final BufferedReader costReader = new BufferedReader( new FileReader( costsFile ) );
-
-		String line = "";
-		for ( final CostFactory< ? > cf : model.getCostFactories() ) {
-			final double[] params = cf.getParameters().getAsArray();
-			for ( int j = 0; j < params.length; j++ ) {
-				do {
-					line = costReader.readLine();
-				}
-				while ( line.trim().startsWith( "#" ) || line.trim().isEmpty() );
-
-				params[ j ] = Double.parseDouble( line );
-			}
-			cf.getParameters().setFromArray( params );
-		}
-		costReader.close();
-		fillCostEditPanel();
-	}
-
-	/**
-	 * @param costsFile
-	 * @throws IOException
-	 */
-	private void exportCostParametrization( final File costsFile ) throws IOException {
-		final SimpleDateFormat sdfDate = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
-		final Date now = new Date();
-		final String strNow = sdfDate.format( now );
-
-		final BufferedWriter costWriter = new BufferedWriter( new FileWriter( costsFile ) );
-		costWriter.write( "# Tr2d cost parameters export from " + strNow + "\n" );
-
-		for ( final CostFactory< ? > cf : model.getCostFactories() ) {
-			costWriter.write( String.format( "# PARAMS FOR: %s\n", cf.getName() ) );
-			final double[] params = cf.getParameters().getAsArray();
-			for ( int j = 0; j < params.length; j++ ) {
-				costWriter.write( String.format( "# >> %s\n", cf.getParameters().getName( j ) ) );
-				costWriter.write( String.format( "%f\n", params[ j ] ) );
-			}
-		}
-		costWriter.flush();
-		costWriter.close();
 	}
 }
