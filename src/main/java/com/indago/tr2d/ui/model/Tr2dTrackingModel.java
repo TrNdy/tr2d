@@ -818,6 +818,10 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	public void saveStateToFile() {
 		try {
 			final FileWriter writer = new FileWriter( new File( dataFolder.getFolder(), FILENAME_STATE ) );
+			writer.append( "" + this.maxPixelComponentSize );
+			writer.append( ", " );
+			writer.append( "" + this.minPixelComponentSize );
+			writer.append( ", " );
 			writer.append( "" + this.maxMovementSearchRadius );
 			writer.append( ", " );
 			writer.append( "" + this.maxMovementsToAddPerHypothesis );
@@ -841,11 +845,15 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			final List< String[] > rows = parser.parseAll( new FileReader( guiState ) );
 			final String[] strings = rows.get( 0 );
 			try {
-				this.maxMovementSearchRadius = Double.parseDouble( strings[ 0 ] );
-				this.maxMovementsToAddPerHypothesis = Integer.parseInt( strings[ 1 ] );
-				this.maxDivisionSearchRadius = Double.parseDouble( strings[ 2 ] );
-				this.maxDivisionsToAddPerHypothesis = Integer.parseInt( strings[ 3 ] );
+				this.maxPixelComponentSize = Integer.parseInt( strings[ 0 ] );
+				this.minPixelComponentSize = Integer.parseInt( strings[ 1 ] );
+				this.maxMovementSearchRadius = Double.parseDouble( strings[ 2 ] );
+				this.maxMovementsToAddPerHypothesis = Integer.parseInt( strings[ 3 ] );
+				this.maxDivisionSearchRadius = Double.parseDouble( strings[ 4 ] );
+				this.maxDivisionsToAddPerHypothesis = Integer.parseInt( strings[ 5 ] );
 			} catch ( final NumberFormatException e ) {
+				this.maxPixelComponentSize = 5000;
+				this.minPixelComponentSize = 1;
 				this.maxMovementSearchRadius = 25;
 				this.maxMovementsToAddPerHypothesis = 5;
 				this.maxDivisionSearchRadius = 25;
