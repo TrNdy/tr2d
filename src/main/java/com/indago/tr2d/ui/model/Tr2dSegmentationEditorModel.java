@@ -28,17 +28,19 @@ public class Tr2dSegmentationEditorModel {
 
 	private final Tr2dModel model;
 
-	private ImgLabeling< String, IntType > segmentations = null;
+	private ImgLabeling< String, IntType > manualSegmentation = null;
+
+	private boolean useManualSegmentation = false;
 
 	public Tr2dSegmentationEditorModel(Tr2dModel model) {
 		this.model = model;
 	}
 
 	public List< RandomAccessibleInterval< IntType > > getSumImages() {
-		if(segmentations == null)
-			return model.getSegmentationModel().getSumImages();
+		if( useManualSegmentation() )
+			return toListOfBitmaps(asLabeling());
 		else
-			return toListOfBitmaps(segmentations);
+			return model.getSegmentationModel().getSumImages();
 	}
 
 	static List<RandomAccessibleInterval<IntType>> toListOfBitmaps(ImgLabeling< String, ? > segmentations) {
@@ -55,15 +57,30 @@ public class Tr2dSegmentationEditorModel {
 				(in, out) -> out.set(in.contains(label) ? 1 : 0), new IntType());
 	}
 
+	public void setUseManualSegmentation(boolean value) {
+		useManualSegmentation = value;
+	}
+
+	public boolean useManualSegmentation() {
+		return useManualSegmentation;
+	}
+
 	public ImgLabeling< String, IntType > asLabeling()
 	{
-		List<RandomAccessibleInterval<IntType>> images = model.getSegmentationModel().getSumImages();
-		List<Labeling> labelings = new ArrayList<>();
+		if(manualSegmentation == null)
+			return fetch();
+		return manualSegmentation;
+	}
+
+	public ImgLabeling< String, IntType > fetch() {
+		List<RandomAccessibleInterval<IntType>>
+				images = model.getSegmentationModel().getSumImages();
+		List<Labeling > labelings = new ArrayList<>();
 		for(int i = 0; i < images.size(); i++)
 			labelings.add(toLabeling("Segmentation " + (i + 1) + " ",
 					images.get(i)));
-		segmentations = joinLabelings(labelings);
-		return segmentations;
+		manualSegmentation = joinLabelings(labelings);
+		return manualSegmentation;
 	}
 
 	private ImgLabeling< String, IntType > joinLabelings(
