@@ -36,6 +36,8 @@ public class Tr2dSegmentationEditorPanel extends JPanel {
 		this.model = segmentationModel;
 		setLayout(new BorderLayout());
 		add(initTopPanel(), BorderLayout.PAGE_START);
+		if(model.useManualSegmentation())
+			checkBox.setSelected(true);
 	}
 
 	private JButton initReloadButton() {

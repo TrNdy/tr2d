@@ -1,5 +1,9 @@
 package com.indago.tr2d.ui.model;
 
+import com.indago.io.ProjectFile;
+import com.indago.io.ProjectFolder;
+import com.indago.tr2d.Tr2dContext;
+import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
@@ -18,6 +22,8 @@ import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.GenericComposite;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,19 +34,60 @@ public class Tr2dSegmentationEditorModel {
 
 	private final Tr2dModel model;
 
-	private ImgLabeling< String, IntType > manualSegmentation = null;
+	private final ProjectFolder projectFolder;
+
+	private final String USE_MANUAL_SEGMENTATION_FILE =
+			"use_manual_segmentation_tag";
+
+	private final String LABELING_FILE = "labeling.tif";
+
+	private ImgLabeling< String, ? > manualSegmentation = null;
 
 	private boolean useManualSegmentation = false;
 
 	public Tr2dSegmentationEditorModel(Tr2dModel model) {
 		this.model = model;
+		this.projectFolder = model.getProjectFolder().getFolder(
+				Tr2dProjectFolder.MANUAL_SEGMENTATION_FOLDER);
+		this.useManualSegmentation = projectFolder.addFile(
+				USE_MANUAL_SEGMENTATION_FILE).exists();
+		tryOpenLabeling();
+	}
+
+	private void tryOpenLabeling() {
+		ProjectFile labelingFile = projectFolder.addFile(LABELING_FILE);
+		if(!labelingFile.exists())
+			return;
+		try {
+			this.manualSegmentation = new LabelingSerializer(Tr2dContext.ops.context())
+					.openImgLabelingFromTiff(
+							labelingFile.getAbsolutePath()
+			);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public List< RandomAccessibleInterval< IntType > > getSumImages() {
-		if( useManualSegmentation() )
-			return toListOfBitmaps(asLabeling());
-		else
+		if( useManualSegmentation() ) {
+			ImgLabeling< String, ? > segmentations = asLabeling();
+			saveLabeling(segmentations);
+			return toListOfBitmaps(segmentations);
+		} else
 			return model.getSegmentationModel().getSumImages();
+	}
+
+	private void saveLabeling(ImgLabeling< String, ? > segmentations) {
+		try {
+			new LabelingSerializer(Tr2dContext.ops.context()).save(
+					new Labeling(segmentations),
+							projectFolder.addFile(LABELING_FILE).getAbsolutePath()
+			);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	static List<RandomAccessibleInterval<IntType>> toListOfBitmaps(ImgLabeling< String, ? > segmentations) {
@@ -59,20 +106,37 @@ public class Tr2dSegmentationEditorModel {
 
 	public void setUseManualSegmentation(boolean value) {
 		useManualSegmentation = value;
+		saveUseManualSegmentation();
+	}
+
+	private void saveUseManualSegmentation() {
+		File file = projectFolder.addFile(USE_MANUAL_SEGMENTATION_FILE).getFile();
+		if(useManualSegmentation) {
+			if(!file.exists())
+				try {
+					file.createNewFile();
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
+		else
+			if(file.exists())
+				file.delete();
 	}
 
 	public boolean useManualSegmentation() {
 		return useManualSegmentation;
 	}
 
-	public ImgLabeling< String, IntType > asLabeling()
+	public ImgLabeling< String, ? > asLabeling()
 	{
 		if(manualSegmentation == null)
 			return fetch();
 		return manualSegmentation;
 	}
 
-	public ImgLabeling< String, IntType > fetch() {
+	public ImgLabeling< String, ? > fetch() {
 		List<RandomAccessibleInterval<IntType>>
 				images = model.getSegmentationModel().getSumImages();
 		List<Labeling > labelings = new ArrayList<>();
