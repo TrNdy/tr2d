@@ -9,7 +9,7 @@ import java.util.List;
 import com.indago.fg.Assignment;
 import com.indago.pg.IndicatorNode;
 import com.indago.tr2d.ui.listener.SolutionChangedListener;
-import com.indago.tr2d.ui.util.SolutionVisulizer;
+import com.indago.tr2d.ui.util.SolutionVisualizer;
 import com.indago.tr2d.ui.view.bdv.overlays.Tr2dTrackingOverlay;
 import com.indago.ui.bdv.BdvWithOverlaysOwner;
 
@@ -65,12 +65,12 @@ public class Tr2dSolDiffModel implements BdvWithOverlaysOwner, SolutionChangedLi
 		newPgAssignment = trackingModel.getSolution();
 
 		if ( imgSolutionOld == null ) {
-			imgSolutionOld = SolutionVisulizer.drawSolutionSegmentImages( trackingModel, oldPgAssignment );
+			imgSolutionOld = SolutionVisualizer.drawSolutionSegmentImages( trackingModel, oldPgAssignment );
 		}
 		bdvAdd( imgSolutionOld, "PREVIOUS SOL", 0, 5, new ARGBType( 0xFF0000 ), true );
 		imgs.add( imgSolutionOld );
 
-		imgSolutionNew = SolutionVisulizer.drawSolutionSegmentImages( trackingModel, newPgAssignment );
+		imgSolutionNew = SolutionVisualizer.drawSolutionSegmentImages( trackingModel, newPgAssignment );
 		bdvAdd( imgSolutionNew, "CURRENT SOL", 0, 5, new ARGBType( 0x00FF00 ), true );
 		imgs.add( imgSolutionNew );
 

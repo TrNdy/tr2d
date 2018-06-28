@@ -28,17 +28,11 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 	private final Tr2dTrackingModel trackingModel;
 	private final int time;
 
-	/**
-	 * @param model
-	 */
 	public Tr2dTrackingOverlay( final Tr2dTrackingModel model ) {
 		this.trackingModel = model;
 		this.time = -1;
 	}
 
-	/**
-	 * @param model
-	 */
 	public Tr2dTrackingOverlay( final Tr2dTrackingModel model, final int t ) {
 		this.trackingModel = model;
 		this.time = t;
@@ -61,11 +55,6 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		}
 	}
 
-	/**
-	 * @param g
-	 * @param cur_t
-	 * @param length
-	 */
 	private void drawCOMTails( final Graphics2D g, final int cur_t, final int length ) {
 		final Tr2dTrackingProblem tr2dPG = trackingModel.getTrackingProblem();
 		final Assignment< IndicatorNode > pgSolution = trackingModel.getSolution();
@@ -96,16 +85,6 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		}
 	}
 
-	/**
-	 * @param g
-	 * @param trans
-	 * @param from_t
-	 * @param from
-	 * @param to
-	 * @param color
-	 * @param i
-	 * @param length
-	 */
 	private void drawCOMTailSegment(
 			final Graphics2D g,
 			final AffineTransform2D trans,
@@ -160,9 +139,6 @@ public class Tr2dTrackingOverlay extends BdvOverlay {
 		}
 	}
 
-	/**
-	 * @param g
-	 */
 	private void drawCOMs( final Graphics2D g, final int cur_t ) {
 		final Color theRegularColor = Color.RED.darker();
 		final Color theForcedColor = Color.RED.brighter();

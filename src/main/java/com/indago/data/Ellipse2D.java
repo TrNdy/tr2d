@@ -227,10 +227,6 @@ public class Ellipse2D {
 //		System.out.println( String.format( ">> Done with: %f%% instead of %f%%", curFracIn, fractionInside ) );
 	}
 
-	/**
-	 * @param points
-	 * @return
-	 */
 	public int countPointsInside( final PixelCloud2D< ? > points ) {
 		int ret = 0;
 		for ( final Point2D p : points.getPoints() ) {
@@ -239,10 +235,6 @@ public class Ellipse2D {
 		return ret;
 	}
 
-	/**
-	 * @param p
-	 * @return
-	 */
 	public boolean contains( final Point2D p ) {
 		// Idea: rotate p around this.center about this.angle.
 		// Then use std-formula for non-rotated ellipses...

@@ -618,6 +618,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	/**
 	 * Returns {@code true} iff {@code a} is a subset of {@code b}.
 	 *
+	 * @param a
+	 *            LabelData instance
+	 * @param b
+	 *            LabelData instance
 	 * @return {@code true} iff {@code a} is a subset of {@code b}.
 	 */
 	public static boolean isSubset( final LabelData a, final LabelData b ) {
@@ -644,6 +648,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 * timepoint found.
 	 *
 	 * @param v
+	 *            SegmentVertex instance
 	 * @return -1 for roots, otherwise the max timepoint of all vertices that
 	 *         connect to v.
 	 */
@@ -964,9 +969,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void callRedo() {
 		if ( !redoStack.isEmpty() ) {
 			pushCurrentStateOnUndoStack();
@@ -992,9 +994,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void avoidCurrentSelection() {
 		pushCurrentStateOnUndoStack();
 		emptyRedoStack();
@@ -1007,9 +1006,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void forceCurrentSelection() {
 		pushCurrentStateOnUndoStack();
 		emptyRedoStack();
@@ -1022,9 +1018,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void forceCurrentSelectionToBeDividedTo() {
 		pushCurrentStateOnUndoStack();
 		emptyRedoStack();
@@ -1044,9 +1037,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void forceCurrentSelectionToBeDividedFrom() {
 		pushCurrentStateOnUndoStack();
 		emptyRedoStack();
@@ -1066,9 +1056,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void forceCurrentSelectionToBeMovedTo() {
 		pushCurrentStateOnUndoStack();
 		emptyRedoStack();
@@ -1088,9 +1075,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void forceCurrentSelectionToBeMovedFrom() {
 		pushCurrentStateOnUndoStack();
 		emptyRedoStack();
@@ -1110,9 +1094,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void forceCurrentSelectionToDisappear() {
 		pushCurrentStateOnUndoStack();
 		emptyRedoStack();
@@ -1125,9 +1106,6 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void forceCurrentSelectionToAppear() {
 		pushCurrentStateOnUndoStack();
 		emptyRedoStack();
@@ -1142,6 +1120,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	/**
 	 * @param conflictSet
+	 *            ConflictSet instance
 	 * @return true, iff all nodes in the given conflict set are currently
 	 *         selected
 	 */
@@ -1154,8 +1133,11 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	/**
 	 * Switches to the given frame.
-	 * Switches to frame 0 if a number &lt;0 is given and to the last frame if the
-	 * given number exceeds the number of frames.
+	 * Switches to frame 0 if a number &lt;0 is given and to the last frame if
+	 * the given number exceeds the number of frames.
+	 *
+	 * @param frameNumToShow
+	 *            the frame number to be shown
 	 */
 	public void setFrameToShow( final int frameNumToShow ) {
 		this.currentFrame = Math.max(

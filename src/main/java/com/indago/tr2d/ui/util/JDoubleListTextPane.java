@@ -43,9 +43,6 @@ public class JDoubleListTextPane extends JTextPane {
 		return ret;
 	}
 
-	/**
-	 * @return
-	 */
 	public List< Double > getList() throws NumberFormatException {
 		final List< Double > ret = new ArrayList< Double >();
 		final String str = this.getText();
@@ -56,9 +53,6 @@ public class JDoubleListTextPane extends JTextPane {
 		return ret;
 	}
 
-	/**
-	 * @param listOfDoubles
-	 */
 	public void setList( final List< Double > listOfDoubles ) {
 		this.listOfDoubles = listOfDoubles;
 		this.setText( this.toString() );

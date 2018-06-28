@@ -73,9 +73,6 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	private int blockRadius = 15;
 	private int maxDistance = 15;
 
-	/**
-	 * @param model
-	 */
 	public Tr2dFlowModel( final Tr2dModel model ) {
 		this.model = model;
 		projectFolder = model.getProjectFolder().getFolder( Tr2dProjectFolder.FLOW_FOLDER );
@@ -100,23 +97,14 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		}
 	}
 
-	/**
-	 * @return
-	 */
 	public ProjectFolder getProjectFolder() {
 		return projectFolder;
 	}
 
-	/**
-	 * @return
-	 */
 	public Tr2dModel getModel() {
 		return model;
 	}
 
-	/**
-	 * @return
-	 */
 	public RandomAccessibleInterval< FloatType > getFlowImage() {
 		if ( imgs.size() > 0 )
 			return imgs.get( 0 );
@@ -124,16 +112,10 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 			return null;
 	}
 
-	/**
-	 * @return
-	 */
 	public RandomAccessibleInterval< FloatType > getFlowImage( final int t ) {
 		return Views.hyperSlice( imgs.get( 0 ), 3, t );
 	}
 
-	/**
-	 * @return
-	 */
 	public ValuePair< Double, Double > getFlowVector( final int t, final int x, final int y ) {
 		final double[] polar = new double[ 2 ];
 
@@ -199,9 +181,6 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		return bdvGetSources().get( idx );
 	}
 
-	/**
-	 * @return
-	 */
 	public boolean hasFlowLoaded() {
 		if ( imgs.size() == 1 )
 			return true;
@@ -224,9 +203,6 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		return bdvOverlaySources;
 	}
 
-	/**
-	 *
-	 */
 	public void computeAndStoreFlow() {
 		// make the parameter values persistent
 		saveParameterProps( filePropsParamValues.getFile() );
@@ -275,7 +251,6 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 	}
 
 	// this can be removed as soo as the actual stupido bug was fixed which will happen in oct. 2016
-	/** Executes the "scale" operation on the given arguments. */
 	@SuppressWarnings( "unchecked" )
 	public < T extends RealType< T > > RandomAccessibleInterval< T > scale(
 			final RandomAccessibleInterval< T > in,
@@ -291,44 +266,26 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 
 	}
 
-	/**
-	 * @return the blockRadius
-	 */
 	public int getBlockRadius() {
 		return blockRadius;
 	}
 
-	/**
-	 * @param blockRadius the blockRadius to set
-	 */
 	public void setBlockRadius( final int blockRadius ) {
 		this.blockRadius = blockRadius;
 	}
 
-	/**
-	 * @return the maxDistance
-	 */
 	public int getMaxDistance() {
 		return maxDistance;
 	}
 
-	/**
-	 * @param maxDistance the maxDistance to set
-	 */
 	public void setMaxDistance( final int maxDistance ) {
 		this.maxDistance = maxDistance;
 	}
 
-	/**
-	 * @return the maxDistance
-	 */
 	public double getScaleFactor() {
 		return scaleFactor;
 	}
 
-	/**
-	 * @param factor
-	 */
 	public void setScaleFactor( final double factor ) {
 		this.scaleFactor = factor;
 	}

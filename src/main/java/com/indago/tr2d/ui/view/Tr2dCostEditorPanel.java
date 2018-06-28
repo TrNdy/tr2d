@@ -49,9 +49,6 @@ public class Tr2dCostEditorPanel extends JPanel implements ActionListener {
 
 	private JPanel panelCosts;
 
-	/**
-	 * @param model
-	 */
 	public Tr2dCostEditorPanel( final Tr2dTrackingModel model, final Tr2dSolDiffModel diffModel ) {
 		this.model = model;
 		this.diffModel = diffModel;

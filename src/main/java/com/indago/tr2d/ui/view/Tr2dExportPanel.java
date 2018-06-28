@@ -71,9 +71,6 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 	private JButton exportTrackingProblemILP;
 
-	/**
-	 * @param model
-	 */
 	public Tr2dExportPanel( final Tr2dModel model ) {
 		super( new BorderLayout() );
 		this.model = model;
@@ -497,9 +494,6 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 		}
 	}
 
-	/**
-	 * @param projectFolderBasePath
-	 */
 	public void schnitzcellExport( final File projectFolderBasePath ) {
 		final File objects = new File( projectFolderBasePath, "tr2d_objects.csv" );
 		final File tracks = new File( projectFolderBasePath, "tr2d_tracks.csv" );

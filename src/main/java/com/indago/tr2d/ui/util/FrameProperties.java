@@ -55,12 +55,6 @@ public class FrameProperties {
 		f.setBounds( x, y, w, h );
 	}
 
-	/**
-	 * @param w
-	 *            desired frame width
-	 * @param h
-	 *            desired frame height
-	 */
 	public static Rectangle getCenteredRectangle( int w, int h ) {
 		final GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		final int maxwidth = gd.getDisplayMode().getWidth();

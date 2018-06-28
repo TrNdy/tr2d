@@ -24,44 +24,15 @@ public class Tr2dSegmentationCollectionModel {
 
 	private final List< Tr2dSegmentationPlugin > plugins = new ArrayList<>();
 
-//	private final Tr2dImportedSegmentationModel importedSegmentationModel;
-//	private final Tr2dWekaSegmentationModel wekaModel;
-
-	/**
-	 * @param model
-	 */
 	public Tr2dSegmentationCollectionModel( final Tr2dModel model ) {
 		this.model = model;
 		projectFolder = model.getProjectFolder().getFolder( Tr2dProjectFolder.SEGMENTATION_FOLDER );
-
-//		importedSegmentationModel = new Tr2dImportedSegmentationModel( this, projectFolder );
-//		wekaModel = new Tr2dWekaSegmentationModel( this, projectFolder );
 	}
 
-//	/**
-//	 * @return the importedSegmentationModel
-//	 */
-//	public Tr2dImportedSegmentationModel getImportedSegmentationModel() {
-//		return importedSegmentationModel;
-//	}
-//
-//	/**
-//	 * @return the wekaModel
-//	 */
-//	public Tr2dWekaSegmentationModel getWekaModel() {
-//		return wekaModel;
-//	}
-//
-	/**
-	 * @return
-	 */
 	public ProjectFolder getProjectFolder() {
 		return projectFolder;
 	}
 
-	/**
-	 * @return
-	 */
 	public Tr2dModel getModel() {
 		return model;
 	}
@@ -74,16 +45,11 @@ public class Tr2dSegmentationCollectionModel {
 		return plugins;
 	}
 
-	/**
-	 * @return
-	 */
 	public List< RandomAccessibleInterval< IntType > > getSumImages() {
 		final List< RandomAccessibleInterval< IntType > > ret = new ArrayList< RandomAccessibleInterval< IntType > >();
 		for ( final Tr2dSegmentationPlugin plugin : plugins ) {
 			ret.addAll( plugin.getOutputs() );
 		}
-//		ret.addAll( wekaModel.getSegmentHypotheses() );
-//		ret.addAll( importedSegmentationModel.getSegmentHypothesesImages() );
 		return ret;
 	}
 

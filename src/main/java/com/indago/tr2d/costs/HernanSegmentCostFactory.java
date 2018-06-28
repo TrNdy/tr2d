@@ -29,9 +29,6 @@ public class HernanSegmentCostFactory implements CostFactory< LabelingSegment > 
 
 	private CostParams params;
 
-	/**
-	 * @param sourceImage
-	 */
 	public HernanSegmentCostFactory(
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
 		this.sourceImage = sourceImage;
@@ -71,9 +68,6 @@ public class HernanSegmentCostFactory implements CostFactory< LabelingSegment > 
 	 * Computes the convex hull of a segment an returns the area difference of
 	 * the convex hull and the segment itself (in pixels, returns 0 if negative
 	 * (due to discrete pixels vs polygon area)).
-	 *
-	 * @param segment
-	 * @return
 	 */
 	private double getNonConvexityPenalty( final LabelingSegment segment ) {
 		final HashMap< Integer, Pair< Integer, Integer > > minmaxPerLine = new HashMap<>();

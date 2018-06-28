@@ -112,6 +112,7 @@ public class EditState {
 
 	/**
 	 * @param segnode
+	 *            the segnode to perform the action on
 	 * @return true, iff the given segnode represents an avoided segment
 	 */
 	public boolean isAvoided( final SegmentNode segnode ) {
@@ -120,6 +121,7 @@ public class EditState {
 
 	/**
 	 * @param segnode
+	 *            the segnode to perform the action on
 	 * @return true, iff the given segnode represents a forced segment
 	 */
 	public boolean isForced( final SegmentNode segnode ) {
@@ -128,6 +130,7 @@ public class EditState {
 
 	/**
 	 * @param segnode
+	 *            the segnode to perform the action on
 	 * @return true, iff the given segnode has movement forced towards it
 	 *         or from a conflict set force it is contained in
 	 */
@@ -141,6 +144,7 @@ public class EditState {
 
 	/**
 	 * @param segnode
+	 *            the segnode to perform the action on
 	 * @return true, iff the given segnode has movement forced away from it
 	 *         or from a conflict set force it is contained in (towards future)
 	 */
@@ -154,6 +158,7 @@ public class EditState {
 
 	/**
 	 * @param segnode
+	 *            the segnode to perform the action on
 	 * @return true, iff the given segnode has division forced towards it
 	 *         or from a conflict set force it is contained in
 	 */
@@ -167,6 +172,7 @@ public class EditState {
 
 	/**
 	 * @param segnode
+	 *            the segnode to perform the action on
 	 * @return true, iff the given segnode has division forced away from it
 	 *         or from a conflict set force it is contained in (towards future)
 	 */

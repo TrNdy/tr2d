@@ -3,16 +3,16 @@ package com.indago.tr2d.plugins.seg;
 import java.util.HashMap;
 import java.util.Set;
 
-import com.indago.tr2d.Tr2dLog;
 import org.scijava.plugin.AbstractPTService;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.PluginInfo;
 import org.scijava.service.Service;
 
+import com.indago.log.LoggingPanel;
+import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.ui.model.Tr2dModel;
 
 import net.imagej.ImageJService;
-import com.indago.log.LoggingPanel;
 
 @Plugin(type = Service.class)
 public class Tr2dSegmentationPluginService extends AbstractPTService< Tr2dSegmentationPlugin >
@@ -22,14 +22,16 @@ public class Tr2dSegmentationPluginService extends AbstractPTService< Tr2dSegmen
 
 	/**
 	 * Gets the list of available plugin types.
-	 * The names on this list can be passed to {@link #createPlugin(String, Tr2dModel, LoggingPanel)}}
+	 * The names on this list can be passed to
+	 * {@link #createPlugin(String, Tr2dModel, LoggingPanel)}}
 	 * to create instances of that animal.
+	 * 
+	 * @return a set of plugin names
 	 */
 	public Set< String > getPluginNames() {
 		return plugins.keySet();
 	}
 
-	/** Creates an animal of the given name. */
 	public Tr2dSegmentationPlugin createPlugin( final String name, final Tr2dModel model, final LoggingPanel logPanel ) {
 		// First, we get the animal plugin with the given name.
 		final PluginInfo< Tr2dSegmentationPlugin > info = plugins.get( name );

@@ -25,11 +25,8 @@ import net.imglib2.view.Views;
 /**
  * @author jug
  */
-public class SolutionVisulizer {
+public class SolutionVisualizer {
 
-	/**
-	 *
-	 */
 	public static RandomAccessibleInterval< IntType > drawSolutionSegmentImages(
 			final Tr2dTrackingModel trackingModel,
 			final Assignment< IndicatorNode > solution ) {
@@ -61,10 +58,6 @@ public class SolutionVisulizer {
 		return ret;
 	}
 
-	/**
-	 * @param segVar
-	 * @param curColorId
-	 */
 	private static void drawLineageWithId(
 			final RandomAccessibleInterval< IntType > imgSolution,
 			final Assignment< IndicatorNode > solution,

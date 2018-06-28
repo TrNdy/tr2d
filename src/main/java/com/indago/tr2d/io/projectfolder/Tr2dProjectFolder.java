@@ -24,10 +24,6 @@ public class Tr2dProjectFolder extends ProjectFolder {
 	public static String FRAME_PROPERTIES = "FRAME_PROPERTIES";
 	public static String RAW_DATA = "RAW_DATA";
 
-	/**
-	 * @param baseFolder
-	 * @throws IOException
-	 */
 	public Tr2dProjectFolder( final File baseFolder ) throws IOException {
 		super( "TR2D", baseFolder );
 	}
@@ -60,6 +56,8 @@ public class Tr2dProjectFolder extends ProjectFolder {
 	 * allowed, and if a 'RAW.tif' file is contained in it.
 	 *
 	 * @param folder
+	 *            Folder to be checked
+	 * @return true or false
 	 */
 	public static boolean isValidProjectFolder( final File folder ) {
 		if (!folder.isDirectory()) return false;

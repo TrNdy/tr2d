@@ -22,9 +22,6 @@ public class Tr2dFlowOverlay extends BdvOverlay {
 
 	private final Tr2dFlowModel flowModel;
 
-	/**
-	 * @param model
-	 */
 	public Tr2dFlowOverlay( final Tr2dFlowModel model ) {
 		this.flowModel = model;
 	}
@@ -41,11 +38,6 @@ public class Tr2dFlowOverlay extends BdvOverlay {
 		}
 	}
 
-	/**
-	 * @param g
-	 * @param cur_t
-	 * @param length
-	 */
 	private void drawRegularSpacesVectors( final Graphics2D g, final int t ) {
 		final RandomAccessibleInterval< FloatType > flowImg = flowModel.getFlowImage( t );
 		final long sizeX = flowImg.dimension( 0 );
@@ -65,12 +57,6 @@ public class Tr2dFlowOverlay extends BdvOverlay {
 		}
 	}
 
-	/**
-	 * @param g
-	 * @param flowImg
-	 * @param x
-	 * @param y
-	 */
 	private void drawVector( final Graphics2D g, final int t, int x, int y ) {
 		final ValuePair< Double, Double > flowVec = flowModel.getFlowVector( t, x, y );
 		if ( x == 0 && y == 0 ) return;

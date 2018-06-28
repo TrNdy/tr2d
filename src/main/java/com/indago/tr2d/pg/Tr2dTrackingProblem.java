@@ -61,9 +61,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		return timepoints;
 	}
 
-	/**
-	 * @param segmentationProblem
-	 */
 	public void addSegmentationProblem( final Tr2dSegmentationProblem segmentationProblem ) {
 		if ( timepoints.size() == 0 ) {
 			timepoints.add( segmentationProblem );
@@ -80,9 +77,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void addAppearanceToLatestFrame( final boolean isFirstFrame ) {
 		final Tr2dSegmentationProblem segProblem = timepoints.get( timepoints.size() - 1 );
 		for ( final SegmentNode segVar : segProblem.getSegments() ) {
@@ -96,9 +90,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void addDisappearanceToLatestFrame() {
 		final Tr2dSegmentationProblem segProblem = timepoints.get( timepoints.size() - 1 );
 		for ( final SegmentNode segVar : segProblem.getSegments() ) {
@@ -122,9 +113,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		}
 	}
 
-	/**
-	 *
-	 */
 	private void addMovesToLatestFramePair() {
 		final Tr2dSegmentationProblem segProblemL = timepoints.get( timepoints.size() - 2 );
 		final Tr2dSegmentationProblem segProblemR = timepoints.get( timepoints.size() - 1 );
@@ -167,10 +155,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		}
 	}
 
-	/**
-	 * @param segProblem
-	 * @return
-	 */
 	private RadiusNeighborSearchOnKDTree< SegmentNode > createRadiusNeighborSearch( final Tr2dSegmentationProblem segProblem ) {
 		List< SegmentNode > segmentList;
 		if ( segProblem.getSegments() instanceof List )
@@ -185,9 +169,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		return search;
 	}
 
-	/**
-	 *
-	 */
 	private void addDivisionsToLatestFramePair() {
 		final Tr2dSegmentationProblem segProblemL = timepoints.get( timepoints.size() - 2 );
 		final Tr2dSegmentationProblem segProblemR = timepoints.get( timepoints.size() - 1 );
@@ -232,6 +213,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	 * Saves the problem graph to file
 	 *
 	 * @param file
+	 *            the file to save to
 	 */
 	public void saveToFile( final File file ) throws IOException {
 //		for ( final Tr2dSegmentationProblem segProblem : timepoints ) {

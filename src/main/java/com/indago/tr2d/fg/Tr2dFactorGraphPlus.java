@@ -43,6 +43,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	 * Creates an empty Tr2d Factor Graph object.
 	 *
 	 * @param firstFrameFG
+	 *            the FG representing the first frame
 	 */
 	public Tr2dFactorGraphPlus(
 			final FactorGraphPlus< Segment > firstFrameFG ) {
@@ -86,9 +87,6 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 		return functions;
 	}
 
-	/**
-	 * @param frameFG
-	 */
 	public void addFirstFrame( final FactorGraphPlus< Segment > frameFG ) {
 		if ( getFrameFGs().size() == 0 ) {
 			getFrameFGs().add( frameFG );
@@ -142,9 +140,6 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 
 	}
 
-	/**
-	 * @param fg
-	 */
 	private void mergeFG( final FactorGraphPlus< Segment > fg ) {
 		this.variables.addAll( fg.getFactorGraph().getVariables() );
 		this.factors.addAll( fg.getFactorGraph().getFactors() );
@@ -156,6 +151,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	 * sum to the same value as the segmentation variable.
 	 *
 	 * @param frameFG
+	 *            a frame FG
 	 */
 	private void addRightContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
 		int numRightContinuationConstraints = 0;
@@ -175,6 +171,7 @@ public class Tr2dFactorGraphPlus implements FactorGraph {
 	 * sum to the same value as the segmentation variable.
 	 *
 	 * @param frameFG
+	 *            a frame FG
 	 */
 	private void addLeftContinuationConstraints( final FactorGraphPlus< Segment > frameFG ) {
 		int numLeftContinuationConstraints = 0;

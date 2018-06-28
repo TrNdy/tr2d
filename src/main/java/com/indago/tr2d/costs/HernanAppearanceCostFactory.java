@@ -20,9 +20,6 @@ public class HernanAppearanceCostFactory implements CostFactory< LabelingSegment
 
 	private CostParams params;
 
-	/**
-	 * @param imgOrig
-	 */
 	public HernanAppearanceCostFactory(
 			final RandomAccessibleInterval< DoubleType > imgOrig ) {
 		this.imgOrig = imgOrig;
@@ -55,10 +52,6 @@ public class HernanAppearanceCostFactory implements CostFactory< LabelingSegment
 				a_3 * getDistToImageBorder( segment );
 	}
 
-	/**
-	 * @param segment
-	 * @return
-	 */
 	private double getDistToImageBorder( final LabelingSegment segment ) {
 		final double posX = segment.getCenterOfMass().getDoublePosition( 0 );
 		final double posY = segment.getCenterOfMass().getDoublePosition( 1 );

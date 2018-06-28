@@ -8,7 +8,7 @@
 		<version>2.2.9</version>
 	</parent>
 
- 	<properties>
+	<properties>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>TrNdy developers</license.copyrightOwners>
 
@@ -131,7 +131,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/TrNdy/tr2d</connection>
 		<developerConnection>scm:git:git@github.com:TrNdy/tr2d</developerConnection>
-		<tag>HEAD</tag>
+		<tag>tr2d-0.1.5</tag>
 		<url>https://github.com/TrNdy/tr2d</url>
 	</scm>
 	<issueManagement>

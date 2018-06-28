@@ -25,9 +25,6 @@ public class HernanMovementCostFactory
 
 	private CostParams params;
 
-	/**
-	 * @param sourceImage
-	 */
 	public HernanMovementCostFactory(
 			final RandomAccessibleInterval< DoubleType > sourceImage ) {
 		this.sourceImage = sourceImage;
@@ -68,23 +65,10 @@ public class HernanMovementCostFactory
 		return a_1 * deltaSize + a_2 * deltaPos;
 	}
 
-	/**
-	 *
-	 * @param s1
-	 * @param s2
-	 * @return
-	 */
 	private double deltaSize( final LabelingSegment s1, final LabelingSegment s2 ) {
 		return Math.abs( s1.getArea() - s2.getArea() );
 	}
 
-	/**
-	 *
-	 * @param s1
-	 * @param s2
-	 * @param flow
-	 * @return
-	 */
 	private double deltaPosSquared( final LabelingSegment s1, final LabelingSegment s2, final Pair< Double, Double > flow ) {
 		final RealLocalizable pos1 = s1.getCenterOfMass();
 		final RealLocalizable pos2 = s2.getCenterOfMass();

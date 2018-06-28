@@ -16,9 +16,6 @@ public class AppearanceHypothesisVariable< S extends Segment, T extends SegmentH
 
 	private final T segVar;
 
-	/**
-	 * @param segment
-	 */
 	public AppearanceHypothesisVariable( final T segment ) {
 		this.segVar = segment;
 	}

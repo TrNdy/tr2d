@@ -24,9 +24,6 @@ public class Tr2dSegmentationCollectionPanel extends JPanel {
 
 	private JTabbedPane tabs;
 
-	/**
-	 * @param segModel
-	 */
 	public Tr2dSegmentationCollectionPanel( final Tr2dSegmentationCollectionModel segModel ) {
 		super( new BorderLayout( 5, 5 ) );
 		this.model = segModel;

@@ -133,6 +133,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param segNode
+	 *            SegmentNode instance
 	 */
 	public void forceAppearance( final SegmentNode segNode ) {
 		// to start: un-force all conflicting segment nodes
@@ -148,6 +149,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param segNode
+	 *            SegmentNode instance
 	 */
 	public void forceDisappearance( final SegmentNode segNode ) {
 		force( segNode );
@@ -172,6 +174,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param segNode
+	 *            SegmentNode instance
 	 */
 	public void forceMoveTo( final SegmentNode segNode ) {
 		// to start: un-force all conflicting segment nodes
@@ -187,6 +190,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param confSet
+	 *            ConflictSet instance
 	 */
 	public void forceMoveTo( final ConflictSet confSet ) {
 		// to start: un-force all conflicting segment nodes
@@ -202,6 +206,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param segNode
+	 *            SegmentNode instance
 	 */
 	public void forceMoveFrom( final SegmentNode segNode ) {
 		// to start: un-force all conflicting segment nodes
@@ -218,6 +223,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param confSet
+	 *            ConflictSet instance
 	 */
 	public void forceMoveFrom( final ConflictSet confSet ) {
 		// to start: un-force all conflicting segment nodes
@@ -233,6 +239,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param segNode
+	 *            SegmentNode instance
 	 */
 	public void forceDivisionTo( final SegmentNode segNode ) {
 		// to start: un-force all conflicting segment nodes
@@ -248,6 +255,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param confSet
+	 *            ConflictSet instance
 	 */
 	public void forceDivisionTo( final ConflictSet confSet ) {
 		// to start: un-force all conflicting segment nodes
@@ -264,6 +272,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param confSet
+	 *            ConflictSet instance
 	 */
 	public void forceDivisionFrom( final ConflictSet confSet ) {
 		// to start: un-force all conflicting segment nodes
@@ -279,6 +288,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting constraints.
 	 *
 	 * @param segNode
+	 *            SegmentNode instance
 	 */
 	public void forceDivisionFrom( final SegmentNode segNode ) {
 		// to start: un-force all conflicting segment nodes
@@ -292,6 +302,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * conflicting nodes and (in-)assignments.
 	 *
 	 * @param segNode
+	 *            SegmentNode instance
 	 */
 	private void forceAndClearConflicts( final SegmentNode segNode ) {
 		// FORCES ON SEGMENT LEVEL
@@ -335,6 +346,11 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * individual forces of nodes in the given conflict set.
 	 *
 	 * @param confSet
+	 *            ConflictSet instance
+	 * @param removeSegmentInAssignments
+	 *            guess
+	 * @param removeSegmentOutAssignments
+	 *            guess
 	 */
 	private void forceAndClearConflicts(
 			final ConflictSet confSet,
@@ -360,7 +376,9 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * Avoids the given SegmentNode in any found solution.
 	 * This method is smart enough to avoid obvious problems by removing
 	 * conflicting constraints.
-	 *
+	 * 
+	 * @param segNode
+	 *            SegmentNode instance
 	 * @see com.indago.pg.SegmentationProblem#avoid(com.indago.pg.segments.SegmentNode)
 	 */
 	@Override

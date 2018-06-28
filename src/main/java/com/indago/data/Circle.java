@@ -63,24 +63,14 @@ public class Circle {
 		this.radius = angle;
 	}
 
-	/**
-	 * @return
-	 */
 	public boolean isZeroCircle() {
 		return ( this.radius == 0.0 );
 	}
 
-	/**
-	 * @return
-	 */
 	public Rectangle2D getBoundingBox() {
 		return new Rectangle2D( this.center.getX()-this.radius, this.center.getY()-this.radius, 2*this.radius, 2*this.radius );
 	}
 
-	/**
-	 * @param p
-	 * @return
-	 */
 	public boolean contains( final Point2D p ) {
 		return ( Point2D.distance( this.center, p ) <= this.radius );
 	}

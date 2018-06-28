@@ -29,9 +29,6 @@ public class Gauss {
 		data_w.add( new Double( weight ) );
 	}
 
-	/**
-	 * @return the sigma
-	 */
 	public double getSigma( final boolean weighted ) {
 		double sum = 0;
 		final ValuePair< Double, Double > mu = getMu( weighted );
@@ -57,9 +54,6 @@ public class Gauss {
 		return sigma * sigma;
 	}
 
-	/**
-	 * @return the mu_y
-	 */
 	public ValuePair< Double, Double > getMu( final boolean weighted ) {
 		double mu_x = 0;
 		double mu_y = 0;

@@ -41,11 +41,6 @@ public class Tr2dOutAssignmentsOverlayOnSelection extends BdvOverlay {
 	private final List< Color > listMovementColors;
 	private final List< Color > listDivisionColors;
 
-	/**
-	 * @param model
-	 * @param showDivisions
-	 * @param showMovements
-	 */
 	public Tr2dOutAssignmentsOverlayOnSelection(
 			final Tr2dTrackingModel model,
 			final int t,
@@ -96,11 +91,6 @@ public class Tr2dOutAssignmentsOverlayOnSelection extends BdvOverlay {
 		}
 	}
 
-	/**
-	 * @param g
-	 * @param cur_t
-	 * @param length
-	 */
 	private void drawOutAssignments( final Graphics2D g, final int cur_t ) {
 		if ( this.selectedNodes == null ) return;
 
@@ -138,9 +128,13 @@ public class Tr2dOutAssignmentsOverlayOnSelection extends BdvOverlay {
 
 	/**
 	 * @param g
+	 *            Graphics2D
 	 * @param trans
+	 *            AffineTransform2D
 	 * @param move
+	 *            MovementHypothesis
 	 * @param color
+	 *            List< Color >
 	 * @param i
 	 *            is a zero based count of how often this function has been
 	 *            called for the same source
@@ -211,9 +205,13 @@ public class Tr2dOutAssignmentsOverlayOnSelection extends BdvOverlay {
 
 	/**
 	 * @param g
+	 *            Graphics2D
 	 * @param trans
+	 *            AffineTransform2D
 	 * @param move
+	 *            MovementHypothesis
 	 * @param color
+	 *            List< Color >
 	 * @param i
 	 *            is a zero based count of how often this function has been
 	 *            called for the same source
@@ -291,9 +289,6 @@ public class Tr2dOutAssignmentsOverlayOnSelection extends BdvOverlay {
 		g.drawLine( ( int ) gposFrom[ 0 ], ( int ) gposFrom[ 1 ], ( int ) gposTo2[ 0 ], ( int ) gposTo2[ 1 ] );
 	}
 
-	/**
-	 * @param g
-	 */
 	private void drawCOMs( final Graphics2D g, final int cur_t ) {
 		if ( this.selectedNodes == null ) return;
 
