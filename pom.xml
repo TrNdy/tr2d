@@ -48,6 +48,12 @@
 		<dependency>
 			<groupId>com.indago</groupId>
 			<artifactId>Indago</artifactId>
+			<exclusions><!-- This is needed until miglayout dependency is changed to miglayout swing. -->
+				<exclusion>
+					<groupId>com.miglayout</groupId>
+					<artifactId>miglayout</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.indago</groupId>
@@ -60,6 +66,7 @@
 		<dependency>
 			<groupId>com.miglayout</groupId>
 			<artifactId>miglayout</artifactId>
+			<classifier>swing</classifier>
 		</dependency>
 		<dependency>
 			<groupId>net.trackmate</groupId>
@@ -90,10 +97,6 @@
 				<exclusion>
 					<groupId>hr.irb.fastRandomForest</groupId>
 					<artifactId>fastRandomForest</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.miglayout</groupId>
-					<artifactId>miglayout</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
