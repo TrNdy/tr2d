@@ -60,6 +60,7 @@
 		<dependency>
 			<groupId>com.miglayout</groupId>
 			<artifactId>miglayout</artifactId>
+			<classifier>swing</classifier>
 		</dependency>
 		<dependency>
 			<groupId>net.trackmate</groupId>
