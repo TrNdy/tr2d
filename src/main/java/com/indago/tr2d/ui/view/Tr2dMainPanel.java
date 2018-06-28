@@ -51,6 +51,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 	private JTabbedPane tabs;
 	private JPanel tabData;
 	private JPanel tabSegmentation;
+	private JPanel tabSegmentationEdit;
 	private JPanel tabFlow;
 	private Tr2dTrackingPanel tabTracking;
 	private Tr2dExportPanel tabExport;
@@ -92,6 +93,9 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		// === TAB SEGMENTATION ===================================================================
 		tabSegmentation = new Tr2dSegmentationCollectionPanel( model.getSegmentationModel() );
 
+		// === TAB SEGMENTATION EDIT ==============================================================
+		tabSegmentationEdit = new Tr2dSegmentationEditorPanel( model.getSegmentationEditorModel() );
+
 		// === TAB FLOW ===========================================================================
 		tabFlow = new Tr2dFlowPanel( model.getFlowModel() );
 
@@ -106,6 +110,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 		tabs.add( "data", tabData );
 		tabs.add( "segments", tabSegmentation );
+		tabs.add( "segmentation edit", tabSegmentationEdit );
 		tabs.add( "flow", tabFlow );
 		tabs.add( "tracking", tabTracking );
 		tabs.add( "export", tabExport );
