@@ -22,13 +22,18 @@ import com.indago.data.segmentation.filteredcomponents.FilteredComponentTree.Max
 import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
 import com.indago.tr2d.Tr2dLog;
-import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
+import com.indago.tr2d.ui.model.Tr2dSegmentationEditorModel;
 
 import indago.ui.progress.ProgressListener;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converters;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.util.Pair;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 import weka.gui.ExtensionFileFilter;
@@ -38,7 +43,7 @@ import weka.gui.ExtensionFileFilter;
  */
 public class LabelingTimeLapse {
 
-	private final Tr2dSegmentationCollectionModel model;
+	private final Tr2dSegmentationEditorModel model;
 
 	// Parameters for FilteredComponentTrees
 	private int minHypothesisSize;
@@ -55,7 +60,7 @@ public class LabelingTimeLapse {
 	 *
 	 * @param model
 	 */
-	public LabelingTimeLapse( final Tr2dSegmentationCollectionModel model, final int minHypothesisSize, final int maxHypothesisSize ) {
+	public LabelingTimeLapse( final Tr2dSegmentationEditorModel model, final int minHypothesisSize, final int maxHypothesisSize ) {
 		this.model = model;
 
 		// this should be a parameter
@@ -73,8 +78,11 @@ public class LabelingTimeLapse {
 	 */
 	public boolean processFrames( final List< ProgressListener > progressListeners ) {
 		try {
-			if ( getSegmentHypothesesImages().size() == 0 ) { return false; }
-			final RandomAccessibleInterval< IntType > firstSumImg = getSegmentHypothesesImages().get( 0 );
+			List< RandomAccessibleInterval< IntType > >
+					segmentHypothesesImages = getSegmentHypothesesImages();
+			if ( segmentHypothesesImages.size() == 0 ) { return false; }
+			final RandomAccessibleInterval< IntType > firstSumImg = segmentHypothesesImages
+					.get( 0 );
 
 			for ( final ProgressListener progressListener : progressListeners ) {
 				progressListener.resetProgress( "Computing segment hypotheses labelings...", ( int ) firstSumImg.dimension( 2 ) );
@@ -88,7 +96,7 @@ public class LabelingTimeLapse {
 				final LabelingBuilder labelingBuilder = new LabelingBuilder( d );
 				frameLabelingBuilders.add( labelingBuilder );
 
-				for ( final RandomAccessibleInterval< IntType > sumimg : getSegmentHypothesesImages() ) {
+				for ( final RandomAccessibleInterval< IntType > sumimg : segmentHypothesesImages) {
 					// hyperslize desired frame
 					IntervalView< IntType > frame = null;
 					final long[] offset = new long[ sumimg.numDimensions() ];

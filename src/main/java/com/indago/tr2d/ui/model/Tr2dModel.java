@@ -36,6 +36,7 @@ public class Tr2dModel {
 	private final ProjectFolder projectFolder;
 
 	private final Tr2dSegmentationCollectionModel segModel;
+	private final Tr2dSegmentationEditorModel segEditModel;
 	private final Tr2dFlowModel flowModel;
 	private final Tr2dTrackingModel trackingModel;
 
@@ -58,6 +59,7 @@ public class Tr2dModel {
 		ImglibUtil.computeMinMax( Views.iterable( imgRaw ), min, max );
 
 		segModel = new Tr2dSegmentationCollectionModel( this );
+		segEditModel = new Tr2dSegmentationEditorModel( this );
 		flowModel = new Tr2dFlowModel( this );
 		trackingModel =
 				new Tr2dTrackingModel( this, new HernanSegmentCostFactory( imgRaw ), new HernanAppearanceCostFactory( imgRaw ), new HernanMovementCostFactory( imgRaw ), new HernanDivisionCostFactory( imgRaw ), new HernanDisappearanceCostFactory( imgRaw ) );
@@ -120,6 +122,10 @@ public class Tr2dModel {
 	 */
 	public Tr2dSegmentationCollectionModel getSegmentationModel() {
 		return segModel;
+	}
+
+	public Tr2dSegmentationEditorModel getSegmentationEditorModel() {
+		return segEditModel;
 	}
 
 	/**

@@ -87,7 +87,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private final String FILENAME_TRACKING = "tracking.tif";
 
 	private final Tr2dModel tr2dModel;
-	private final Tr2dSegmentationCollectionModel tr2dSegModel;
+	private final Tr2dSegmentationEditorModel tr2dSegEditModel;
 
 	private double maxMovementSearchRadius = 50;
 	private double maxDivisionSearchRadius = 50;
@@ -157,7 +157,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		getCostFactories().add( this.moveCosts );
 		getCostFactories().add( this.divisionCosts );
 
-		this.tr2dSegModel = model.getSegmentationModel();
+		this.tr2dSegEditModel = model.getSegmentationEditorModel();
 
 		final File fImgSol = dataFolder.addFile( FILENAME_TRACKING ).getFile();
 		if ( fImgSol.canRead() ) {
@@ -167,7 +167,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		imgs.add( imgSolution );
 
 		// Loading hypotheses labeling frames if exist in project folder
-		this.labelingFrames = new LabelingTimeLapse( tr2dSegModel, this.getMinPixelComponentSize(), this.getMaxPixelComponentSize() );
+		this.labelingFrames = new LabelingTimeLapse( tr2dSegEditModel, this.getMinPixelComponentSize(), this.getMaxPixelComponentSize() );
 		try {
 			hypothesesFolder = dataFolder.addFolder( FOLDER_LABELING_FRAMES );
 			hypothesesFolder.loadFiles();
