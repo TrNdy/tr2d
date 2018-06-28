@@ -82,6 +82,21 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-labkit</artifactId>
+			<version>0.1.11</version>
+			<exclusions>
+				<exclusion>
+					<groupId>hr.irb.fastRandomForest</groupId>
+					<artifactId>fastRandomForest</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.miglayout</groupId>
+					<artifactId>miglayout</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<developers>
