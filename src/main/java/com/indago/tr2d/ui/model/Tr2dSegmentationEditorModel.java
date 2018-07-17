@@ -4,6 +4,9 @@ import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
+import gnu.trove.list.TIntList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.set.hash.TIntHashSet;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
 import net.imglib2.img.Img;
@@ -15,6 +18,7 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.roi.labeling.ImgLabeling;
+import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Intervals;
@@ -25,6 +29,7 @@ import net.imglib2.view.composite.GenericComposite;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -166,19 +171,43 @@ public class Tr2dSegmentationEditorModel {
 		return labeling;
 	}
 
-	private static Labeling toLabeling(String prefix, RandomAccessibleInterval< IntType > image) {
-		int maxValue = max(image);
-		List< Set< String > > labelSets = labelSets(prefix, maxValue);
+	static Labeling toLabeling(String prefix,
+			RandomAccessibleInterval< IntType > image) {
+		TIntList sortedValues = getSortedValues(image);
+		int maxValue = sortedValues.size() - 1;
+		List< Set< String > > labelSets = labelSets(prefix, sortedValues);
 		Img< IntType > intTypes = ImgView.wrap(image, null);
-		ImgLabeling< String, ? > imgLabeling = LabelingSerializer
-				.fromImageAndLabelSets(intTypes, labelSets);
+		ImgLabeling<String, IntType> imgLabeling = new ImgLabeling<>(intTypes);
+		new LabelingMapping.SerialisationAccess<String>(imgLabeling.getMapping()) {
+			public void run() {
+				setLabelSets(labelSets);
+			}
+		}.run();
 		return new Labeling(labels(prefix, maxValue), imgLabeling);
 	}
 
-	private static List<Set<String>> labelSets(String prefix, int maxValue) {
-		return IntStream.rangeClosed(0, maxValue).mapToObj(
-				index -> labelSet(prefix, index)).collect(
-				Collectors.toList());
+	private static TIntList getSortedValues(
+			RandomAccessibleInterval< IntType > image)
+	{
+		TIntHashSet values = new TIntHashSet();
+		for(IntType value : Views.iterable(image))
+			values.add(value.getInteger());
+		TIntList sortedValues = new TIntArrayList(values);
+		sortedValues.sort();
+		return sortedValues;
+	}
+
+	private static List<Set<String>> labelSets(String prefix, TIntList sortedValues) {
+		int maxValue = sortedValues.get(sortedValues.size() - 1);
+		List<Set<String>> result = new ArrayList<>(maxValue + 1);
+		result.add(Collections.emptySet());
+		for (int value = 1; value <= maxValue; value++)
+			result.add(Collections.singleton("__DUMMY__:" + value));
+		for (int i = 0; i < sortedValues.size(); i++) {
+			int value = sortedValues.get(i);
+			result.set(value, labelSet(prefix, i));
+		}
+		return result;
 	}
 
 	private static Set<String> labelSet(String prefix, int index) {

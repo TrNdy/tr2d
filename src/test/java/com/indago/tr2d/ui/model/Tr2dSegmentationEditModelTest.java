@@ -3,14 +3,17 @@ package com.indago.tr2d.ui.model;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.view.Views;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -60,5 +63,18 @@ public class Tr2dSegmentationEditModelTest {
 		Iterator< IntType > resultIterator1 = Views.iterable(result.get(1)).iterator();
 		assertEquals(0, resultIterator1.next().get());
 		assertEquals(1, resultIterator1.next().get());
+	}
+
+	@Test
+	public void testToListOfBitmaps255() {
+		Img< IntType > input =
+				ArrayImgs.ints(new int[] { 0, 255 }, 2);
+		Labeling result = Tr2dSegmentationEditorModel.toLabeling("prefix:", input);
+		Iterator< Set< String > > pixels =
+				Views.flatIterable(result).iterator();
+		assertEquals(Collections.emptySet(), pixels.next());
+		Set< String > next = pixels.next();
+		assertEquals(Collections.singleton("prefix:Level 1"), next);
+		assertEquals(Collections.singletonList("prefix:Level 1"), result.getLabels());
 	}
 }
