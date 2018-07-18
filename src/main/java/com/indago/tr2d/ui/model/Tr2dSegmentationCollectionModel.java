@@ -5,8 +5,11 @@ package com.indago.tr2d.ui.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import com.indago.io.ProjectFolder;
+import com.indago.tr2d.Tr2dContext;
+import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.plugins.seg.Tr2dSegmentationPlugin;
 
@@ -16,7 +19,7 @@ import net.imglib2.type.numeric.integer.IntType;
 /**
  * @author jug
  */
-public class Tr2dSegmentationCollectionModel {
+public class Tr2dSegmentationCollectionModel implements AutoCloseable {
 
 	private final Tr2dModel model;
 
@@ -53,4 +56,14 @@ public class Tr2dSegmentationCollectionModel {
 		return ret;
 	}
 
+	@Override
+	public void close() {
+		for(Tr2dSegmentationPlugin plugin : this.plugins)
+			try {
+				plugin.close();
+			}
+			catch (Exception e) {
+				Tr2dLog.log.warn("Exception while closing: " + plugin.getUiName(), e);
+			}
+	}
 }
