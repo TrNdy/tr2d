@@ -18,7 +18,7 @@ import net.imglib2.type.numeric.integer.IntType;
 /**
  * @author jug
  */
-public interface Tr2dSegmentationPlugin extends ImageJPlugin {
+public interface Tr2dSegmentationPlugin extends ImageJPlugin, AutoCloseable {
 
 	JPanel getInteractionPanel();
 
@@ -31,4 +31,8 @@ public interface Tr2dSegmentationPlugin extends ImageJPlugin {
 	public void setLogger( Logger logger );
 
 	default boolean isUsable() { return true; };
+
+	@Override default void close() throws Exception {
+		// default implementation is intentionally empty
+	}
 }

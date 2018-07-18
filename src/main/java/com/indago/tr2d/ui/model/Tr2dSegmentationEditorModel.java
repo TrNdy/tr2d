@@ -3,6 +3,7 @@ package com.indago.tr2d.ui.model;
 import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
 import com.indago.tr2d.Tr2dContext;
+import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TIntArrayList;
@@ -35,7 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Tr2dSegmentationEditorModel {
+public class Tr2dSegmentationEditorModel implements AutoCloseable {
 
 	private final Tr2dModel model;
 
@@ -77,10 +78,16 @@ public class Tr2dSegmentationEditorModel {
 	public List< RandomAccessibleInterval< IntType > > getSumImages() {
 		if( useManualSegmentation() ) {
 			ImgLabeling< String, ? > segmentations = asLabeling();
-			saveLabeling(segmentations);
+			saveSettings();
 			return toListOfBitmaps(segmentations);
 		} else
 			return model.getSegmentationModel().getSumImages();
+	}
+
+	private void saveSettings() {
+		if(manualSegmentation != null)
+			saveLabeling(manualSegmentation);
+		saveUseManualSegmentation();
 	}
 
 	private void saveLabeling(ImgLabeling< String, ? > segmentations) {
@@ -111,7 +118,6 @@ public class Tr2dSegmentationEditorModel {
 
 	public void setUseManualSegmentation(boolean value) {
 		useManualSegmentation = value;
-		saveUseManualSegmentation();
 	}
 
 	private void saveUseManualSegmentation() {
@@ -231,5 +237,15 @@ public class Tr2dSegmentationEditorModel {
 
 	public Tr2dModel getModel() {
 		return model;
+	}
+
+	@Override
+	public void close() {
+		try {
+			saveSettings();
+		}
+		catch(Exception e) {
+			Tr2dLog.log.warn("Exception while saving manual segmentation: ", e);
+		}
 	}
 }

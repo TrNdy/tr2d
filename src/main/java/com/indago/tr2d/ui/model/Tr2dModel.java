@@ -23,7 +23,7 @@ import net.imglib2.view.Views;
 /**
  * @author jug
  */
-public class Tr2dModel {
+public class Tr2dModel implements AutoCloseable {
 
 	private final ImagePlus imgPlus;
 	private RandomAccessibleInterval< DoubleType > imgRaw;
@@ -146,5 +146,11 @@ public class Tr2dModel {
 
 	public Tr2dMainPanel getMainPanel() {
 		return this.mainUiPanel;
+	}
+
+	@Override
+	public void close() {
+		segEditModel.close();
+		segModel.close();
 	}
 }
