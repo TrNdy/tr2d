@@ -53,8 +53,14 @@ public class Tr2dSegmentationEditorModel implements AutoCloseable {
 
 	public Tr2dSegmentationEditorModel(Tr2dModel model) {
 		this.model = model;
-		this.projectFolder = model.getProjectFolder().getFolder(
-				Tr2dProjectFolder.MANUAL_SEGMENTATION_FOLDER);
+		try {
+			this.projectFolder = model.getProjectFolder()
+					.getFolder(Tr2dProjectFolder.SEGMENTATION_FOLDER)
+					.addFolder("manual");
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 		this.useManualSegmentation = projectFolder.addFile(
 				USE_MANUAL_SEGMENTATION_FILE).exists();
 		tryOpenLabeling();
