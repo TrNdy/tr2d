@@ -37,7 +37,7 @@ public class HernanSegmentCostFactory implements CostFactory< LabelingSegment > 
 		params.add( "area (a)", -1 );
 		params.add( "|conv_hull(segm)-segm|", 1 );
 		params.add( "value of max_a", 100 );
-		params.add( "max(0, (size-max_area))²", 1 );
+		params.add( "max(0, (size-max_area))²", 0 );
 	}
 
 	/**

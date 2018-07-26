@@ -93,8 +93,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private double maxDivisionSearchRadius = 50;
 	private int maxMovementsToAddPerHypothesis = 4;
 	private int maxDivisionsToAddPerHypothesis = 8;
-	private int maxPixelComponentSize = Integer.MAX_VALUE;
-	private int minPixelComponentSize = 1;
+	private int maxPixelComponentSize = 10000;
+	private int minPixelComponentSize = 16;
 
 	private final List< CostFactory< ? > > costFactories = new ArrayList<>();
 	private final CostFactory< LabelingSegment > segmentCosts;
@@ -356,7 +356,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		} catch ( final IOException e ) {
 			e.printStackTrace();
 		} catch ( final NullPointerException npe ) {
-			Tr2dLog.log.error( "PGraph could not be stored to disk!" );
+			Tr2dLog.log.warn( "PGraph could not be stored to disk!" );
 		}
 	}
 
@@ -821,8 +821,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				this.maxDivisionSearchRadius = Double.parseDouble( strings[ 4 ] );
 				this.maxDivisionsToAddPerHypothesis = Integer.parseInt( strings[ 5 ] );
 			} catch ( final NumberFormatException e ) {
-				this.maxPixelComponentSize = 5000;
-				this.minPixelComponentSize = 1;
+				this.maxPixelComponentSize = 10000;
+				this.minPixelComponentSize = 16;
 				this.maxMovementSearchRadius = 25;
 				this.maxMovementsToAddPerHypothesis = 5;
 				this.maxDivisionSearchRadius = 25;
