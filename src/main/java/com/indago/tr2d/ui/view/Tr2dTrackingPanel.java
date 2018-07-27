@@ -201,9 +201,9 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	 */
 	@Override
 	public void focusLost( final FocusEvent e ) {
-		if ( e.getSource().equals( txtMaxMovementSearchRadius ) || e.getSource().equals( txtMaxMovementsPerNode ) || e.getSource().equals(
-				txtMaxDivisionSearchRadius ) || e.getSource().equals( txtMaxDivisionsPerNode ) || e.getSource().equals(
-						txtMaxPixelComponentSize ) || e.getSource().equals( txtMinPixelComponentSize ) ) {
+		if ( e.getSource().equals( txtMaxMovementSearchRadius ) || e.getSource().equals( txtMaxMovementsPerNode ) || 
+			 e.getSource().equals( txtMaxDivisionSearchRadius ) || e.getSource().equals( txtMaxDivisionsPerNode ) || 
+			 e.getSource().equals( txtMaxPixelComponentSize ) || e.getSource().equals( txtMinPixelComponentSize ) ) {
 			parseAndSetParametersInModel();
 			model.saveStateToFile();
 		}
