@@ -89,11 +89,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private final Tr2dModel tr2dModel;
 	private final Tr2dSegmentationEditorModel tr2dSegEditModel;
 
-	private double maxMovementSearchRadius = 50;
-	private double maxDivisionSearchRadius = 50;
+	private int maxMovementSearchRadius = 50;
+	private int maxDivisionSearchRadius = 50;
 	private int maxMovementsToAddPerHypothesis = 4;
 	private int maxDivisionsToAddPerHypothesis = 8;
-	private int maxPixelComponentSize = 10000;
+	private int maxPixelComponentSize = 32; // gets set to more sensible value in constructor
 	private int minPixelComponentSize = 16;
 
 	private final List< CostFactory< ? > > costFactories = new ArrayList<>();
@@ -136,6 +136,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
 			final CostFactory< LabelingSegment > disappearanceCosts ) {
 		this.tr2dModel = model;
+		this.maxPixelComponentSize = this.tr2dModel.getImgPlus().getWidth() * this.tr2dModel.getImgPlus().getHeight() - 1;
 
 		stateChangedListeners = new ArrayList<>();
 
@@ -693,7 +694,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	/**
 	 * @return the maxMovementToAddRadius
 	 */
-	public double getMaxMovementSearchRadius() {
+	public int getMaxMovementSearchRadius() {
 		return maxMovementSearchRadius;
 	}
 
@@ -701,14 +702,14 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * @param maxMovementToAddRadius
 	 *            the maxMovementToAddRadius to set
 	 */
-	public void setMaxMovementSearchRadius( final double maxMovementToAddRadius ) {
+	public void setMaxMovementSearchRadius( final int maxMovementToAddRadius ) {
 		this.maxMovementSearchRadius = maxMovementToAddRadius;
 	}
 
 	/**
 	 * @return the maxDivisionToAddRadius
 	 */
-	public double getMaxDivisionSearchRadius() {
+	public int getMaxDivisionSearchRadius() {
 		return maxDivisionSearchRadius;
 	}
 
@@ -716,7 +717,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * @param maxDivisionToAddRadius
 	 *            the maxDivisionToAddRadius to set
 	 */
-	public void setMaxDivisionSearchRadius( final double maxDivisionToAddRadius ) {
+	public void setMaxDivisionSearchRadius( final int maxDivisionToAddRadius ) {
 		this.maxDivisionSearchRadius = maxDivisionToAddRadius;
 	}
 
@@ -816,17 +817,17 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			try {
 				this.maxPixelComponentSize = Integer.parseInt( strings[ 0 ] );
 				this.minPixelComponentSize = Integer.parseInt( strings[ 1 ] );
-				this.maxMovementSearchRadius = Double.parseDouble( strings[ 2 ] );
+				this.maxMovementSearchRadius = Integer.parseInt( strings[ 2 ] );
 				this.maxMovementsToAddPerHypothesis = Integer.parseInt( strings[ 3 ] );
-				this.maxDivisionSearchRadius = Double.parseDouble( strings[ 4 ] );
+				this.maxDivisionSearchRadius = Integer.parseInt( strings[ 4 ] );
 				this.maxDivisionsToAddPerHypothesis = Integer.parseInt( strings[ 5 ] );
 			} catch ( final NumberFormatException e ) {
-				this.maxPixelComponentSize = 10000;
+				this.maxPixelComponentSize = this.tr2dModel.getImgPlus().getWidth() * this.tr2dModel.getImgPlus().getHeight() - 1;
 				this.minPixelComponentSize = 16;
-				this.maxMovementSearchRadius = 25;
-				this.maxMovementsToAddPerHypothesis = 5;
-				this.maxDivisionSearchRadius = 25;
-				this.maxDivisionsToAddPerHypothesis = 5;
+				this.maxMovementSearchRadius = 50;
+				this.maxMovementsToAddPerHypothesis = 4;
+				this.maxDivisionSearchRadius = 50;
+				this.maxDivisionsToAddPerHypothesis = 8;
 			}
 		} catch ( final FileNotFoundException e ) {}
 		fireStateChangedEvent();
