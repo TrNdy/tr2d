@@ -1125,6 +1125,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	 *         selected
 	 */
 	private boolean isSelected( final ConflictSet conflictSet ) {
+		if ( conflictSet.size() == 0 ) { return false; }
 		for ( final SegmentNode node : conflictSet ) {
 			if ( !selectionModel.isSelected( mapLabelingSegment2SegmentVertex.get( node.getSegment() ) ) ) { return false; }
 		}
