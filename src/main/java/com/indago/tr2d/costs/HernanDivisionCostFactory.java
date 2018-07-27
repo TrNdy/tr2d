@@ -185,7 +185,12 @@ public class HernanDivisionCostFactory
 		final double angleS2s = Math.toDegrees( Math.atan( regressionS2s.getSlope() ) );
 //		final double confidenceS2s = 1-regressionS2s.getRSquare();
 
-		return confidenceS1 * Math.abs( angleS1 - angleS2s );
+		final double ret = confidenceS1 * Math.abs( angleS1 - angleS2s );
+		if ( Double.isNaN( ret ) ) {
+			return 0;
+		} else {
+			return ret;
+		}
 	}
 
 	/**
