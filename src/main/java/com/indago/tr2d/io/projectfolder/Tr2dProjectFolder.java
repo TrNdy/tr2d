@@ -45,13 +45,13 @@ public class Tr2dProjectFolder extends ProjectFolder {
 
 	public void initialize( final File rawToCopy ) throws IOException {
 		deleteContent();
-		Files.copy( rawToCopy.toPath(), new File( super.getFolder() + File.separator + "RAW.tif" ).toPath() );
+		Files.copy( rawToCopy.toPath(), new File( super.getFolder() + File.separator + "raw.tif" ).toPath() );
 		initialize();
 	}
 
 	/**
 	 * checks if the given <code>File</code> is a folder, if write access is
-	 * allowed, and if a 'RAW.tif' file is contained in it.
+	 * allowed, and if a 'raw.tif' file is contained in it.
 	 *
 	 * @param folder
 	 *            Folder to be checked
