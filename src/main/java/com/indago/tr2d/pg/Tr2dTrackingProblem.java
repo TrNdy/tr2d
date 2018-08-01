@@ -147,7 +147,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 							flow_vec ) );
 				prioQueue.add( new MovementHypothesis( cost_flow, segVarL, segVarR ) );
 			}
-			for ( int i = 0; i < Math.min( trackingModel.getMaxMovementsToAddPerHypothesis(), prioQueue.size() ); i++ ) {
+
+			final int assmtsToAdd = Math.min( trackingModel.getMaxMovementsToAddPerHypothesis(), prioQueue.size() );
+			for ( int i = 0; i < assmtsToAdd; i++ ) {
 				final MovementHypothesis moveHyp = prioQueue.poll();
 				moveHyp.getSrc().getOutAssignments().add( moveHyp );
 				moveHyp.getDest().getInAssignments().add( moveHyp );
@@ -200,7 +202,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					prioQueue.add( new DivisionHypothesis( cost, segVarL, segVarR1, segVarR2 ) );
 				}
 			}
-			for ( int i = 0; i < Math.min( trackingModel.getMaxDivisionsToAddPerHypothesis(), prioQueue.size() ); i++ ) {
+
+			final int assmtsToAdd = Math.min( trackingModel.getMaxDivisionsToAddPerHypothesis(), prioQueue.size() );
+			for ( int i = 0; i < assmtsToAdd; i++ ) {
 				final DivisionHypothesis divHyp = prioQueue.poll();
 				divHyp.getSrc().getOutAssignments().add( divHyp );
 				divHyp.getDest1().getInAssignments().add( divHyp );
