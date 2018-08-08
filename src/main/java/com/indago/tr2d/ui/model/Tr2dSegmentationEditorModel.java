@@ -76,6 +76,10 @@ public class Tr2dSegmentationEditorModel implements AutoCloseable {
 							labelingFile.getAbsolutePath()
 			);
 		}
+		catch (NoClassDefFoundError e) {
+			// NB: this happens if imglib2-labkit isn't installed
+			e.printStackTrace();
+		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}

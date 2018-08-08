@@ -88,10 +88,14 @@ public class Tr2dSegmentationEditorPanel extends JPanel {
 	private void addEditor() {
 		removeEditor();
 		RandomAccessibleInterval< ? extends NumericType< ? > > image = model.getModel().getRawData();
-		ImageLabelingModel labelingComponentModel =
-				new ImageLabelingModel(image, new Labeling(model.asLabeling()), true);
-		editorComponent = new LabelingComponent(null, labelingComponentModel)
-				.getComponent();
+		try {
+			ImageLabelingModel labelingComponentModel =
+					new ImageLabelingModel(image, new Labeling(model.asLabeling()), true);
+			editorComponent = new LabelingComponent(null, labelingComponentModel)
+					.getComponent();
+		} catch (NoClassDefFoundError e) {
+			editorComponent = new JLabel("Please install Labkit to enable manual segmentation.");
+		}
 		add(editorComponent);
 		repaint();
 	}
