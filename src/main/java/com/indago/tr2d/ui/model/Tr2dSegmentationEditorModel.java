@@ -7,11 +7,10 @@ import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import gnu.trove.list.TIntList;
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.set.hash.TIntHashSet;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.converter.Converters;
-import net.imglib2.img.Img;
-import net.imglib2.img.ImgView;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.IntArray;
@@ -19,7 +18,6 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.labeling.LabelingSerializer;
 import net.imglib2.loops.LoopBuilder;
 import net.imglib2.roi.labeling.ImgLabeling;
-import net.imglib2.roi.labeling.LabelingMapping;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.Intervals;
@@ -160,7 +158,7 @@ public class Tr2dSegmentationEditorModel implements AutoCloseable {
 	public ImgLabeling< String, ? > fetch() {
 		List<RandomAccessibleInterval<IntType>>
 				images = model.getSegmentationModel().getSumImages();
-		List<Labeling > labelings = new ArrayList<>();
+		List< RandomAccessibleInterval< Set< String > > > labelings = new ArrayList<>();
 		for(int i = 0; i < images.size(); i++)
 			labelings.add(toLabeling("Segmentation " + (i + 1) + " ",
 					images.get(i)));
@@ -187,19 +185,13 @@ public class Tr2dSegmentationEditorModel implements AutoCloseable {
 		return labeling;
 	}
 
-	static Labeling toLabeling(String prefix,
+	static RandomAccessibleInterval<Set<String>> toLabeling(String prefix,
 			RandomAccessibleInterval< IntType > image) {
 		TIntList sortedValues = getSortedValues(image);
-		int maxValue = sortedValues.size() - 1;
-		List< Set< String > > labelSets = labelSets(prefix, sortedValues);
-		Img< IntType > intTypes = ImgView.wrap(image, null);
-		ImgLabeling<String, IntType> imgLabeling = new ImgLabeling<>(intTypes);
-		new LabelingMapping.SerialisationAccess<String>(imgLabeling.getMapping()) {
-			public void run() {
-				setLabelSets(labelSets);
-			}
-		}.run();
-		return new Labeling(labels(prefix, maxValue), imgLabeling);
+		TIntObjectHashMap< Set< String > > mapping = new TIntObjectHashMap<>();
+		for ( int i = 0; i < sortedValues.size(); i++ )
+			mapping.put(sortedValues.get(i), labelSet(prefix, i));
+		return new MappedView<>(image, intType -> mapping.get(intType.get()));
 	}
 
 	private static TIntList getSortedValues(
@@ -213,26 +205,8 @@ public class Tr2dSegmentationEditorModel implements AutoCloseable {
 		return sortedValues;
 	}
 
-	private static List<Set<String>> labelSets(String prefix, TIntList sortedValues) {
-		int maxValue = sortedValues.get(sortedValues.size() - 1);
-		List<Set<String>> result = new ArrayList<>(maxValue + 1);
-		result.add(Collections.emptySet());
-		for (int value = 1; value <= maxValue; value++)
-			result.add(Collections.singleton("__DUMMY__:" + value));
-		for (int i = 0; i < sortedValues.size(); i++) {
-			int value = sortedValues.get(i);
-			result.set(value, labelSet(prefix, i));
-		}
-		return result;
-	}
-
 	private static Set<String> labelSet(String prefix, int index) {
 		return IntStream.rangeClosed(1, index).mapToObj(i -> labelTitle(prefix, i)).collect(Collectors.toSet());
-	}
-
-	private static List<String> labels(String prefix, int maxValue) {
-		return IntStream.rangeClosed(1, maxValue).mapToObj(
-				x -> labelTitle(prefix, x)).collect(Collectors.toList());
 	}
 
 	private static String labelTitle(String prefix, int x) {

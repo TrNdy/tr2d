@@ -7,10 +7,13 @@ import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.roi.labeling.LabelingType;
 import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.ShortType;
 import net.imglib2.view.Views;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -69,12 +72,21 @@ public class Tr2dSegmentationEditModelTest {
 	public void testToListOfBitmaps255() {
 		Img< IntType > input =
 				ArrayImgs.ints(new int[] { 0, 255 }, 2);
-		Labeling result = Tr2dSegmentationEditorModel.toLabeling("prefix:", input);
+		RandomAccessibleInterval< Set< String > > result = Tr2dSegmentationEditorModel.toLabeling("prefix:", input);
 		Iterator< Set< String > > pixels =
 				Views.flatIterable(result).iterator();
 		assertEquals(Collections.emptySet(), pixels.next());
-		Set< String > next = pixels.next();
-		assertEquals(Collections.singleton("prefix:Level 1"), next);
-		assertEquals(Collections.singletonList("prefix:Level 1"), result.getLabels());
+		assertEquals(Collections.singleton("prefix:Level 1"), pixels.next());
+	}
+
+	@Test
+	public void testToLabeling() {
+		Img< IntType > input = ArrayImgs.ints(new int[] { 400, 450, 460 }, 3);
+		RandomAccessibleInterval< Set< String > > result = Tr2dSegmentationEditorModel.toLabeling("prefix:", input);
+		Iterator< Set< String > > pixels =
+				Views.flatIterable(result).iterator();
+		assertEquals(Collections.emptySet(), pixels.next());
+		assertEquals(Collections.singleton("prefix:Level 1"), pixels.next());
+		assertEquals(new HashSet<>(Arrays.asList("prefix:Level 1", "prefix:Level 2")), pixels.next());
 	}
 }
