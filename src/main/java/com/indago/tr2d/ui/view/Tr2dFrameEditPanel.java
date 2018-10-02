@@ -27,11 +27,11 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import org.mastodon.adapter.FocusAdapter;
-import org.mastodon.adapter.HighlightAdapter;
+import org.mastodon.adapter.FocusModelAdapter;
+import org.mastodon.adapter.HighlightModelAdapter;
 import org.mastodon.adapter.NavigationHandlerAdapter;
 import org.mastodon.adapter.RefBimap;
-import org.mastodon.adapter.SelectionAdapter;
+import org.mastodon.adapter.SelectionModelAdapter;
 import org.mastodon.graph.GraphIdBimap;
 import org.mastodon.graph.algorithm.ShortestPath;
 import org.mastodon.graph.algorithm.traversal.BreadthFirstIterator;
@@ -41,24 +41,24 @@ import org.mastodon.revised.trackscheme.TrackSchemeEdgeBimap;
 import org.mastodon.revised.trackscheme.TrackSchemeGraph;
 import org.mastodon.revised.trackscheme.TrackSchemeVertex;
 import org.mastodon.revised.trackscheme.TrackSchemeVertexBimap;
-import org.mastodon.revised.trackscheme.display.TrackSchemeNavigator.NavigatorEtiquette;
+import org.mastodon.revised.trackscheme.display.TrackSchemeNavigationActions.NavigatorEtiquette;
 import org.mastodon.revised.trackscheme.display.TrackSchemeOptions;
 import org.mastodon.revised.trackscheme.display.TrackSchemePanel;
 import org.mastodon.revised.trackscheme.wrap.DefaultModelGraphProperties;
 import org.mastodon.revised.trackscheme.wrap.ModelGraphProperties;
-import org.mastodon.revised.ui.selection.FocusListener;
-import org.mastodon.revised.ui.selection.FocusModel;
-import org.mastodon.revised.ui.selection.FocusModelImp;
-import org.mastodon.revised.ui.selection.HighlightListener;
-import org.mastodon.revised.ui.selection.HighlightModel;
-import org.mastodon.revised.ui.selection.HighlightModelImp;
-import org.mastodon.revised.ui.selection.NavigationHandler;
-import org.mastodon.revised.ui.selection.NavigationHandlerImp;
-import org.mastodon.revised.ui.selection.Selection;
-import org.mastodon.revised.ui.selection.SelectionImp;
-import org.mastodon.revised.ui.selection.SelectionListener;
-import org.mastodon.revised.ui.selection.TimepointModel;
-import org.mastodon.revised.ui.selection.TimepointModelImp;
+import org.mastodon.model.FocusListener;
+import org.mastodon.model.FocusModel;
+import org.mastodon.model.DefaultFocusModel;
+import org.mastodon.model.HighlightListener;
+import org.mastodon.model.HighlightModel;
+import org.mastodon.model.DefaultHighlightModel;
+import org.mastodon.model.NavigationHandler;
+import org.mastodon.model.DefaultNavigationHandler;
+import org.mastodon.model.SelectionModel;
+import org.mastodon.model.DefaultSelectionModel;
+import org.mastodon.model.SelectionListener;
+import org.mastodon.model.TimepointModel;
+import org.mastodon.model.DefaultTimepointModel;
 import org.scijava.ui.behaviour.MouseAndKeyHandler;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.InputActionBindings;
@@ -180,7 +180,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 	private Map< LabelData, SegmentVertex > mapLabelData2SegmentVertex;
 	private Map< LabelingSegment, SegmentVertex > mapLabelingSegment2SegmentVertex;
 
-	private Selection< SegmentVertex, SubsetEdge > selectionModel;
+	private SelectionModel< SegmentVertex, SubsetEdge > selectionModel;
 	private HighlightModel< SegmentVertex, SubsetEdge > highlightModel;
 	private FocusModel< SegmentVertex, SubsetEdge > focusModel;
 	private TimepointModel timepointModel;
@@ -476,12 +476,12 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		final GraphIdBimap< SegmentVertex, SubsetEdge > idmap = modelGraph.getGraphIdBimap();
 
-		selectionModel = new SelectionImp<>( modelGraph, idmap );
-		final Selection< SegmentVertex, SubsetEdge > segmentsUnderMouse = new SelectionImp<>( modelGraph, idmap );
-		highlightModel = new HighlightModelImp<>( idmap );
-		focusModel = new FocusModelImp<>( idmap );
-		timepointModel = new TimepointModelImp();
-		navigationHandler = new NavigationHandlerImp<>();
+		selectionModel = new DefaultSelectionModel<>( modelGraph, idmap );
+		final SelectionModel< SegmentVertex, SubsetEdge > segmentsUnderMouse = new DefaultSelectionModel<>( modelGraph, idmap );
+		highlightModel = new DefaultHighlightModel<>( idmap );
+		focusModel = new DefaultFocusModel<>( idmap );
+		timepointModel = new DefaultTimepointModel();
+		navigationHandler = new DefaultNavigationHandler<>();
 
 		// === TrackScheme ===
 
@@ -495,10 +495,10 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		final RefBimap< SubsetEdge, TrackSchemeEdge > edgeMap = new TrackSchemeEdgeBimap<>( idmap, trackSchemeGraph );
 		final TrackSchemePanel trackschemePanel = new TrackSchemePanel(
 				trackSchemeGraph,
-				new HighlightAdapter<>( highlightModel, vertexMap, edgeMap ),
-				new FocusAdapter<>( focusModel, vertexMap, edgeMap ),
+				new HighlightModelAdapter<>( highlightModel, vertexMap, edgeMap ),
+				new FocusModelAdapter<>( focusModel, vertexMap, edgeMap ),
 				timepointModel,
-				new SelectionAdapter<>( selectionModel, vertexMap, edgeMap ),
+				new SelectionModelAdapter<>( selectionModel, vertexMap, edgeMap ),
 				new NavigationHandlerAdapter<>( navigationHandler, vertexMap, edgeMap ),
 				trackSchemeOptions );
 		segHypothesesTreePanel.add( trackschemePanel, BorderLayout.CENTER );
@@ -511,8 +511,8 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 		if ( tfHandler instanceof BehaviourTransformEventHandler )
 			( ( BehaviourTransformEventHandler< ? > ) tfHandler ).install( triggerbindings );
 
-		trackschemePanel.getNavigator().installActionBindings( keybindings, inputConf, NavigatorEtiquette.FINDER_LIKE );
-		trackschemePanel.getNavigator().installBehaviourBindings( triggerbindings, inputConf );
+		trackschemePanel.getNavigationActions().install( keybindings, inputConf, NavigatorEtiquette.FINDER_LIKE );
+		trackschemePanel.getNavigationBehaviours().install( triggerbindings, inputConf );
 
 		int maxTimepoint = 0;
 		for ( final SegmentVertex v : modelGraph.vertices() )
@@ -669,13 +669,13 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 		private final LabelingPlus labelingPlus;
 
-		private final Selection< SegmentVertex, SubsetEdge > selectionModel;
+		private final SelectionModel< SegmentVertex, SubsetEdge > selectionModel;
 
 		private int[] intensities;
 
 		public SelectedSegmentsConverter(
 				final LabelingPlus labelingPlus,
-				final Selection< SegmentVertex, SubsetEdge > selectionModel ) {
+				final SelectionModel< SegmentVertex, SubsetEdge > selectionModel ) {
 			this.labelingPlus = labelingPlus;
 			this.selectionModel = selectionModel;
 			selectionModel.listeners().add( this );
@@ -1329,12 +1329,12 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
 
 	static class SelectedSegmentsColorTable extends SegmentsColorTable implements SelectionListener {
 
-		private final Selection< SegmentVertex, SubsetEdge > selectionModel;
+		private final SelectionModel< SegmentVertex, SubsetEdge > selectionModel;
 
 		public SelectedSegmentsColorTable(
 				final LabelingPlus labelingPlus,
 				final ColorTableConverter converter,
-				final Selection< SegmentVertex, SubsetEdge > selectionModel ) {
+				final SelectionModel< SegmentVertex, SubsetEdge > selectionModel ) {
 			super( labelingPlus, converter );
 			this.selectionModel = selectionModel;
 			selectionModel.listeners().add( this );
