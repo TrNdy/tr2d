@@ -101,7 +101,7 @@ public class Tr2dSegmentationEditorModel implements AutoCloseable {
 	private void saveLabeling(ImgLabeling< String, ? > segmentations) {
 		try {
 			new LabelingSerializer(Tr2dContext.ops.context()).save(
-					new Labeling(segmentations),
+					Labeling.fromImgLabeling(segmentations),
 							projectFolder.addFile(LABELING_FILE).getAbsolutePath()
 			);
 		}

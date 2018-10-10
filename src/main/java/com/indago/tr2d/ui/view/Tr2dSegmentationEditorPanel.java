@@ -90,7 +90,7 @@ public class Tr2dSegmentationEditorPanel extends JPanel {
 		RandomAccessibleInterval< ? extends NumericType< ? > > image = model.getModel().getRawData();
 		try {
 			ImageLabelingModel labelingComponentModel =
-					new ImageLabelingModel(image, new Labeling(model.asLabeling()), true);
+					new ImageLabelingModel(image, Labeling.fromImgLabeling(model.asLabeling()), true);
 			editorComponent = new LabelingComponent(null, labelingComponentModel)
 					.getComponent();
 		} catch (NoClassDefFoundError e) {
