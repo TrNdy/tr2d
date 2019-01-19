@@ -300,13 +300,20 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			}
 		} else {
 			// ELSE: EXTERNAL SOLVER
+			fireNextProgressPhaseEvent( "Solving tracking with external solver...", 3 );
+			fireProgressEvent();
 			if ( tr2dTraProblem == null || forceRebuildPG ) {
 				if ( preparePG() ) {
-					solveProblemGraphExternally();
+					pgSolution = solveProblemGraphExternally();
 				}
 			} else {
-				solveProblemGraphExternally();
+				pgSolution = solveProblemGraphExternally();
 			}
+			fireProgressEvent();
+			imgSolution = SolutionVisualizer.drawSolutionSegmentImages( this, pgSolution );
+			saveSolution();
+			fireSolutionChangedEvent();
+			fireProgressEvent();
 		}
 
 		fireProgressCompletedEvent();
@@ -482,16 +489,17 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		pgSolution = assMapper.map( fgSolution );
 	}
 
-	private void solveProblemGraphExternally() {
+	private Assignment< IndicatorNode > solveProblemGraphExternally() {
 		try {
 			// TODO clean up the hard path
 			externalPGsolver = new SolveExternal( new File( this.getExternalSolverExchangeFolder() ) );
-			fgSolution = externalPGsolver.solve( tr2dTraProblem );
+			pgSolution = externalPGsolver.solve( tr2dTraProblem );
+			fgSolution = null;
 		} catch ( final IOException e ) {
 			Tr2dLog.solverlog.error( "External solver threw IOException!" );
 			e.printStackTrace();
 		}
-
+		return pgSolution;
 	}
 
 	/**

@@ -11,16 +11,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 
 import com.indago.fg.Assignment;
-import com.indago.fg.Variable;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.AssignmentNode;
@@ -29,8 +30,10 @@ import com.indago.pg.assignments.DivisionHypothesis;
 import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.ConflictSet;
 import com.indago.pg.segments.SegmentNode;
+import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
+import com.indago.util.Bimap;
 
 import net.imglib2.util.ValuePair;
 
@@ -49,8 +52,8 @@ public class SolveExternal {
 	private final String expectedSolutionFileName = "solution.sol";
 
 	private ExternalSolverResult pgSolution;
-	final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id;
-	final Map< AssignmentNode, ValuePair< Integer, Integer > > mapAss2Id;
+	final Bimap< SegmentNode, ValuePair< Integer, Integer > > bimapSeg2Id;
+	final Bimap< AssignmentNode, ValuePair< Integer, Integer > > bimapAss2Id;
 
 
 	public SolveExternal( final File exchangeFolder ) throws IOException {
@@ -61,8 +64,8 @@ public class SolveExternal {
 
 		setStatus( STATUS_NONE );
 
-		mapSeg2Id = new HashMap<>();
-		mapAss2Id = new HashMap<>();
+		bimapSeg2Id = new Bimap<>();
+		bimapAss2Id = new Bimap<>();
 	}
 
 	private void setStatus( final String statusToSet ) throws IOException {
@@ -78,12 +81,11 @@ public class SolveExternal {
 		statusWriter.close();
 	}
 
-	public static Assignment< Variable > staticSolve(
+	public static Assignment< IndicatorNode > staticSolve(
 			final Tr2dTrackingProblem tr2dTraProblem,
 			final File exchangeFolder ) throws IOException {
 		final SolveExternal solver = new SolveExternal( exchangeFolder );
-		final Assignment< Variable > assignment = solver.solve( tr2dTraProblem );
-		return assignment;
+		return solver.solve( tr2dTraProblem );
 	}
 
 	/**
@@ -95,7 +97,7 @@ public class SolveExternal {
 	 *            the factor graph to be solved.
 	 * @return an <code>Assignment</code> containing the solution.
 	 */
-	public Assignment< Variable > solve( final Tr2dTrackingProblem tr2dTraProblem ) throws IOException {
+	public Assignment< IndicatorNode > solve( final Tr2dTrackingProblem tr2dTraProblem ) throws IOException {
 		// -------------------------------
 		setStatus( STATUS_EXPORTING );
 		exportTrackingInstance( tr2dTraProblem );
@@ -106,11 +108,11 @@ public class SolveExternal {
 
 		// -------------------------------
 		setStatus( STATUS_IMPORTING );
-		pgSolution = new ExternalSolverResult( tr2dTraProblem, mapSeg2Id, mapAss2Id, solutionFile );
+		pgSolution = new ExternalSolverResult( tr2dTraProblem, bimapSeg2Id, bimapAss2Id, solutionFile );
 
 		// -------------------------------
 		setStatus( STATUS_DONE );
-		return null;
+		return pgSolution;
 	}
 
 	private void exportTrackingInstance( final Tr2dTrackingProblem tr2dTraProblem ) {
@@ -139,8 +141,8 @@ public class SolveExternal {
 				// write all segment hypotheses
 				final Collection< SegmentNode > segments = t.getSegments();
 				for ( final SegmentNode segment : segments ) {
-					mapSeg2Id.put( segment, new ValuePair< Integer, Integer >( t.getTime(), ++next_segment_id ) );
-					final String shortName = writeSegmentLine( t.getTime(), segment, next_segment_id, problemWriter );
+					bimapSeg2Id.add( segment, new ValuePair< Integer, Integer >( t.getTime(), ++next_segment_id ) );
+					writeSegmentLine( t.getTime(), segment, next_segment_id, problemWriter );
 				}
 			}
 
@@ -153,23 +155,26 @@ public class SolveExternal {
 
 					final Collection< AppearanceHypothesis > apps = segment.getInAssignments().getAppearances();
 					for ( final AppearanceHypothesis app : apps ) {
-						mapAss2Id.put( app, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						final String shortName = writeAppearanceLine( app, mapSeg2Id, problemWriter );
+						final ValuePair< Integer, Integer > id = new ValuePair<>( t.getTime(), ++next_assignment_id );
+						bimapAss2Id.add( app, id );
+						writeAppearanceLine( app, id, bimapSeg2Id, problemWriter );
 					}
 					final Collection< DisappearanceHypothesis > disapps = segment.getOutAssignments().getDisappearances();
 					for ( final DisappearanceHypothesis disapp : disapps ) {
-						mapAss2Id.put( disapp, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						final String shortName = writeDisappearanceLine( disapp, mapSeg2Id, problemWriter );
+						final ValuePair< Integer, Integer > id = new ValuePair<>( t.getTime(), ++next_assignment_id );
+						bimapAss2Id.add( disapp, id );
+						writeDisappearanceLine( disapp, id, bimapSeg2Id, problemWriter );
 					}
 					final Collection< MovementHypothesis > moves = segment.getOutAssignments().getMoves();
 					for ( final MovementHypothesis move : moves ) {
-						mapAss2Id.put( move, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						final String shortName = writeMovementLine( move, mapSeg2Id, problemWriter );
+						final ValuePair< Integer, Integer > id = new ValuePair<>( t.getTime(), ++next_assignment_id );
+						bimapAss2Id.add( move, id );
 					}
 					final Collection< DivisionHypothesis > divs = segment.getOutAssignments().getDivisions();
 					for ( final DivisionHypothesis div : divs ) {
-						mapAss2Id.put( div, new ValuePair<>( t.getTime(), ++next_assignment_id ) );
-						final String shortName = writeDivisionLine( div, mapSeg2Id, problemWriter );
+						final ValuePair< Integer, Integer > id = new ValuePair<>( t.getTime(), ++next_assignment_id );
+						bimapAss2Id.add( div, id );
+						writeDivisionLine( div, id, bimapSeg2Id, problemWriter );
 					}
 					problemWriter.write( "\n" );
 				}
@@ -182,7 +187,7 @@ public class SolveExternal {
 					final Iterator< SegmentNode > it = cs.iterator();
 					while ( it.hasNext() ) {
 						final SegmentNode segnode = it.next();
-						final ValuePair< Integer, Integer > timeAndId = mapSeg2Id.get( segnode );
+						final ValuePair< Integer, Integer > timeAndId = bimapSeg2Id.getB( segnode );
 						if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
 						timeAndIdPairs.add( timeAndId );
 					}
@@ -205,11 +210,11 @@ public class SolveExternal {
 						for ( final SegmentNode segment : segments ) {
 							final List< ValuePair< Integer, Integer > > leftSegs = new ArrayList<>();
 							for ( final AssignmentNode ass : segment.getInAssignments().getAllAssignments() ) {
-								final ValuePair< Integer, Integer > timeAndId = mapAss2Id.get( ass );
+								final ValuePair< Integer, Integer > timeAndId = bimapAss2Id.getB( ass );
 								if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
 								leftSegs.add( timeAndId );
 							}
-							final ValuePair< Integer, Integer > segTimeAndId = mapSeg2Id.get( segment );
+							final ValuePair< Integer, Integer > segTimeAndId = bimapSeg2Id.getB( segment );
 
 							// CONT <time> <seg_id> <left_ass_ids as (time, id) pairs...>
 							problemWriter.write( String.format( "CONT    %3d %4d ", segTimeAndId.a, segTimeAndId.b ) );
@@ -220,7 +225,7 @@ public class SolveExternal {
 
 							final List< ValuePair< Integer, Integer > > rightSegs = new ArrayList<>();
 							for ( final AssignmentNode ass : segment.getOutAssignments().getAllAssignments() ) {
-								final ValuePair< Integer, Integer > timeAndId = mapAss2Id.get( ass );
+								final ValuePair< Integer, Integer > timeAndId = bimapAss2Id.getB( ass );
 								if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
 								rightSegs.add( timeAndId );
 							}
@@ -272,20 +277,20 @@ public class SolveExternal {
 		private final BufferedReader brSolution;
 
 		private final Tr2dTrackingProblem tr2dTraProblem;
-		private final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id;
-		private final Map< AssignmentNode, ValuePair< Integer, Integer > > mapAss2Id;
+		private final Bimap< SegmentNode, ValuePair< Integer, Integer > > bimapSeg2Id;
+		private final Bimap< AssignmentNode, ValuePair< Integer, Integer > > bimapAss2Id;
 
 		public ExternalSolverResult(
 				final Tr2dTrackingProblem tr2dTraProblem,
-				final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
-				final Map< AssignmentNode, ValuePair< Integer, Integer > > mapAss2Id,
+				final Bimap< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
+				final Bimap< AssignmentNode, ValuePair< Integer, Integer > > mapAss2Id,
 				final File solutionFile ) throws IOException {
 
 			this.assignment = new HashMap<>();
 
 			this.tr2dTraProblem = tr2dTraProblem;
-			this.mapSeg2Id = mapSeg2Id;
-			this.mapAss2Id = mapAss2Id;
+			this.bimapSeg2Id = mapSeg2Id;
+			this.bimapAss2Id = mapAss2Id;
 
 			this.solutionFile = solutionFile;
 			final FileReader frSolution = new FileReader( solutionFile );
@@ -298,12 +303,12 @@ public class SolveExternal {
 		private void zeroInitializeAssignment() {
 			assignment.clear();
 
-			final Set< SegmentNode > segNodes = mapSeg2Id.keySet();
+			final Collection< SegmentNode > segNodes = bimapSeg2Id.valuesAs();
 			for ( final SegmentNode segmentNode : segNodes ) {
 				assignment.put( segmentNode, Boolean.FALSE );
 			}
 
-			final Set< AssignmentNode > assNodes = mapAss2Id.keySet();
+			final Collection< AssignmentNode > assNodes = bimapAss2Id.valuesAs();
 			for ( final AssignmentNode assignmentNode : assNodes ) {
 				assignment.put( assignmentNode, Boolean.FALSE );
 			}
@@ -312,7 +317,39 @@ public class SolveExternal {
 		private void importSolution() throws IOException {
 			String line = brSolution.readLine();
 			while ( line != null ) {
+				final Scanner scanner = new Scanner( line );
+				scanner.useDelimiter( " " );
 
+				try {
+					final String type = scanner.next();
+
+					final int t = scanner.nextInt();
+					final int id = scanner.nextInt();
+
+					switch ( type ) {
+					case "H":
+						final SegmentNode segNode = bimapSeg2Id.getA( new ValuePair<>( t, id ) );
+						if ( segNode != null ) assignment.put( segNode, Boolean.TRUE );
+						break;
+					case "APP":
+					case "DISAPP":
+					case "MOVE":
+					case "DIV":
+						final AssignmentNode assNode = bimapAss2Id.getA( new ValuePair<>( t, id ) );
+						if ( assNode != null ) assignment.put( assNode, Boolean.TRUE );
+						break;
+					default:
+						Tr2dLog.solverlog.warn( "Solution of external solver contained a unknown line: " + line );
+					}
+				} catch ( final InputMismatchException ime ) {
+					Tr2dLog.solverlog.error( "External solution currupted (wrong format given): " + line );
+					ime.printStackTrace();
+				} catch ( final NoSuchElementException nsee ) {
+					Tr2dLog.solverlog.error( "External solution currupted (missing data): " + line );
+					nsee.printStackTrace();
+				}
+
+				scanner.close();
 				line = brSolution.readLine();
 			}
 		}
@@ -328,7 +365,7 @@ public class SolveExternal {
 		}
 	}
 
-	private String writeSegmentLine( final int t, final SegmentNode segment, final int id, final BufferedWriter writer ) throws IOException {
+	private void writeSegmentLine( final int t, final SegmentNode segment, final int id, final BufferedWriter writer ) throws IOException {
 		// H <id> <cost> <com_x_pos> <com_y_pos>
 		writer.write(
 				String.format(
@@ -338,102 +375,82 @@ public class SolveExternal {
 						segment.getCost(),
 						segment.getSegment().getCenterOfMass().getFloatPosition( 0 ),
 						segment.getSegment().getCenterOfMass().getFloatPosition( 1 ) ) );
-
-		return String.format(
-				"H-%d/%d",
-				t,
-				id );
-
 	}
 
-	private String writeAppearanceLine(
+	private void writeAppearanceLine(
 			final AppearanceHypothesis app,
-			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
+			final ValuePair< Integer, Integer > segid,
+			final Bimap< SegmentNode, ValuePair< Integer, Integer > > bimapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
 		// APP <time> <segment_id> <cost>
-		final ValuePair< Integer, Integer > timeAndId = mapSeg2Id.get( app.getDest() );
+		final int srcId = bimapSeg2Id.getB( app.getDest() ).getB();
 		writer.write(
 				String.format(
-						"APP     %3d %4d %.16f\n",
-						timeAndId.a,
-						timeAndId.b,
+						"APP     %3d %4d   %4d %.16f\n",
+						segid.a,
+						segid.b,
+						srcId,
 						app.getCost() ) );
-		return String.format(
-				"APP-%d/%d",
-				timeAndId.a,
-				timeAndId.b );
 	}
 
-	private String writeDisappearanceLine(
+	private void writeDisappearanceLine(
 			final DisappearanceHypothesis disapp,
-			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
+			final ValuePair< Integer, Integer > assid,
+			final Bimap< SegmentNode, ValuePair< Integer, Integer > > bimapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
 		// DISAPP <time> <segment_id> <cost>
-		final ValuePair< Integer, Integer > timeAndId = mapSeg2Id.get( disapp.getSrc() );
+		final int srcId = bimapSeg2Id.getB( disapp.getSrc() ).getB();
 		writer.write(
 				String.format(
-						"DISAPP  %3d %4d %.16f\n",
-						timeAndId.a,
-						timeAndId.b,
+						"DISAPP  %3d %4d   %4d %.16f\n",
+						assid.a,
+						assid.b,
+						srcId,
 						disapp.getCost() ) );
-		return String.format(
-				"DISAPP-%d/%d",
-				timeAndId.a,
-				timeAndId.b );
 	}
 
-	private String writeMovementLine(
+	private void writeMovementLine(
 			final MovementHypothesis move,
-			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
+			final ValuePair< Integer, Integer > assid,
+			final Bimap< SegmentNode, ValuePair< Integer, Integer > > bimapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
 		// MOVE <ass_id> <source_time> <source_segment_id> <dest_time> <dest_segment_id> <cost>
-		final ValuePair< Integer, Integer > timeAndId4Src = mapSeg2Id.get( move.getSrc() );
-		final ValuePair< Integer, Integer > timeAndId4Dest = mapSeg2Id.get( move.getDest() );
+		final int srcId = bimapSeg2Id.getB( move.getSrc() ).getB();
+		final ValuePair< Integer, Integer > timeAndId4Dest = bimapSeg2Id.getB( move.getDest() );
 		writer.write(
 				String.format(
-						"MOVE    %3d %4d %3d %4d %.16f\n",
-						timeAndId4Src.a,
-						timeAndId4Src.b,
+						"MOVE    %3d %4d   %4d %3d %4d %.16f\n",
+						assid.a,
+						assid.b,
+						srcId,
 						timeAndId4Dest.a,
 						timeAndId4Dest.b,
 						move.getCost() ) );
-		return String.format(
-				"MOVE-%d/%d-%d/%d",
-				timeAndId4Src.a,
-				timeAndId4Src.b,
-				timeAndId4Dest.a,
-				timeAndId4Dest.b );
 	}
 
-	private String writeDivisionLine(
+	private void writeDivisionLine(
 			final DivisionHypothesis div,
-			final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
+			final ValuePair< Integer, Integer > assid,
+			final Bimap< SegmentNode, ValuePair< Integer, Integer > > bimapSeg2Id,
 			final BufferedWriter writer )
 			throws IOException {
 		// DIV <ass_id> <source_segment_id> <dest1_segment_id> <dest2_segment_id> <cost>
-		final ValuePair< Integer, Integer > timeAndId4Src = mapSeg2Id.get( div.getSrc() );
-		final ValuePair< Integer, Integer > timeAndId4Dest1 = mapSeg2Id.get( div.getDest1() );
-		final ValuePair< Integer, Integer > timeAndId4Dest2 = mapSeg2Id.get( div.getDest2() );
+		final int srcId = bimapSeg2Id.getB( div.getSrc() ).getB();
+		final ValuePair< Integer, Integer > timeAndId4Dest1 = bimapSeg2Id.getB( div.getDest1() );
+		final ValuePair< Integer, Integer > timeAndId4Dest2 = bimapSeg2Id.getB( div.getDest2() );
 		writer.write(
 				String.format(
-						"DIV     %3d %4d %3d %4d %3d %4d %.16f\n",
-						timeAndId4Src.a,
-						timeAndId4Src.b,
+						"DIV     %3d %4d   %4d %3d %4d %3d %4d %.16f\n",
+						assid.a,
+						assid.b,
+						srcId,
 						timeAndId4Dest1.a,
 						timeAndId4Dest1.b,
 						timeAndId4Dest2.a,
 						timeAndId4Dest2.b,
 						div.getCost() ) );
-		return String.format(
-				"DIV-%d/%d-%d/%d-%d/%d",
-				timeAndId4Src.a,
-				timeAndId4Src.b,
-				timeAndId4Dest1.a,
-				timeAndId4Dest1.b,
-				timeAndId4Dest2.a,
-				timeAndId4Dest2.b );
 	}
 }

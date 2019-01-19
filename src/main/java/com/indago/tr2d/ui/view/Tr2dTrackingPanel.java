@@ -118,7 +118,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		panelFetch.add( bFetch, "growx, wrap" );
 
 		final JPanel panelImportSolution = new JPanel( new MigLayout() );
-		cbSolveWithExternalSolver = new JCheckBox( "use external solver", true );
+		cbSolveWithExternalSolver = new JCheckBox( "use external solver", model.isExternalSolverActive() );
 		cbSolveWithExternalSolver.addActionListener( this );
 		txtExternalSolverExchangeFolder = new JTextField( "/Users/jug/Desktop/tr2dtest" ); //model.getExternalSolverExchangeFolder()
 
