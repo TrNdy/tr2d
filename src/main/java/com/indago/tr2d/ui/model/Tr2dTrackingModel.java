@@ -182,12 +182,6 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			ioe.printStackTrace();
 		}
 
-		final File fPgraph = dataFolder.addFile( FILENAME_PGRAPH ).getFile();
-		// TODO: load if exists!
-
-		final File fPgraphSolution = dataFolder.addFile( FILENAME_PGRAPH_SOLUTION ).getFile();
-		// TODO: load if exists!
-
 		loadStateFromProjectFolder();
 		loadCostParametersFromProjectFolder();
 	}
@@ -872,6 +866,17 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				this.maxDivisionSearchRadius = 50;
 				this.maxDivisionsToAddPerHypothesis = 8;
 			}
+
+			final File fPgraph = dataFolder.addFile( FILENAME_PGRAPH ).getFile();
+			if ( fPgraph.canRead() ) {
+				// TODO implement loading PGraph
+			}
+
+			final File fPgraphSolution = dataFolder.addFile( FILENAME_PGRAPH_SOLUTION ).getFile();
+			if ( fPgraphSolution.canRead() ) {
+				// TODO implement loading solution so last tracking solution is shown on startup!!!
+			}
+
 		} catch ( final FileNotFoundException e ) {}
 		fireStateChangedEvent();
 	}
