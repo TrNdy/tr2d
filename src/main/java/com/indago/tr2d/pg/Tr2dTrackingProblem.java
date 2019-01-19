@@ -64,11 +64,11 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	public void addSegmentationProblem( final Tr2dSegmentationProblem segmentationProblem ) {
 		if ( timepoints.size() == 0 ) {
 			timepoints.add( segmentationProblem );
-			addAppearanceToLatestFrame( false );
+			addAppearanceToLatestFrame( true );
 		} else {
 			addDisappearanceToLatestFrame();
 			timepoints.add( segmentationProblem );
-			addAppearanceToLatestFrame( true );
+			addAppearanceToLatestFrame( false );
 		}
 
 		if ( timepoints.size() >= 2 ) {
@@ -82,9 +82,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		for ( final SegmentNode segVar : segProblem.getSegments() ) {
 			AppearanceHypothesis appHyp = null;
 			if ( isFirstFrame ) {
-				appHyp = new AppearanceHypothesis( appearanceCosts.getCost( segProblem.getLabelingSegment( segVar ) ), segVar );
-			} else {
 				appHyp = new AppearanceHypothesis( 0, segVar );
+			} else {
+				appHyp = new AppearanceHypothesis( appearanceCosts.getCost( segProblem.getLabelingSegment( segVar ) ), segVar );
 			}
 			segVar.getInAssignments().add( appHyp );
 		}
