@@ -118,7 +118,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		// --- LOGGING PANEL (from IndagoLoggingWrapper dependency) -------------------------------
 		IndagoLog.log = setupLogger(logger, "indago");
 		Tr2dLog.log = setupLogger(logger, "tr2dy");
-		Tr2dLog.gurobilog = setupLogger(logger, "gurobi");
+		Tr2dLog.solverlog = setupLogger(logger, "gurobi");
 
 		splitPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, tabs, logPanel );
 		splitPane.setResizeWeight( .5 ); // 1.0 == extra space given to left (top) component alone!

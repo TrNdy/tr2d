@@ -376,7 +376,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	 * Avoids the given SegmentNode in any found solution.
 	 * This method is smart enough to avoid obvious problems by removing
 	 * conflicting constraints.
-	 * 
+	 *
 	 * @param segNode
 	 *            SegmentNode instance
 	 * @see com.indago.pg.SegmentationProblem#avoid(com.indago.pg.segments.SegmentNode)

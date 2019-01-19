@@ -13,6 +13,7 @@ import java.awt.event.FocusListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -53,6 +54,10 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	private JTextField txtMaxDivisionSearchRadius;
 	private JTextField txtMaxPixelComponentSize;
 	private JTextField txtMinPixelComponentSize;
+
+	private JCheckBox cbSolveWithExternalSolver;
+	private JTextField txtExternalSolverExchangeFolder;
+
 
 	public Tr2dTrackingPanel( final Tr2dTrackingModel trackingModel ) {
 		super( new BorderLayout() );
@@ -112,6 +117,16 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		panelFetch.add( txtMinPixelComponentSize, "growx, wrap" );
 		panelFetch.add( bFetch, "growx, wrap" );
 
+		final JPanel panelImportSolution = new JPanel( new MigLayout() );
+		cbSolveWithExternalSolver = new JCheckBox( "use external solver", true );
+		cbSolveWithExternalSolver.addActionListener( this );
+		txtExternalSolverExchangeFolder = new JTextField( "/Users/jug/Desktop/tr2dtest" ); //model.getExternalSolverExchangeFolder()
+
+		panelImportSolution.setBorder( BorderFactory.createTitledBorder( "graph parameters" ) );
+		panelImportSolution.add( cbSolveWithExternalSolver, "growx,wrap" );
+		panelImportSolution.add( new JLabel( "Exchange folder:" ), "growx,wrap" );
+		panelImportSolution.add( txtExternalSolverExchangeFolder, "growx, wrap" );
+
 		final JPanel panelGraphConstructionParams = new JPanel( new MigLayout() );
 		txtMaxMovementSearchRadius = new JTextField( 3 );
 		txtMaxMovementSearchRadius.addActionListener( this );
@@ -150,6 +165,7 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 						.inputTriggerConfig( model.getTr2dModel().getDefaultInputTriggerConfig() ) ) );
 
 		controls.add( panelFetch, "growx, wrap" );
+		controls.add( panelImportSolution, "growx, wrap" );
 		controls.add( panelGraphConstructionParams, "growx, wrap" );
 
 		viewer.add( model.bdvGetHandlePanel().getViewerPanel(), BorderLayout.CENTER );
@@ -187,6 +203,9 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 				}
 			} );
 			t.start();
+		} else if ( e.getSource().equals( cbSolveWithExternalSolver ) ) {
+			model.solveExternally( cbSolveWithExternalSolver.isSelected() );
+			model.setExternalSolverExchangeFolder( txtExternalSolverExchangeFolder.getText() );
 		}
 	}
 
@@ -201,8 +220,8 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 	 */
 	@Override
 	public void focusLost( final FocusEvent e ) {
-		if ( e.getSource().equals( txtMaxMovementSearchRadius ) || e.getSource().equals( txtMaxMovementsPerNode ) || 
-			 e.getSource().equals( txtMaxDivisionSearchRadius ) || e.getSource().equals( txtMaxDivisionsPerNode ) || 
+		if ( e.getSource().equals( txtMaxMovementSearchRadius ) || e.getSource().equals( txtMaxMovementsPerNode ) ||
+			 e.getSource().equals( txtMaxDivisionSearchRadius ) || e.getSource().equals( txtMaxDivisionsPerNode ) ||
 			 e.getSource().equals( txtMaxPixelComponentSize ) || e.getSource().equals( txtMinPixelComponentSize ) ) {
 			parseAndSetParametersInModel();
 			model.saveStateToFile();

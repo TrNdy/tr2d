@@ -161,7 +161,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 			final BufferedWriter problemWriter = new BufferedWriter( new FileWriter( exportFile ) );
 			problemWriter.write( "# Tr2d problem export from " + strNow + "\n" );
-			problemWriter.write( String.format( "# objective_value = %.12f\n", model.getTrackingModel().getSolver().getLatestEnergy() ) );
+			problemWriter.write( String.format( "# objective_value = %.12f\n", model.getTrackingModel().getInternalFGSolver().getLatestEnergy() ) );
 
 			final MappedFactorGraph mfg = model.getTrackingModel().getMappedFactorGraph();
 			final Bimap< IndicatorNode, Variable > varmap = mfg.getVarmap();
@@ -486,7 +486,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 		final File exportFile = new File( projectFolderBasePath, "tr2d_problem.lp" );
 
 		try {
-			model.getTrackingModel().getSolver().saveLatestModel( exportFile.getAbsolutePath() );
+			model.getTrackingModel().getInternalFGSolver().saveLatestModel( exportFile.getAbsolutePath() );
 		} catch ( final NullPointerException e ) {
 			JOptionPane
 					.showMessageDialog( this, "Cannot write LP to file.", "Gurobi Model Error", JOptionPane.ERROR_MESSAGE );

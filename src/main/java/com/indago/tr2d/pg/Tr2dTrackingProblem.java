@@ -220,8 +220,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 	 *            the file to save to
 	 */
 	public void saveToFile( final File file ) throws IOException {
+		// save seg problems
 //		for ( final Tr2dSegmentationProblem segProblem : timepoints ) {
-//
+//			segProblem.saveToFile( file );
 //		}
 		//TODO implement! :)
 		throw new NotImplementedException();

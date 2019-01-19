@@ -41,6 +41,7 @@ import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.data.LabelingTimeLapse;
+import com.indago.tr2d.ilp.SolveExternal;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.pg.Tr2dTrackingProblem;
@@ -122,8 +123,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private final List< ProgressListener > progressListeners = new ArrayList<>();
 
-	private SolveGurobi solver;
+	private boolean doSolveInternal = true;
+	private SolveGurobi gurobiFGsolver;
+	private SolveExternal externalPGsolver;
 	private final List< ChangeListener > stateChangedListeners;
+	private String externalSolverFolderName = System.getProperty( "java.io.tmpdir" );
 
 	/**
 	 * @param model
@@ -270,27 +274,38 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 *            constraints etc.)
 	 */
 	public void run( final boolean forceSolving, final boolean forceRebuildPG ) {
-		boolean doSolving = forceSolving;
+		if ( doSolveInternal ) {
+			boolean doSolving = forceSolving;
 
-		if ( tr2dTraProblem == null || forceRebuildPG ) {
-			if ( preparePG() ) {
+			if ( tr2dTraProblem == null || forceRebuildPG ) {
+				if ( preparePG() ) {
+					prepareFG();
+					doSolving = true;
+				}
+			} else if ( mfg == null ) {
 				prepareFG();
 				doSolving = true;
 			}
-		} else if ( mfg == null ) {
-			prepareFG();
-			doSolving = true;
-		}
 
-		if (doSolving) {
-			fireNextProgressPhaseEvent( "Solving tracking with GUROBI...", 3 );
-			fireProgressEvent();
-    		solveFactorGraph();
-			fireProgressEvent();
-			imgSolution = SolutionVisualizer.drawSolutionSegmentImages( this, pgSolution );
-    		saveSolution();
-			fireSolutionChangedEvent();
-			fireProgressEvent();
+			if ( doSolving ) {
+				fireNextProgressPhaseEvent( "Solving tracking with GUROBI...", 3 );
+				fireProgressEvent();
+				solveFactorGraphInternally();
+				fireProgressEvent();
+				imgSolution = SolutionVisualizer.drawSolutionSegmentImages( this, pgSolution );
+				saveSolution();
+				fireSolutionChangedEvent();
+				fireProgressEvent();
+			}
+		} else {
+			// ELSE: solve using external solver
+			if ( tr2dTraProblem == null || forceRebuildPG ) {
+				if ( preparePG() ) {
+					solveProblemGraphExternally();
+				}
+			} else {
+				solveProblemGraphExternally();
+			}
 		}
 
 		fireProgressCompletedEvent();
@@ -445,7 +460,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		tictoc.toc( "done!" );
 	}
 
-	private void solveFactorGraph() {
+	private void solveFactorGraphInternally() {
 		final UnaryCostConstraintGraph fg = mfg.getFg();
 		final AssignmentMapper< Variable, IndicatorNode > assMapper = mfg.getAssmntMapper();
 //		final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
@@ -453,9 +468,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		fgSolution = null;
 		try {
 			SolveGurobi.GRB_PRESOLVE = 0;
-			solver = new SolveGurobi();
-			fgSolution = solver.solve( fg, new DefaultLoggingGurobiCallback( Tr2dLog.gurobilog ) );
-			pgSolution = assMapper.map( fgSolution );
+			gurobiFGsolver = new SolveGurobi();
+			fgSolution = gurobiFGsolver.solve( fg, new DefaultLoggingGurobiCallback( Tr2dLog.solverlog ) );
 		} catch ( final GRBException e ) {
 			e.printStackTrace();
 		} catch ( final IllegalStateException ise ) {
@@ -464,6 +478,19 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			Tr2dLog.log.error( "Model is now infeasible and needs to be retracked!" );
 			fireModelInfeasibleEvent();
 		}
+		pgSolution = assMapper.map( fgSolution );
+	}
+
+	private void solveProblemGraphExternally() {
+		try {
+			// TODO clean up the hard path
+			externalPGsolver = new SolveExternal( new File( this.getExternalSolverExchangeFolder() ) );
+			fgSolution = externalPGsolver.solve( tr2dTraProblem );
+		} catch ( final IOException e ) {
+			Tr2dLog.solverlog.error( "External solver threw IOException!" );
+			e.printStackTrace();
+		}
+
 	}
 
 	/**
@@ -684,11 +711,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		this.progressListeners.remove( progress );
 	}
 
-	/**
-	 * @return the solver
-	 */
-	public SolveGurobi getSolver() {
-		return solver;
+	public SolveExternal getExternalPGSolver() {
+		return externalPGsolver;
+	}
+
+	public SolveGurobi getInternalFGSolver() {
+		return gurobiFGsolver;
 	}
 
 	/**
@@ -907,6 +935,26 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		}
 		costWriter.flush();
 		costWriter.close();
+	}
+
+	public void loadSolution( final File solFile ) {
+
+	}
+
+	public boolean isExternalSolverActive() {
+		return !doSolveInternal;
+	}
+
+	public void solveExternally( final boolean solveExternally ) {
+		this.doSolveInternal = !solveExternally;
+	}
+
+	public void setExternalSolverExchangeFolder( final String folderName ) {
+		this.externalSolverFolderName = folderName;
+	}
+
+	public String getExternalSolverExchangeFolder() {
+		return this.externalSolverFolderName;
 	}
 
 }
