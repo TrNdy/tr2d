@@ -85,6 +85,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private ProjectFolder hypothesesFolder = null;
 
 	private final String FILENAME_PGRAPH = "tracking.pgraph";
+	private final String FILENAME_PGRAPH_SOLUTION = "tracking.sol";
 	private final String FILENAME_TRACKING = "tracking.tif";
 
 	private final Tr2dModel tr2dModel;
@@ -180,6 +181,12 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		} catch ( final IOException ioe ) {
 			ioe.printStackTrace();
 		}
+
+		final File fPgraph = dataFolder.addFile( FILENAME_PGRAPH ).getFile();
+		// TODO: load if exists!
+
+		final File fPgraphSolution = dataFolder.addFile( FILENAME_PGRAPH_SOLUTION ).getFile();
+		// TODO: load if exists!
 
 		loadStateFromProjectFolder();
 		loadCostParametersFromProjectFolder();
@@ -379,8 +386,6 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			tr2dTraProblem.saveToFile( dataFolder.getFile( FILENAME_PGRAPH ).getFile() );
 		} catch ( final IOException e ) {
 			e.printStackTrace();
-		} catch ( final NullPointerException npe ) {
-			Tr2dLog.log.warn( "PGraph could not be stored to disk!" );
 		}
 	}
 
@@ -487,6 +492,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			fireModelInfeasibleEvent();
 		}
 		pgSolution = assMapper.map( fgSolution );
+		this.tr2dTraProblem.getSerializer().saveSolution( pgSolution, dataFolder.getFile( FILENAME_PGRAPH_SOLUTION ).getFile() );
 	}
 
 	private Assignment< IndicatorNode > solveProblemGraphExternally() {
