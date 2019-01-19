@@ -275,6 +275,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 */
 	public void run( final boolean forceSolving, final boolean forceRebuildPG ) {
 		if ( doSolveInternal ) {
+			// INTERNAL (GUROBI) SOLVER
 			boolean doSolving = forceSolving;
 
 			if ( tr2dTraProblem == null || forceRebuildPG ) {
@@ -298,7 +299,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				fireProgressEvent();
 			}
 		} else {
-			// ELSE: solve using external solver
+			// ELSE: EXTERNAL SOLVER
 			if ( tr2dTraProblem == null || forceRebuildPG ) {
 				if ( preparePG() ) {
 					solveProblemGraphExternally();

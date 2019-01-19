@@ -1,7 +1,9 @@
 package com.indago.tr2d.ilp;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -12,12 +14,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 
 import com.indago.fg.Assignment;
 import com.indago.fg.Variable;
+import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
 import com.indago.pg.assignments.AssignmentNode;
 import com.indago.pg.assignments.DisappearanceHypothesis;
@@ -44,6 +48,11 @@ public class SolveExternal {
 
 	private final String expectedSolutionFileName = "solution.sol";
 
+	private ExternalSolverResult pgSolution;
+	final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id;
+	final Map< AssignmentNode, ValuePair< Integer, Integer > > mapAss2Id;
+
+
 	public SolveExternal( final File exchangeFolder ) throws IOException {
 		if ( !(exchangeFolder.isDirectory() && exchangeFolder.canWrite()) ) {
 			throw new IOException( "Given data exchange folder is not a directory or cannot be written to!" );
@@ -51,6 +60,9 @@ public class SolveExternal {
 		this.dataExchangeFolder = exchangeFolder;
 
 		setStatus( STATUS_NONE );
+
+		mapSeg2Id = new HashMap<>();
+		mapAss2Id = new HashMap<>();
 	}
 
 	private void setStatus( final String statusToSet ) throws IOException {
@@ -90,11 +102,11 @@ public class SolveExternal {
 
 		// -------------------------------
 		setStatus( STATUS_SOLVING );
-		waitForSolution();
+		final File solutionFile = waitForSolution();
 
 		// -------------------------------
 		setStatus( STATUS_IMPORTING );
-		importSolution();
+		pgSolution = new ExternalSolverResult( tr2dTraProblem, mapSeg2Id, mapAss2Id, solutionFile );
 
 		// -------------------------------
 		setStatus( STATUS_DONE );
@@ -106,9 +118,7 @@ public class SolveExternal {
 
 		final File exportFile = new File( dataExchangeFolder, "problem.jug" );
 
-		final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id = new HashMap<>();
 		int next_segment_id = -1;
-		final Map< AssignmentNode, ValuePair< Integer, Integer > > mapAss2Id = new HashMap<>();
 		int next_assignment_id = -1;
 
 		try {
@@ -234,16 +244,14 @@ public class SolveExternal {
 		}
 	}
 
-	private void waitForSolution() {
+	private File waitForSolution() {
 		final File solutionFile = new File( dataExchangeFolder, expectedSolutionFileName );
 		while ( !solutionFile.exists() ) {
 			try {
 				TimeUnit.SECONDS.sleep( 1 );
 			} catch ( final InterruptedException e ) {}
 		}
-	}
-
-	private void importSolution() {
+		return solutionFile;
 	}
 
 	/**
@@ -256,19 +264,67 @@ public class SolveExternal {
 		return Double.NaN;
 	}
 
-	public static class ExternelSolverResult implements Assignment< Variable > {
+	public static class ExternalSolverResult implements Assignment< IndicatorNode > {
 
-		public ExternelSolverResult() {
+		private final Map< IndicatorNode, Boolean > assignment;
+
+		private final File solutionFile;
+		private final BufferedReader brSolution;
+
+		private final Tr2dTrackingProblem tr2dTraProblem;
+		private final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id;
+		private final Map< AssignmentNode, ValuePair< Integer, Integer > > mapAss2Id;
+
+		public ExternalSolverResult(
+				final Tr2dTrackingProblem tr2dTraProblem,
+				final Map< SegmentNode, ValuePair< Integer, Integer > > mapSeg2Id,
+				final Map< AssignmentNode, ValuePair< Integer, Integer > > mapAss2Id,
+				final File solutionFile ) throws IOException {
+
+			this.assignment = new HashMap<>();
+
+			this.tr2dTraProblem = tr2dTraProblem;
+			this.mapSeg2Id = mapSeg2Id;
+			this.mapAss2Id = mapAss2Id;
+
+			this.solutionFile = solutionFile;
+			final FileReader frSolution = new FileReader( solutionFile );
+			brSolution = new BufferedReader( frSolution );
+
+			zeroInitializeAssignment();
+			importSolution();
+		}
+
+		private void zeroInitializeAssignment() {
+			assignment.clear();
+
+			final Set< SegmentNode > segNodes = mapSeg2Id.keySet();
+			for ( final SegmentNode segmentNode : segNodes ) {
+				assignment.put( segmentNode, Boolean.FALSE );
+			}
+
+			final Set< AssignmentNode > assNodes = mapAss2Id.keySet();
+			for ( final AssignmentNode assignmentNode : assNodes ) {
+				assignment.put( assignmentNode, Boolean.FALSE );
+			}
+		}
+
+		private void importSolution() throws IOException {
+			String line = brSolution.readLine();
+			while ( line != null ) {
+
+				line = brSolution.readLine();
+			}
 		}
 
 		@Override
-		public boolean isAssigned( final Variable var ) {
-			return false;
+		public boolean isAssigned( final IndicatorNode node ) {
+			return assignment.containsKey( node );
 		}
 
 		@Override
-		public int getAssignment( final Variable var ) {
-			return -1;
+		public int getAssignment( final IndicatorNode node ) {
+			return assignment.get( node ) ? 1 : 0;
 		}
 	}
 
