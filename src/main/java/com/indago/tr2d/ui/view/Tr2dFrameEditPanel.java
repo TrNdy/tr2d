@@ -1213,7 +1213,7 @@ public class Tr2dFrameEditPanel extends JPanel implements ActionListener, BdvWit
     		final Assignment< IndicatorNode > pgSolution = model.getSolution();
 			for ( final SegmentNode segNode : frameSegmentationModel.getSegments() ) {
     			final LabelingSegment labelingSegment = frameSegmentationModel.getLabelingSegment( segNode );
-    			if ( pgSolution.getAssignment( segNode ) == 1 ) {
+				if ( pgSolution.getAssignment( segNode ) == 1 ) {
 					selectionModel.setSelected( mapLabelingSegment2SegmentVertex.get( labelingSegment ), true );
     			} else {
 					selectionModel.setSelected( mapLabelingSegment2SegmentVertex.get( labelingSegment ), false );

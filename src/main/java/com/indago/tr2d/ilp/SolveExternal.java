@@ -23,7 +23,7 @@ public class SolveExternal {
 	String status;
 	File statusFile;
 
-	private final String expectedSolutionFileName = "solution.sol";
+	private final String expectedSolutionFileName = "tracking.sol";
 
 	private Tr2dTrackingProblemResult pgSolution;
 
@@ -70,7 +70,7 @@ public class SolveExternal {
 		// -------------------------------
 		setStatus( STATUS_EXPORTING );
 		final File exportFile = new File( dataExchangeFolder, "problem.jug" );
-		tr2dTraProblem.saveToFile( exportFile );
+		tr2dTraProblem.getSerializer().savePgraph( tr2dTraProblem, exportFile );
 
 		// -------------------------------
 		setStatus( STATUS_SOLVING );

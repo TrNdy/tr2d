@@ -377,7 +377,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	private void saveTrackingProblem() {
 		try {
-			tr2dTraProblem.saveToFile( dataFolder.getFile( FILENAME_PGRAPH ).getFile() );
+			tr2dTraProblem.getSerializer().savePgraph( tr2dTraProblem, dataFolder.getFile( FILENAME_PGRAPH ).getFile() );
 		} catch ( final IOException e ) {
 			e.printStackTrace();
 		}
@@ -477,6 +477,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			SolveGurobi.GRB_PRESOLVE = 0;
 			gurobiFGsolver = new SolveGurobi();
 			fgSolution = gurobiFGsolver.solve( fg, new DefaultLoggingGurobiCallback( Tr2dLog.solverlog ) );
+			pgSolution = assMapper.map( fgSolution );
 		} catch ( final GRBException e ) {
 			e.printStackTrace();
 		} catch ( final IllegalStateException ise ) {
@@ -485,13 +486,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			Tr2dLog.log.error( "Model is now infeasible and needs to be retracked!" );
 			fireModelInfeasibleEvent();
 		}
-		pgSolution = assMapper.map( fgSolution );
-		this.tr2dTraProblem.getSerializer().saveSolution( pgSolution, dataFolder.getFile( FILENAME_PGRAPH_SOLUTION ).getFile() );
+		this.tr2dTraProblem.getSerializer().saveSolution( tr2dTraProblem, pgSolution, dataFolder.getFile( FILENAME_PGRAPH_SOLUTION ).getFile() );
 	}
 
 	private Assignment< IndicatorNode > solveProblemGraphExternally() {
 		try {
-			// TODO clean up the hard path
 			externalPGsolver = new SolveExternal( new File( this.getExternalSolverExchangeFolder() ) );
 			pgSolution = externalPGsolver.solve( tr2dTraProblem );
 			fgSolution = null;
