@@ -84,6 +84,9 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private final String FOLDER_LABELING_FRAMES = "labeling_frames";
 	private ProjectFolder hypothesesFolder = null;
 
+	private final String FOLDER_EXTERNAL_SOLVER = "external_solver";
+	private ProjectFolder externalSolverFolder = null;
+
 	private final String FILENAME_PGRAPH = "tracking.pgraph";
 	private final String FILENAME_PGRAPH_SOLUTION = "tracking.sol";
 	private final String FILENAME_TRACKING = "tracking.tif";
@@ -128,7 +131,6 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private SolveGurobi gurobiFGsolver;
 	private SolveExternal externalPGsolver;
 	private final List< ChangeListener > stateChangedListeners;
-	private String externalSolverFolderName = System.getProperty( "java.io.tmpdir" );
 
 	/**
 	 * @param model
@@ -180,6 +182,14 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			labelingFrames.loadFromProjectFolder( hypothesesFolder );
 		} catch ( final IOException ioe ) {
 			ioe.printStackTrace();
+		}
+
+		// Creating exchange folder for external solver
+		try {
+			externalSolverFolder = dataFolder.addFolder( FOLDER_EXTERNAL_SOLVER );
+			externalSolverFolder.loadFiles();
+		} catch ( final IOException e ) {
+			e.printStackTrace();
 		}
 
 		loadStateFromProjectFolder();
@@ -968,12 +978,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		this.doSolveInternal = !solveExternally;
 	}
 
-	public void setExternalSolverExchangeFolder( final String folderName ) {
-		this.externalSolverFolderName = folderName;
-	}
-
 	public String getExternalSolverExchangeFolder() {
-		return this.externalSolverFolderName;
+		return this.externalSolverFolder.getAbsolutePath();
 	}
 
 }

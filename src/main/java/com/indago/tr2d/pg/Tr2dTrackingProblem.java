@@ -615,11 +615,8 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 
 				try {
 					final String type = scanner.next();
-					System.out.print( type );
 					final int t = scanner.nextInt();
-					System.out.print( t );
 					final int id = scanner.nextInt();
-					System.out.println( id );
 
 					switch ( type ) {
 					case "H":
@@ -638,7 +635,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					case "DISAPP":
 					case "MOVE":
 					case "DIV":
-					case "A":
+					case "A": // one to rule them all ;)
 						final AssignmentNode assNode = tr2dTraProblem.getSerializer().getBimapAss2Id().getA( new ValuePair<>( t, id ) );
 						if ( assNode == null ) {
 							Tr2dLog.solverlog.warn( String.format( "Assignment hypothesis (%d, %d) not found in Ass2Id bimap!", t, id ) );

@@ -120,9 +120,10 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 		final JPanel panelImportSolution = new JPanel( new MigLayout() );
 		cbSolveWithExternalSolver = new JCheckBox( "use external solver", model.isExternalSolverActive() );
 		cbSolveWithExternalSolver.addActionListener( this );
-		txtExternalSolverExchangeFolder = new JTextField( "/Users/jug/Desktop/tr2dtest" ); //model.getExternalSolverExchangeFolder()
+		txtExternalSolverExchangeFolder = new JTextField( model.getExternalSolverExchangeFolder() );
+		txtExternalSolverExchangeFolder.setEditable( false );
 
-		panelImportSolution.setBorder( BorderFactory.createTitledBorder( "graph parameters" ) );
+		panelImportSolution.setBorder( BorderFactory.createTitledBorder( "Solver options" ) );
 		panelImportSolution.add( cbSolveWithExternalSolver, "growx,wrap" );
 		panelImportSolution.add( new JLabel( "Exchange folder:" ), "growx,wrap" );
 		panelImportSolution.add( txtExternalSolverExchangeFolder, "growx, wrap" );
@@ -205,7 +206,6 @@ public class Tr2dTrackingPanel extends JPanel implements ActionListener, FocusLi
 			t.start();
 		} else if ( e.getSource().equals( cbSolveWithExternalSolver ) ) {
 			model.solveExternally( cbSolveWithExternalSolver.isSelected() );
-			model.setExternalSolverExchangeFolder( txtExternalSolverExchangeFolder.getText() );
 		}
 	}
 
