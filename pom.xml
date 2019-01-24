@@ -12,6 +12,8 @@
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>TrNdy developers</license.copyrightOwners>
 
+		<Indago.version>0.1.10</Indago.version>
+
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 	</properties>
