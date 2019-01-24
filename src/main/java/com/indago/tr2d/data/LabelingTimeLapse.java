@@ -6,7 +6,7 @@ package com.indago.tr2d.data;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,8 +46,8 @@ public class LabelingTimeLapse {
 	private final Filter maxGrowthPerStep;
 	private final boolean darkToBright = false;
 
-	private List< LabelingBuilder > frameLabelingBuilders;
-	private final Map< LabelingBuilder, ConflictGraph > mapToConflictGraphs = new HashMap< >();
+	private List< LabelingBuilder > frameLabelingBuilders = new ArrayList<>(); // need ensured order
+	private final Map< LabelingBuilder, ConflictGraph > mapToConflictGraphs = new LinkedHashMap<>();  // need ensured order
 
 	private boolean processedOrLoaded;
 
@@ -63,7 +63,6 @@ public class LabelingTimeLapse {
 		this.maxHypothesisSize = maxHypothesisSize;
 		maxGrowthPerStep = new MaxGrowthPerStep( maxHypothesisSize );
 
-		frameLabelingBuilders = new ArrayList<>();
 		processedOrLoaded = false;
 	}
 

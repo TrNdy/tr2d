@@ -30,6 +30,7 @@ import com.indago.fg.Variable;
 import com.indago.ilp.DefaultLoggingGurobiCallback;
 import com.indago.ilp.SolveGurobi;
 import com.indago.io.IntTypeImgLoader;
+import com.indago.io.ProjectFile;
 import com.indago.io.ProjectFolder;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
@@ -159,7 +160,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		this.divisionCosts = divisionCosts;
 		this.disappearanceCosts = disappearanceCosts;
 
-		getCostFactories().add( this.segmentCosts );
+		getCostFactories().add( this.getSegmentCosts() );
 		getCostFactories().add( this.appearanceCosts );
 		getCostFactories().add( this.disappearanceCosts );
 		getCostFactories().add( this.moveCosts );
@@ -174,16 +175,6 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		imgs = new ArrayList< >();
 		imgs.add( imgSolution );
 
-		// Loading hypotheses labeling frames if exist in project folder
-		this.labelingFrames = new LabelingTimeLapse( tr2dSegEditModel, this.getMinPixelComponentSize(), this.getMaxPixelComponentSize() );
-		try {
-			hypothesesFolder = dataFolder.addFolder( FOLDER_LABELING_FRAMES );
-			hypothesesFolder.loadFiles();
-			labelingFrames.loadFromProjectFolder( hypothesesFolder );
-		} catch ( final IOException ioe ) {
-			ioe.printStackTrace();
-		}
-
 		// Creating exchange folder for external solver
 		try {
 			externalSolverFolder = dataFolder.addFolder( FOLDER_EXTERNAL_SOLVER );
@@ -192,8 +183,11 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			e.printStackTrace();
 		}
 
-		loadStateFromProjectFolder();
+		this.labelingFrames = new LabelingTimeLapse( tr2dSegEditModel, this.getMinPixelComponentSize(), this.getMaxPixelComponentSize() );
+
+		loadUIStateFromProjectFolder();
 		loadCostParametersFromProjectFolder();
+		loadStoredGraphsAndSolutions();
 	}
 
 	/**
@@ -453,7 +447,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			final ConflictGraph< LabelingSegment > conflictGraph =
 					labelingFrames.getConflictGraph( frameId );
 			final Tr2dSegmentationProblem segmentationProblem =
-					new Tr2dSegmentationProblem( frameId, segments, segmentCosts, conflictGraph );
+					new Tr2dSegmentationProblem( frameId, segments, getSegmentCosts(), conflictGraph );
 			tictoc.toc( "done!" );
 
 			// =============================
@@ -624,7 +618,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				final SegmentNode segVar = tp.getSegmentVar( labelingSegment );
 
 				// SEGMENT COST UPDATE
-				tp.getSegmentVar( labelingSegment ).setCost( segmentCosts.getCost( labelingSegment ) );
+				tp.getSegmentVar( labelingSegment ).setCost( getSegmentCosts().getCost( labelingSegment ) );
 
 				// APPEARANCE COST UPDATE
 				for ( final AppearanceHypothesis inApp : tp.getSegmentVar( labelingSegment ).getInAssignments().getAppearances() ) {
@@ -853,7 +847,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		}
 	}
 
-	private void loadStateFromProjectFolder() {
+	private void loadUIStateFromProjectFolder() {
 		final CsvParser parser = new CsvParser( new CsvParserSettings() );
 
 		final File guiState = dataFolder.addFile( FILENAME_STATE ).getFile();
@@ -897,6 +891,49 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			fireStateChangedEvent();
 		} catch ( final IOException e ) {
 			Tr2dLog.log.warn( "No cost parameter file found in project folder. Falling back to default values." );
+		}
+	}
+
+	private void loadStoredGraphsAndSolutions() {
+		// Loading hypotheses labeling frames if exist in project folder
+		try {
+			hypothesesFolder = dataFolder.addFolder( FOLDER_LABELING_FRAMES );
+			hypothesesFolder.loadFiles();
+			labelingFrames.loadFromProjectFolder( hypothesesFolder );
+		} catch ( final IOException ioe ) {
+			ioe.printStackTrace();
+		}
+
+		// Loading stored PGraph and solution if exist in project folder
+		final ProjectFile pgFile = externalSolverFolder.getFile( FILENAME_PGRAPH );
+		final ProjectFile pgSolFile = externalSolverFolder.getFile( FILENAME_PGRAPH_SOLUTION );
+		if ( pgFile.exists() ) {
+			this.tr2dTraProblem =
+					new Tr2dTrackingProblem(
+							this,
+							tr2dModel.getFlowModel(),
+							appearanceCosts,
+							moveCosts,
+							divisionCosts,
+							disappearanceCosts );
+			boolean success;
+			try {
+				success = tr2dTraProblem.getSerializer().loadPGraph( tr2dTraProblem, pgFile.getFile() );
+			} catch ( final IOException e1 ) {
+				success = false;
+				e1.printStackTrace();
+			}
+
+			if ( success && pgSolFile.exists() ) {
+				try {
+					pgSolution = new Tr2dTrackingProblem.Tr2dTrackingProblemResult( tr2dTraProblem, pgSolFile.getFile() );
+    			} catch ( final IOException e ) {
+    				pgSolution = null;
+    				e.printStackTrace();
+    			}
+			} else {
+				this.tr2dTraProblem = null;
+			}
 		}
 	}
 
@@ -966,10 +1003,6 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		costWriter.close();
 	}
 
-	public void loadSolution( final File solFile ) {
-
-	}
-
 	public boolean isExternalSolverActive() {
 		return !doSolveInternal;
 	}
@@ -980,6 +1013,34 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 
 	public String getExternalSolverExchangeFolder() {
 		return this.externalSolverFolder.getAbsolutePath();
+	}
+
+	public CostFactory< LabelingSegment > getSegmentCosts() {
+		return segmentCosts;
+	}
+
+	public CostFactory< LabelingSegment > getAppearanceCosts() {
+		return appearanceCosts;
+	}
+
+	public CostFactory< Pair< Pair< LabelingSegment, LabelingSegment >, Pair< Double, Double > > > getMoveCosts() {
+		return moveCosts;
+	}
+
+	public CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > getDivisionCosts() {
+		return divisionCosts;
+	}
+
+	public CostFactory< LabelingSegment > getDisappearanceCosts() {
+		return disappearanceCosts;
+	}
+
+	public Tr2dTrackingProblem getTr2dTraProblem() {
+		return tr2dTraProblem;
+	}
+
+	public void setTr2dTraProblem( Tr2dTrackingProblem tr2dTraProblem ) {
+		this.tr2dTraProblem = tr2dTraProblem;
 	}
 
 }

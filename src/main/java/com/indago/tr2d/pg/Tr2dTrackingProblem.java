@@ -22,6 +22,7 @@ import java.util.Scanner;
 import javax.swing.JOptionPane;
 
 import com.indago.costs.CostFactory;
+import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.fg.Assignment;
 import com.indago.pg.IndicatorNode;
@@ -34,9 +35,11 @@ import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.ConflictSet;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.Tr2dLog;
+import com.indago.tr2d.data.LabelingTimeLapse;
 import com.indago.tr2d.ui.model.Tr2dFlowModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 import com.indago.util.Bimap;
+import com.indago.util.TicToc;
 
 import net.imglib2.KDTree;
 import net.imglib2.RealLocalizable;
@@ -560,6 +563,108 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		public Bimap< AssignmentNode, ValuePair< Integer, Integer > > getBimapAss2Id() {
 			return bimapAss2Id;
 		}
+
+		/**
+		 * @return true, if PGraph could be loaded.
+		 * @throws IOException
+		 */
+		public boolean loadPGraph( final Tr2dTrackingProblem ttp, final File file ) throws IOException {
+			final TicToc tictoc = new TicToc();
+
+			final LabelingTimeLapse labelingFrames = ttp.trackingModel.getLabelingFrames();
+
+//			fireNextProgressPhaseEvent( "Building tracking problem (PG)...", labelingFrames.getNumFrames() );
+			for ( int frameId = 0; frameId < labelingFrames.getNumFrames(); frameId++ ) {
+				Tr2dLog.log.info(
+						String.format( "Loading frame %d of %d...", frameId + 1, labelingFrames.getNumFrames() ) );
+
+				// =============================
+				// build Tr2dSegmentationProblem
+				// =============================
+				tictoc.tic( "Constructing Tr2dSegmentationProblem..." );
+				final List< LabelingSegment > segments =
+						labelingFrames.getLabelingSegmentsForFrame( frameId );
+				final ConflictGraph< LabelingSegment > conflictGraph =
+						labelingFrames.getConflictGraph( frameId );
+				final Tr2dSegmentationProblem segmentationProblem =
+						new Tr2dSegmentationProblem( frameId, segments, ttp.trackingModel.getSegmentCosts(), conflictGraph );
+				tictoc.toc( "done!" );
+
+				// =============================
+				// add it to Tr2dTrackingProblem
+				// =============================
+				tictoc.tic( "Connect it to Tr2dTrackingProblem..." );
+				ttp.trackingModel.getTr2dTraProblem().addSegmentationProblem( segmentationProblem );
+				tictoc.toc( "done!" );
+
+//				fireProgressEvent();
+			}
+			ttp.trackingModel.getTr2dTraProblem().addDummyDisappearance();
+
+			Tr2dLog.log.info( "Tracking graph was loaded/build sucessfully!" );
+
+
+//			final FileReader fr = new FileReader( file );
+//			final BufferedReader br = new BufferedReader( fr );
+//
+//			String line = br.readLine();
+//			while ( line != null ) {
+//				if ( line.trim().startsWith( "#" ) || line.trim().equals( "" ) ) {
+//					line = br.readLine();
+//					continue;
+//				}
+//
+//				final Scanner scanner = new Scanner( line );
+//				scanner.useDelimiter( "\\s+" );
+//
+//				try {
+//					final String type = scanner.next();
+//					final int t = scanner.nextInt();
+//					final int id = scanner.nextInt();
+//
+//					switch ( type ) {
+//					case "H":
+//						final double cost = scanner.nextDouble();
+//						final int tpsize = ttp.getTimepoints().size();
+//						while (t>tpsize) {
+//							ttp.getTimepoints().add(
+//								new Tr2dSegmentationProblem(
+//										tpsize,
+//										new ArrayList<>(),
+//										ttp.trackingModel.getSegmentCosts(),
+//										ttp.trackingModel.getLabelingFrames().getConflictGraph( t )
+//										)
+//								);
+//							tpsize++;
+//						}
+//						ttp.getTimepoints().get( t ).
+//						break;
+//					case "APP":
+//						break;
+//					case "DISAPP":
+//						break;
+//					case "MOVE":
+//						break;
+//					case "DIV":
+//						break;
+//					default:
+//						Tr2dLog.solverlog.warn( "Saved PGraph contained a unknown line: " + line );
+//					}
+//				} catch ( final InputMismatchException ime ) {
+//					Tr2dLog.solverlog.error( String.format( "Saved PGraph currupted (wrong format given): '%s'", line ) );
+//					ime.printStackTrace();
+//					return false;
+//				} catch ( final NoSuchElementException nsee ) {
+//					Tr2dLog.solverlog.error( String.format( "Saved PGraph currupted (missing data): '%s'", line ) );
+//					nsee.printStackTrace();
+//					return false;
+//				}
+//
+//				scanner.close();
+//				line = br.readLine();
+//			}
+			return true;
+		}
 	}
 
 	public static class Tr2dTrackingProblemResult implements Assignment< IndicatorNode > {
@@ -599,11 +704,10 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		}
 
 		private void importSolution() throws IOException {
-			String line = brSolution.readLine();
-
 			int trueSegs = 0;
 			int trueAssmts = 0;
 
+			String line = brSolution.readLine();
 			while ( line != null ) {
 				if ( line.trim().startsWith( "#" ) || line.trim().equals( "" ) ) {
 					line = brSolution.readLine();

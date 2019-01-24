@@ -20,7 +20,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 	private final int time;
 	private final CostFactory< LabelingSegment > segmentCosts;
 
-	private final Collection< SegmentNode > segments;
+	private final Collection< SegmentNode > segments = new ArrayList< SegmentNode >();;
 	private final ConflictGraph< LabelingSegment > conflictGraph;
 	private final AssignmentNodes inAssignments;
 	private final AssignmentNodes outAssignments;
@@ -43,7 +43,6 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 		this.segmentCosts = segmentCosts;
 		this.conflictGraph = conflictGraph;
 
-		segments = new ArrayList< SegmentNode >();
 		createSegmentVars( labelingSegments );
 	}
 
