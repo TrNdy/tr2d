@@ -11,7 +11,7 @@ import com.indago.io.ProjectFolder;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
-import com.indago.tr2d.plugins.seg.Tr2dSegmentationPlugin;
+import com.indago.tr2d.plugins.seg.IndagoSegmentationPlugin;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.integer.IntType;
@@ -25,7 +25,7 @@ public class Tr2dSegmentationCollectionModel implements AutoCloseable {
 
 	private final ProjectFolder projectFolder;
 
-	private final List< Tr2dSegmentationPlugin > plugins = new ArrayList<>();
+	private final List< IndagoSegmentationPlugin > plugins = new ArrayList<>();
 
 	public Tr2dSegmentationCollectionModel( final Tr2dModel model ) {
 		this.model = model;
@@ -40,17 +40,17 @@ public class Tr2dSegmentationCollectionModel implements AutoCloseable {
 		return model;
 	}
 
-	public void addPlugin( final Tr2dSegmentationPlugin segPlugin ) {
+	public void addPlugin( final IndagoSegmentationPlugin segPlugin ) {
 		this.plugins.add( segPlugin );
 	}
 
-	public List< Tr2dSegmentationPlugin > getPlugins() {
+	public List< IndagoSegmentationPlugin > getPlugins() {
 		return plugins;
 	}
 
 	public List< RandomAccessibleInterval< IntType > > getSumImages() {
 		final List< RandomAccessibleInterval< IntType > > ret = new ArrayList< RandomAccessibleInterval< IntType > >();
-		for ( final Tr2dSegmentationPlugin plugin : plugins ) {
+		for ( final IndagoSegmentationPlugin plugin : plugins ) {
 			ret.addAll( plugin.getOutputs() );
 		}
 		return ret;
@@ -58,7 +58,7 @@ public class Tr2dSegmentationCollectionModel implements AutoCloseable {
 
 	@Override
 	public void close() {
-		for(Tr2dSegmentationPlugin plugin : this.plugins)
+		for(IndagoSegmentationPlugin plugin : this.plugins)
 			try {
 				plugin.close();
 			}

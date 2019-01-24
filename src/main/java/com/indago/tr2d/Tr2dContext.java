@@ -5,7 +5,7 @@ package com.indago.tr2d;
 
 import javax.swing.JFrame;
 
-import com.indago.tr2d.plugins.seg.Tr2dSegmentationPluginService;
+import com.indago.tr2d.plugins.seg.IndagoSegmentationPluginService;
 
 import net.imagej.ops.OpService;
 
@@ -15,7 +15,7 @@ import net.imagej.ops.OpService;
 public class Tr2dContext {
 
 	public static OpService ops = null;
-	public static Tr2dSegmentationPluginService segPlugins = null;
+	public static IndagoSegmentationPluginService segPlugins = null;
 	public static JFrame guiFrame = null;
 
 }

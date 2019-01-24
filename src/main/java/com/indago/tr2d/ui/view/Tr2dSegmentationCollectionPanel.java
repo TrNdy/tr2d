@@ -9,7 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import com.indago.tr2d.Tr2dContext;
-import com.indago.tr2d.plugins.seg.Tr2dSegmentationPlugin;
+import com.indago.tr2d.plugins.seg.IndagoSegmentationPlugin;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 
 
@@ -34,8 +34,12 @@ public class Tr2dSegmentationCollectionPanel extends JPanel {
 		tabs = new JTabbedPane();
 
 		for ( final String name : Tr2dContext.segPlugins.getPluginNames() ) {
-			final Tr2dSegmentationPlugin segPlugin =
-					Tr2dContext.segPlugins.createPlugin( name, model.getModel(), model.getModel().getMainPanel().getLogPanel() );
+			final IndagoSegmentationPlugin segPlugin =
+					Tr2dContext.segPlugins.createPlugin(
+							name,
+							model.getProjectFolder(),
+							model.getModel().getRawData(),
+							model.getModel().getMainPanel().getLogPanel() );
 			if(segPlugin.isUsable()) {
 				model.addPlugin( segPlugin );
 				tabs.add( segPlugin.getUiName(), segPlugin.getInteractionPanel() );
