@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.concurrent.Executors;
 
 import com.indago.io.ProjectFolder;
+import com.indago.plugins.seg.IndagoSegmentationPlugin;
 import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
-import com.indago.tr2d.plugins.seg.IndagoSegmentationPlugin;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.integer.IntType;

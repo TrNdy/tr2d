@@ -25,7 +25,7 @@ import com.indago.costs.CostParams;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.ui.model.Tr2dSolDiffModel;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
-import com.indago.tr2d.ui.util.UniversalFileChooser;
+import com.indago.ui.util.UniversalFileChooser;
 
 import bdv.util.Bdv;
 import bdv.util.BdvHandlePanel;

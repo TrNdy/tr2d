@@ -44,7 +44,7 @@ import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.SolutionExporter;
 import com.indago.tr2d.ui.util.SolutionExporter.Tracklet;
-import com.indago.tr2d.ui.util.UniversalFileChooser;
+import com.indago.ui.util.UniversalFileChooser;
 import com.indago.util.Bimap;
 
 import gnu.trove.map.TObjectIntMap;

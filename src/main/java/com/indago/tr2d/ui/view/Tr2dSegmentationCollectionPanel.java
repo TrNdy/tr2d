@@ -8,8 +8,9 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import com.indago.plugins.seg.IndagoSegmentationPlugin;
 import com.indago.tr2d.Tr2dContext;
-import com.indago.tr2d.plugins.seg.IndagoSegmentationPlugin;
+import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.ui.model.Tr2dSegmentationCollectionModel;
 
 
@@ -39,7 +40,7 @@ public class Tr2dSegmentationCollectionPanel extends JPanel {
 							name,
 							model.getProjectFolder(),
 							model.getModel().getRawData(),
-							model.getModel().getMainPanel().getLogPanel() );
+							Tr2dLog.segmenterLog );
 			if(segPlugin.isUsable()) {
 				model.addPlugin( segPlugin );
 				tabs.add( segPlugin.getUiName(), segPlugin.getInteractionPanel() );

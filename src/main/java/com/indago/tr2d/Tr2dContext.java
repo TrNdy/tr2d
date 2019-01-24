@@ -5,7 +5,7 @@ package com.indago.tr2d;
 
 import javax.swing.JFrame;
 
-import com.indago.tr2d.plugins.seg.IndagoSegmentationPluginService;
+import com.indago.plugins.seg.IndagoSegmentationPluginService;
 
 import net.imagej.ops.OpService;
 
