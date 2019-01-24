@@ -275,7 +275,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					// write all segment hypotheses
 					final Collection< SegmentNode > segments = t.getSegments();
 					for ( final SegmentNode segment : segments ) {
-						bimapSeg2Id.add( segment, new ValuePair< Integer, Integer >( t.getTime(), ++next_segment_id ) );
+						bimapSeg2Id.add( segment, new ValuePair<>( t.getTime(), ++next_segment_id ) );
 						writeSegmentLine( t.getTime(), next_segment_id, segment, problemWriter );
 					}
 				}

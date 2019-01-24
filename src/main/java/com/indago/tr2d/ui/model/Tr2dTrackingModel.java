@@ -254,10 +254,10 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * Runs the optimization for the prepared tracking (in <code>prepare</code>
+	 * Runs the optimization for the prepared tracking (if <code>prepare</code>
 	 * was never called, this function will call it).
 	 * Does not take care of the BDV.
-	 * For a threaded version us <code>runInThread</code>, which also takes care
+	 * For a threaded version use <code>runInThread</code>, which also takes care
 	 * of BDV.
 	 * Does not force resolving. If wanted: call <code>run(true)</code>.
 	 */
@@ -266,10 +266,10 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
-	 * Runs the optimization for the prepared tracking (in <code>prepare</code>
+	 * Runs the optimization for the prepared tracking (if <code>prepare</code>
 	 * was never called, this function will call it).
 	 * Does not take care of the BDV.
-	 * For a threaded version us <code>runInThread</code>, which also takes care
+	 * For a threaded version use <code>runInThread</code>, which also takes care
 	 * of BDV.
 	 *
 	 * @param forceSolving
@@ -347,20 +347,15 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	 * @return the created thread the run is performed in
 	 */
 	public Thread runInThread( final boolean forceResolve, final boolean forceRebuildPG ) {
-		final Runnable runnable = new Runnable() {
+		final Runnable runnable = () -> {
+			bdvRemoveAllOverlays();
+			bdvRemoveAll();
 
-			@Override
-			public void run() {
-				bdvRemoveAllOverlays();
-				bdvRemoveAll();
+			Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG );
 
-				Tr2dTrackingModel.this.run( forceResolve, forceRebuildPG );
-
-				final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
-				populateBdv();
-				bdvHandlePanel.getViewerPanel().setTimepoint( bdvTime );
-			}
-
+			final int bdvTime = bdvHandlePanel.getViewerPanel().getState().getCurrentTimepoint();
+			populateBdv();
+			bdvHandlePanel.getViewerPanel().setTimepoint( bdvTime );
 		};
 		final Thread t = new Thread( runnable );
 		t.start();
