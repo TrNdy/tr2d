@@ -9,7 +9,6 @@ import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
 import com.indago.pg.SegmentationProblem;
-import com.indago.pg.assignments.AssignmentNodes;
 import com.indago.pg.segments.ConflictSet;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.levedit.EditState;
@@ -22,8 +21,6 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 
 	private final Collection< SegmentNode > segments = new ArrayList<>();
 	private final ConflictGraph< LabelingSegment > conflictGraph;
-	private final AssignmentNodes inAssignments;
-	private final AssignmentNodes outAssignments;
 
 	// LEVERAGED EDITING STATE
 	private EditState edits = new EditState();
@@ -35,9 +32,7 @@ public class Tr2dSegmentationProblem implements SegmentationProblem {
 			final List< LabelingSegment > labelingSegments,
 			final CostFactory< LabelingSegment > segmentCosts,
 			final ConflictGraph< LabelingSegment > conflictGraph ) {
-		inAssignments = new AssignmentNodes();
-		outAssignments = new AssignmentNodes();
-		segmentBimap = new Bimap< >();
+		segmentBimap = new Bimap<>();
 
 		this.time = time;
 		this.segmentCosts = segmentCosts;
