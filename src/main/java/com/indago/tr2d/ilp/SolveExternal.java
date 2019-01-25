@@ -62,8 +62,6 @@ public class SolveExternal {
 	 *
 	 * @param tr2dTraProblem
 	 *
-	 * @param mfg
-	 *            the factor graph to be solved.
 	 * @return an <code>Assignment</code> containing the solution.
 	 */
 	public Assignment< IndicatorNode > solve( final Tr2dTrackingProblem tr2dTraProblem ) throws IOException {
