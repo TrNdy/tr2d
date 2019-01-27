@@ -58,7 +58,6 @@ public class LabelingTimeLapse {
 	public LabelingTimeLapse( final Tr2dSegmentationEditorModel model, final int minHypothesisSize, final int maxHypothesisSize ) {
 		this.model = model;
 
-		// this should be a parameter
 		this.minHypothesisSize = minHypothesisSize;
 		this.maxHypothesisSize = maxHypothesisSize;
 		maxGrowthPerStep = new MaxGrowthPerStep( maxHypothesisSize );
