@@ -15,8 +15,7 @@ import com.indago.tr2d.costs.HernanSegmentCostFactory;
 import com.indago.tr2d.ui.view.Tr2dMainPanel;
 import com.indago.util.ImglibUtil;
 
-import ij.ImagePlus;
-import net.imglib2.RandomAccessibleInterval;
+import net.imagej.ImgPlus;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.Views;
 
@@ -25,8 +24,7 @@ import net.imglib2.view.Views;
  */
 public class Tr2dModel implements AutoCloseable {
 
-	private final ImagePlus imgPlus;
-	private RandomAccessibleInterval< DoubleType > imgRaw;
+	private ImgPlus< DoubleType > imgRaw;
 	private final DoubleType min = new DoubleType();
 	private final DoubleType max = new DoubleType();
 
@@ -45,8 +43,7 @@ public class Tr2dModel implements AutoCloseable {
 	 */
 	private Tr2dMainPanel mainUiPanel;
 
-	public Tr2dModel( final ProjectFolder projectFolder, final ImagePlus imgPlus ) {
-		this.imgPlus = imgPlus;
+	public Tr2dModel( final ProjectFolder projectFolder, final ImgPlus imgPlus ) {
 		this.projectFolder = projectFolder;
 		this.mainUiPanel = null;
 
@@ -62,7 +59,7 @@ public class Tr2dModel implements AutoCloseable {
 
 	/**
 	 * Sets the ref to the main UI panel of Tr2d.
-	 * 
+	 *
 	 * @param mainPanel
 	 *            Tr2dMainPanl
 	 */
@@ -71,16 +68,9 @@ public class Tr2dModel implements AutoCloseable {
 	}
 
 	/**
-	 * @return the imgPlus
-	 */
-	public ImagePlus getImgPlus() {
-		return imgPlus;
-	}
-
-	/**
 	 * @return the imgRaw
 	 */
-	public RandomAccessibleInterval< DoubleType > getRawData() {
+	public ImgPlus< DoubleType > getRawData() {
 		return imgRaw;
 	}
 
@@ -88,7 +78,7 @@ public class Tr2dModel implements AutoCloseable {
 	 * @param imgOrig
 	 *            the imgOrig to set
 	 */
-	public void setRawData( final RandomAccessibleInterval< DoubleType > imgOrig ) {
+	public void setRawData( final ImgPlus< DoubleType > imgOrig ) {
 		this.imgRaw = imgOrig;
 	}
 

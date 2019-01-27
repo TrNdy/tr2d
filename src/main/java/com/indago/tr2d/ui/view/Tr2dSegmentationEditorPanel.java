@@ -1,25 +1,21 @@
 package com.indago.tr2d.ui.view;
 
-import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
-import com.indago.tr2d.ui.model.Tr2dModel;
+import java.awt.BorderLayout;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import com.indago.tr2d.ui.model.Tr2dSegmentationEditorModel;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.gui.NewImage;
+
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.labkit.LabelingComponent;
 import net.imglib2.labkit.labeling.Labeling;
 import net.imglib2.labkit.models.ImageLabelingModel;
-import net.imglib2.roi.labeling.ImgLabeling;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.IntType;
 import net.miginfocom.swing.MigLayout;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class Tr2dSegmentationEditorPanel extends JPanel {
 
@@ -32,7 +28,7 @@ public class Tr2dSegmentationEditorPanel extends JPanel {
 	private JComponent editorComponent;
 
 	public Tr2dSegmentationEditorPanel(
-			Tr2dSegmentationEditorModel segmentationModel) {
+			final Tr2dSegmentationEditorModel segmentationModel) {
 		this.model = segmentationModel;
 		setLayout(new BorderLayout());
 		add(initTopPanel(), BorderLayout.PAGE_START);
@@ -41,7 +37,7 @@ public class Tr2dSegmentationEditorPanel extends JPanel {
 	}
 
 	private JButton initReloadButton() {
-		JButton button = new JButton("refresh");
+		final JButton button = new JButton("refresh");
 		button.setVisible(false);
 		button.addActionListener(ignore -> fetch());
 		return button;
@@ -53,13 +49,13 @@ public class Tr2dSegmentationEditorPanel extends JPanel {
 	}
 
 	private JCheckBox initCheckBox() {
-		JCheckBox checkBox = new JCheckBox("edit segments manually");
+		final JCheckBox checkBox = new JCheckBox("edit segments manually");
 		checkBox.addItemListener( ignore -> checkBoxClicked() );
 		return checkBox;
 	}
 
 	private JComponent initTopPanel() {
-		JPanel top = new JPanel();
+		final JPanel top = new JPanel();
 		top.setLayout(new MigLayout());
 		initCheckBox();
 		top.add(checkBox);
@@ -68,7 +64,7 @@ public class Tr2dSegmentationEditorPanel extends JPanel {
 	}
 
 	private void checkBoxClicked() {
-		boolean selected = checkBox.isSelected();
+		final boolean selected = checkBox.isSelected();
 		model.setUseManualSegmentation(selected);
 		reloadButton.setVisible(selected);
 		if(selected)
@@ -87,34 +83,17 @@ public class Tr2dSegmentationEditorPanel extends JPanel {
 
 	private void addEditor() {
 		removeEditor();
-		RandomAccessibleInterval< ? extends NumericType< ? > > image = model.getModel().getRawData();
+		final RandomAccessibleInterval< ? extends NumericType< ? > > image = model.getModel().getRawData();
 		try {
-			ImageLabelingModel labelingComponentModel =
+			final ImageLabelingModel labelingComponentModel =
 					new ImageLabelingModel(image, Labeling.fromImgLabeling(model.asLabeling()), true);
 			editorComponent = new LabelingComponent(null, labelingComponentModel)
 					.getComponent();
-		} catch (NoClassDefFoundError e) {
+		} catch (final NoClassDefFoundError e) {
 			editorComponent = new JLabel("Please install Labkit to enable manual segmentation.");
 		}
 		add(editorComponent);
 		repaint();
-	}
-
-	public static void main(String... args) throws IOException {
-		// demo
-		JFrame frame = new JFrame();
-		frame.setSize(500, 500);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Path tmpFolder = Files.createTempDirectory(null);
-		Tr2dProjectFolder projectFolder =
-				new Tr2dProjectFolder(tmpFolder.toFile());
-		ImagePlus image = NewImage.createFloatImage("title", 200, 200, 10, 0);
-		IJ.save(image, projectFolder + "/raw.tif");
-		projectFolder.initialize();
-		Tr2dModel model = new Tr2dModel(projectFolder, image);
-		Tr2dSegmentationEditorModel editorModel = model.getSegmentationEditorModel();
-		frame.add( new Tr2dSegmentationEditorPanel(editorModel) );
-		frame.setVisible(true);
 	}
 
 }

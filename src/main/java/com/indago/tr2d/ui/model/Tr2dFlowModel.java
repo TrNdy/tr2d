@@ -210,7 +210,7 @@ public class Tr2dFlowModel implements BdvWithOverlaysOwner {
 		final MSEBlockFlow flowMagic = new MSEBlockFlow();
 
 		//scaling
-		final Img< FloatType > img = ImageJFunctions.convertFloat( model.getImgPlus() );
+		final Img< FloatType > img = ImageJFunctions.convertFloat( ImageJFunctions.wrap( model.getRawData(), "raw.tif" ) );
 
 		final RandomAccessibleInterval< FloatType > imgScaled =
 				scale( img, new double[] { scaleFactor, scaleFactor, 1 }, new NLinearInterpolatorFactory<>(), Tr2dContext.ops );

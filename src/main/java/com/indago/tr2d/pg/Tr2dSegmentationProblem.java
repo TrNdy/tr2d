@@ -8,13 +8,13 @@ import java.util.Set;
 import com.indago.costs.CostFactory;
 import com.indago.data.segmentation.ConflictGraph;
 import com.indago.data.segmentation.LabelingSegment;
-import com.indago.pg.SegmentationProblem;
+import com.indago.pg.TrackingSegmentationProblem;
 import com.indago.pg.segments.ConflictSet;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.levedit.EditState;
 import com.indago.util.Bimap;
 
-public class Tr2dSegmentationProblem implements SegmentationProblem {
+public class Tr2dSegmentationProblem implements TrackingSegmentationProblem {
 
 	private final int time;
 	private final CostFactory< LabelingSegment > segmentCosts;

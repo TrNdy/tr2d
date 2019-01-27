@@ -61,6 +61,7 @@ import bdv.util.BdvOverlay;
 import bdv.util.BdvSource;
 import gurobi.GRBException;
 import ij.IJ;
+import ij.ImagePlus;
 import indago.ui.progress.DialogProgress;
 import indago.ui.progress.ProgressListener;
 import net.imglib2.RandomAccessibleInterval;
@@ -144,7 +145,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 			final CostFactory< Pair< LabelingSegment, Pair< LabelingSegment, LabelingSegment > > > divisionCosts,
 			final CostFactory< LabelingSegment > disappearanceCosts ) {
 		this.tr2dModel = model;
-		this.maxPixelComponentSize = this.tr2dModel.getImgPlus().getWidth() * this.tr2dModel.getImgPlus().getHeight() - 1;
+		final ImagePlus temp = ImageJFunctions.wrap( this.tr2dModel.getRawData(), "raw.tif" );
+		this.maxPixelComponentSize = temp.getWidth() * temp.getHeight() - 1;
 
 		stateChangedListeners = new ArrayList<>();
 
@@ -857,7 +859,8 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				this.maxDivisionSearchRadius = Integer.parseInt( strings[ 4 ] );
 				this.maxDivisionsToAddPerHypothesis = Integer.parseInt( strings[ 5 ] );
 			} catch ( final NumberFormatException e ) {
-				this.maxPixelComponentSize = this.tr2dModel.getImgPlus().getWidth() * this.tr2dModel.getImgPlus().getHeight() - 1;
+				final ImagePlus temp = ImageJFunctions.wrap( this.tr2dModel.getRawData(), "raw.tif" );
+				this.maxPixelComponentSize = temp.getWidth() * temp.getHeight() - 1;
 				this.minPixelComponentSize = 16;
 				this.maxMovementSearchRadius = 50;
 				this.maxMovementsToAddPerHypothesis = 4;
@@ -1034,7 +1037,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 		return tr2dTraProblem;
 	}
 
-	public void setTr2dTraProblem( Tr2dTrackingProblem tr2dTraProblem ) {
+	public void setTr2dTraProblem( final Tr2dTrackingProblem tr2dTraProblem ) {
 		this.tr2dTraProblem = tr2dTraProblem;
 	}
 
