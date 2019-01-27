@@ -21,13 +21,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.indago.tr2d.Tr2dContext;
-import org.scijava.log.Logger;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.io.yaml.YamlConfigIO;
 import org.scijava.ui.behaviour.util.InputActionBindings;
 
 import com.indago.IndagoLog;
+import com.indago.log.LoggingPanel;
+import com.indago.tr2d.Tr2dContext;
 import com.indago.tr2d.Tr2dLog;
 import com.indago.tr2d.ui.model.Tr2dModel;
 
@@ -35,7 +35,6 @@ import bdv.util.Bdv;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandlePanel;
 import bdv.util.BdvSource;
-import com.indago.log.LoggingPanel;
 
 /**
  * @author jug
@@ -62,7 +61,7 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 
 	private final LoggingPanel logPanel;
 
-	public Tr2dMainPanel( final Frame frame, final Tr2dModel model, final Logger logger) {
+	public Tr2dMainPanel( final Frame frame, final Tr2dModel model ) {
 		super( new BorderLayout( 5, 5 ) );
 		logPanel = new LoggingPanel(Tr2dContext.ops.context());
 		model.setRefToMainPanel( this );
@@ -71,10 +70,10 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		this.frame = frame;
 		this.model = model;
 
-		buildGui(logger);
+		buildGui();
 	}
 
-	private void buildGui(Logger logger) {
+	private void buildGui() {
 		// --- INPUT TRIGGERS ---------------------------------------------------------------------
 		model.setDefaultInputTriggerConfig( loadInputTriggerConfig() );
 
@@ -116,21 +115,14 @@ public class Tr2dMainPanel extends JPanel implements ActionListener, ChangeListe
 		tabs.add( "export", tabExport );
 
 		// --- LOGGING PANEL (from IndagoLoggingWrapper dependency) -------------------------------
-		IndagoLog.log = setupLogger(logger, "indago");
-		Tr2dLog.log = setupLogger(logger, "tr2dy");
-		Tr2dLog.solverlog = setupLogger(logger, "gurobi");
+		IndagoLog.log.addLogListener( logPanel );
+		Tr2dLog.log.addLogListener( logPanel );
 
 		splitPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, tabs, logPanel );
 		splitPane.setResizeWeight( .5 ); // 1.0 == extra space given to left (top) component alone!
 		splitPane.setOneTouchExpandable( true );
 
 		this.add( splitPane, BorderLayout.CENTER );
-	}
-
-	private Logger setupLogger(Logger logger, String name) {
-		Logger log = logger.subLogger(name);
-		log.addLogListener(logPanel);
-		return log;
 	}
 
 	/**

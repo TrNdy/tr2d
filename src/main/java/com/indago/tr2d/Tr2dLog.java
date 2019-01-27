@@ -12,8 +12,8 @@ import com.indago.IndagoLog;
  */
 public class Tr2dLog {
 
-	public static Logger log = IndagoLog.log.subLogger( "tr2d" );
-	public static Logger solverlog = IndagoLog.log.subLogger( "gurobi" );
-	public static Logger segmenterLog = IndagoLog.log.subLogger( "seg" );
+	public static Logger log = IndagoLog.stdLogger().subLogger( "tr2d" );
+	public static Logger solverlog = log.subLogger( "sol" );
+	public static Logger segmenterLog = log.subLogger( "seg" );
 
 }
