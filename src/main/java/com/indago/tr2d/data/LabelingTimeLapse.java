@@ -47,7 +47,7 @@ public class LabelingTimeLapse {
 	private final boolean darkToBright = false;
 
 	private List< LabelingBuilder > frameLabelingBuilders = new ArrayList<>(); // need ensured order
-	private final Map< LabelingBuilder, ConflictGraph > mapToConflictGraphs = new LinkedHashMap<>();  // need ensured order
+	private final Map< LabelingBuilder, ConflictGraph > mapToConflictGraphs = new LinkedHashMap<>();
 
 	private boolean processedOrLoaded;
 
