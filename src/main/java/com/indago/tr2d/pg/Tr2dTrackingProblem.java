@@ -429,12 +429,12 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 							if ( timeAndId == null ) throw new IllegalStateException( "this should not be possible -- find bug!" );
 							timeAndIdPairs.add( timeAndId );
 						}
-						// CONFSET <t id...>
+						// CONFSET <id...>
 						problemWriter.write( "CONFSET " );
 						boolean first = true;
 						for ( final NodeId timeAndId : timeAndIdPairs ) {
 							if ( !first ) problemWriter.write( " + " );
-							problemWriter.write( String.format( "%3d %4d ", timeAndId.timepoint(), timeAndId.id() ) );
+							problemWriter.write( String.format( "%4d ", timeAndId.id() ) );
 							first = false;
 						}
 						problemWriter.write( " <= 1\n" );
@@ -570,10 +570,11 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		}
 
 		private static void writeSegmentLine( final NodeId segid, final SegmentNode segment, final BufferedWriter writer ) throws IOException {
-			// H <id> <cost> (<com_x_pos> <com_y_pos>)
+			// H <time> <id> <cost> (<com_x_pos> <com_y_pos>)
 			writer.write(
 					String.format(
-							"H %4d %.16f (%.1f,%.1f)\n",
+							"H %3d %4d %.16f (%.1f,%.1f)\n",
+							segid.timepoint(),
 							segid.id(),
 							segment.getCost(),
 							segment.getSegment().getCenterOfMass().getFloatPosition( 0 ),
