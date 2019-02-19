@@ -255,7 +255,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		}
 
 		@Override
-		public boolean equals( Object o ) {
+		public boolean equals( final Object o ) {
 			if ( this == o )
 				return true;
 			if ( ! ( o instanceof NodeId ) )
@@ -289,12 +289,12 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			bimapAss2Id = new Bimap<>();
 		}
 
-		private NodeId nodeId( SegmentNode node )
+		private NodeId nodeId( final SegmentNode node )
 		{
 			return bimapSeg2Id.getB( node );
 		}
 
-		private NodeId nodeId( AssignmentNode node )
+		private NodeId nodeId( final AssignmentNode node )
 		{
 			return bimapAss2Id.getB( node );
 		}
@@ -304,7 +304,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			map.clear();
 			final List< Tr2dSegmentationProblem > timePoints = ttp.getTimepoints();
 			for ( final Tr2dSegmentationProblem timePoint : timePoints ) {
-				int t = timePoint.getTime();
+				final int t = timePoint.getTime();
 				for ( final SegmentNode segment : timePoint.getSegments() ) {
 					map.add( segment, new NodeId( t, segment.getSegment().getId() ) );
 				}
@@ -316,14 +316,14 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			map.clear();
 			final List< Tr2dSegmentationProblem > timePoints = ttp.getTimepoints();
 			for ( final Tr2dSegmentationProblem timePoint : timePoints ) {
-				int t = timePoint.getTime();
+				final int t = timePoint.getTime();
 
 				// Adds an AssignmentNode to map with this timepoint and a new id
-				Consumer< AssignmentNode > addToMap = new Consumer< AssignmentNode >() {
+				final Consumer< AssignmentNode > addToMap = new Consumer< AssignmentNode >() {
 					private int next_assignment_id = -1;
 
 					@Override
-					public void accept( AssignmentNode node ) {
+					public void accept( final AssignmentNode node ) {
 						map.add( node, new NodeId( t, ++next_assignment_id ) );
 					}
 				};
@@ -355,7 +355,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 
 					segment.getOutAssignments().getDivisions()
 							.stream()
-							.sorted( Comparator.comparingInt( ( DivisionHypothesis d ) -> d.getDest1().getSegment().getId() )
+							.sorted( Comparator.comparingInt( ( final DivisionHypothesis d ) -> d.getDest1().getSegment().getId() )
 									.thenComparingInt( d -> d.getDest2().getSegment().getId() ) )
 							.forEach( addToMap );
 				}
@@ -371,7 +371,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			buildBimapSeg2Id( ttp, bimapSeg2Id );
 			buildBimapAss2Id( ttp, bimapAss2Id );
 
-			int next_assignment_id = -1;
+			final int next_assignment_id = -1;
 
 			try {
 				final SimpleDateFormat sdfDate = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
@@ -570,11 +570,10 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		}
 
 		private static void writeSegmentLine( final NodeId segid, final SegmentNode segment, final BufferedWriter writer ) throws IOException {
-			// H <id> <cost> <com_x_pos> <com_y_pos>
+			// H <id> <cost> (<com_x_pos> <com_y_pos>)
 			writer.write(
 					String.format(
-							"H %3d %4d %.16f (%.1f,%.1f)\n",
-							segid.timepoint(),
+							"H %4d %.16f (%.1f,%.1f)\n",
 							segid.id(),
 							segment.getCost(),
 							segment.getSegment().getCenterOfMass().getFloatPosition( 0 ),
@@ -587,14 +586,12 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 				final Bimap< SegmentNode, NodeId > bimapSeg2Id,
 				final BufferedWriter writer )
 				throws IOException {
-			// APP <time> <segment_id> <cost>
-			final int destId = bimapSeg2Id.getB( app.getDest() ).id();
+			// APP <id> <segment_id> <cost>
 			writer.write(
 					String.format(
-							"APP     %3d %4d   %4d %.16f\n",
-							assid.timepoint(),
+							"APP     %4d %4d %.16f\n",
 							assid.id(),
-							destId,
+							bimapSeg2Id.getB( app.getDest() ).id(),
 							app.getCost() ) );
 		}
 
@@ -604,14 +601,12 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 				final Bimap< SegmentNode, NodeId > bimapSeg2Id,
 				final BufferedWriter writer )
 				throws IOException {
-			// DISAPP <time> <segment_id> <cost>
-			final int srcId = bimapSeg2Id.getB( disapp.getSrc() ).id();
+			// DISAPP <id> <segment_id> <cost>
 			writer.write(
 					String.format(
-							"DISAPP  %3d %4d   %4d %.16f\n",
-							assid.timepoint(),
+							"DISAPP  %4d %4d %.16f\n",
 							assid.id(),
-							srcId,
+							bimapSeg2Id.getB( disapp.getSrc() ).id(),
 							disapp.getCost() ) );
 		}
 
@@ -621,17 +616,13 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 				final Bimap< SegmentNode, NodeId > bimapSeg2Id,
 				final BufferedWriter writer )
 				throws IOException {
-			// MOVE <ass_id> <source_time> <source_segment_id> <dest_time> <dest_segment_id> <cost>
-			final int srcId = bimapSeg2Id.getB( move.getSrc() ).id();
-			final NodeId timeAndId4Dest = bimapSeg2Id.getB( move.getDest() );
+			// MOVE <ass_id> <source_segment_id> <dest_segment_id> <cost>
 			writer.write(
 					String.format(
-							"MOVE    %3d %4d   %4d %3d %4d %.16f\n",
-							assid.timepoint(),
+							"MOVE    %4d %4d %4d %.16f\n",
 							assid.id(),
-							srcId,
-							timeAndId4Dest.timepoint(),
-							timeAndId4Dest.id(),
+							bimapSeg2Id.getB( move.getSrc() ).id(),
+							bimapSeg2Id.getB( move.getDest() ).id(),
 							move.getCost() ) );
 		}
 
@@ -647,14 +638,11 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			final NodeId timeAndId4Dest2 = bimapSeg2Id.getB( div.getDest2() );
 			writer.write(
 					String.format(
-							"DIV     %3d %4d   %4d %3d %4d %3d %4d %.16f\n",
-							assid.timepoint(),
+							"DIV     %4d %4d %4d %4d %.16f\n",
 							assid.id(),
-							srcId,
-							timeAndId4Dest1.timepoint(),
-							timeAndId4Dest1.id(),
-							timeAndId4Dest2.timepoint(),
-							timeAndId4Dest2.id(),
+							bimapSeg2Id.getB( div.getSrc() ).id(),
+							bimapSeg2Id.getB( div.getDest1() ).id(),
+							bimapSeg2Id.getB( div.getDest2() ).id(),
 							div.getCost() ) );
 		}
 
