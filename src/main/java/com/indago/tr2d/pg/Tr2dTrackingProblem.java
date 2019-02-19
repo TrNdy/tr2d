@@ -297,7 +297,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			map.clear();
 			final List< Tr2dSegmentationProblem > timePoints = ttp.getTimepoints();
 			for ( final Tr2dSegmentationProblem timePoint : timePoints ) {
-				final int t = timePoint.getTime();
 				for ( final SegmentNode segment : timePoint.getSegments() ) {
 					map.add( segment, new NodeId( segment.getSegment().getId() ) );
 				}
@@ -307,19 +306,20 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 		private static void buildBimapAss2Id( final Tr2dTrackingProblem ttp, final Bimap< AssignmentNode, NodeId > map )
 		{
 			map.clear();
+
+			// Adds an AssignmentNode to map with this timepoint and a new id
+			final Consumer< AssignmentNode > addToMap = new Consumer< AssignmentNode >() {
+
+				private int next_assignment_id = -1;
+
+				@Override
+				public void accept( final AssignmentNode node ) {
+					map.add( node, new NodeId( ++next_assignment_id ) );
+				}
+			};
+
 			final List< Tr2dSegmentationProblem > timePoints = ttp.getTimepoints();
 			for ( final Tr2dSegmentationProblem timePoint : timePoints ) {
-				final int t = timePoint.getTime();
-
-				// Adds an AssignmentNode to map with this timepoint and a new id
-				final Consumer< AssignmentNode > addToMap = new Consumer< AssignmentNode >() {
-					private int next_assignment_id = -1;
-
-					@Override
-					public void accept( final AssignmentNode node ) {
-						map.add( node, new NodeId( ++next_assignment_id ) );
-					}
-				};
 
 				// sort segments by segment id
 				final ArrayList< SegmentNode > segments = new ArrayList<>( timePoint.getSegments() );
@@ -363,8 +363,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 
 			buildBimapSeg2Id( ttp, bimapSeg2Id );
 			buildBimapAss2Id( ttp, bimapAss2Id );
-
-			final int next_assignment_id = -1;
 
 			try {
 				final SimpleDateFormat sdfDate = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
@@ -628,9 +626,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 				final BufferedWriter writer )
 				throws IOException {
 			// DIV <ass_id> <source_segment_id> <dest1_segment_id> <dest2_segment_id> <cost>
-			final int srcId = bimapSeg2Id.getB( div.getSrc() ).id();
-			final NodeId timeAndId4Dest1 = bimapSeg2Id.getB( div.getDest1() );
-			final NodeId timeAndId4Dest2 = bimapSeg2Id.getB( div.getDest2() );
 			writer.write(
 					String.format(
 							"DIV     %4d %4d %4d %4d %.16f\n",
