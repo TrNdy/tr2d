@@ -245,12 +245,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 
 	static final class NodeId
 	{
-		private final int timepoint;
-
 		private final int id;
 
-		public NodeId( final int timepoint, final int id ) {
-			this.timepoint = timepoint;
+		public NodeId( final int id ) {
 			this.id = id;
 		}
 
@@ -261,16 +258,12 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			if ( ! ( o instanceof NodeId ) )
 				return false;
 			final NodeId other = ( NodeId ) o;
-			return id == other.id && timepoint == other.timepoint;
+			return id == other.id;
 		}
 
 		@Override
 		public int hashCode() {
-			return 31 * timepoint + id;
-		}
-
-		public int timepoint() {
-			return timepoint;
+			return id;
 		}
 
 		public int id() {
@@ -306,7 +299,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			for ( final Tr2dSegmentationProblem timePoint : timePoints ) {
 				final int t = timePoint.getTime();
 				for ( final SegmentNode segment : timePoint.getSegments() ) {
-					map.add( segment, new NodeId( t, segment.getSegment().getId() ) );
+					map.add( segment, new NodeId( segment.getSegment().getId() ) );
 				}
 			}
 		}
@@ -324,7 +317,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 
 					@Override
 					public void accept( final AssignmentNode node ) {
-						map.add( node, new NodeId( t, ++next_assignment_id ) );
+						map.add( node, new NodeId( ++next_assignment_id ) );
 					}
 				};
 
@@ -389,7 +382,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 
 					// write all segment hypotheses
 					for ( final SegmentNode segment : t.getSegments() ) {
-						writeSegmentLine( nodeId( segment ), segment, problemWriter );
+						writeSegmentLine( t.getTime(), nodeId( segment ), segment, problemWriter );
 					}
 				}
 
@@ -455,9 +448,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 								final NodeId segTimeAndId = nodeId( segment );
 
 								// CONT <time> <seg_id> <left_ass_ids as (time, id) pairs...>
-								problemWriter.write( String.format( "CONT    %3d %4d ", segTimeAndId.timepoint(), segTimeAndId.id() ) );
+								problemWriter.write( String.format( "CONT    %4d ", segTimeAndId.id() ) );
 								for ( final NodeId leftTimeAndId : leftSegs ) {
-									problemWriter.write( String.format( "%3d %4d", leftTimeAndId.timepoint(), leftTimeAndId.id() ) );
+									problemWriter.write( String.format( "%4d", leftTimeAndId.id() ) );
 								}
 								problemWriter.write( "\n" );
 
@@ -468,9 +461,9 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 									rightSegs.add( timeAndId );
 								}
 								// CONT <time> <seg_id> <right_ass_ids as (time, id) pairs...>
-								problemWriter.write( String.format( "CONT    %3d %4d ", segTimeAndId.timepoint(), segTimeAndId.id() ) );
+								problemWriter.write( String.format( "CONT    %4d ", segTimeAndId.id() ) );
 								for ( final NodeId rightTimeAndId : rightSegs ) {
-									problemWriter.write( String.format( "%3d %4d", rightTimeAndId.timepoint(), rightTimeAndId.id() ) );
+									problemWriter.write( String.format( "%4d", rightTimeAndId.id() ) );
 								}
 								problemWriter.write( "\n" );
 							}
@@ -508,7 +501,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					for ( final SegmentNode segmentNode : t.getSegments() ) {
 						if ( pgAssignment.getAssignment( segmentNode ) == 1 ) {
 							final NodeId key = nodeId( segmentNode );
-							solutionWriter.write( String.format( "H %3d %4d\n", key.timepoint(), key.id() ) );
+							solutionWriter.write( String.format( "H %3d %4d\n", t.getTime(), key.id() ) );
 						}
 					}
 				}
@@ -528,27 +521,27 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 						for ( final AppearanceHypothesis app : apps ) {
 							if ( pgAssignment.getAssignment( app ) == 1 ) {
 								final NodeId key = nodeId( app );
-								solutionWriter.write( String.format( "APP %3d %4d\n", key.timepoint(), key.id() ) );
+								solutionWriter.write( String.format( "APP %4d\n", key.id() ) );
 							}						}
 						final Collection< DisappearanceHypothesis > disapps = segment.getOutAssignments().getDisappearances();
 						for ( final DisappearanceHypothesis disapp : disapps ) {
 							if ( pgAssignment.getAssignment( disapp ) == 1 ) {
 								final NodeId key = nodeId( disapp );
-								solutionWriter.write( String.format( "DISAPP %3d %4d\n", key.timepoint(), key.id() ) );
+								solutionWriter.write( String.format( "DISAPP %4d\n", key.id() ) );
 							}
 						}
 						final Collection< MovementHypothesis > moves = segment.getOutAssignments().getMoves();
 						for ( final MovementHypothesis move : moves ) {
 							if ( pgAssignment.getAssignment( move ) == 1 ) {
 								final NodeId key = nodeId( move );
-								solutionWriter.write( String.format( "MOVE %3d %4d\n", key.timepoint(), key.id() ) );
+								solutionWriter.write( String.format( "MOVE %4d\n", key.id() ) );
 							}
 						}
 						final Collection< DivisionHypothesis > divs = segment.getOutAssignments().getDivisions();
 						for ( final DivisionHypothesis div : divs ) {
 							if ( pgAssignment.getAssignment( div ) == 1 ) {
 								final NodeId key = nodeId( div );
-								solutionWriter.write( String.format( "DIV %3d %4d\n", key.timepoint(), key.id() ) );
+								solutionWriter.write( String.format( "DIV %4d\n", key.id() ) );
 							}
 						}
 					}
@@ -569,12 +562,13 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			}
 		}
 
-		private static void writeSegmentLine( final NodeId segid, final SegmentNode segment, final BufferedWriter writer ) throws IOException {
+		private static void writeSegmentLine( final int t, final NodeId segid, final SegmentNode segment, final BufferedWriter writer )
+				throws IOException {
 			// H <time> <id> <cost> (<com_x_pos> <com_y_pos>)
 			writer.write(
 					String.format(
 							"H %3d %4d %.16f (%.1f,%.1f)\n",
-							segid.timepoint(),
+							t,
 							segid.id(),
 							segment.getCost(),
 							segment.getSegment().getCenterOfMass().getFloatPosition( 0 ),
@@ -810,20 +804,19 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 
 				try {
 					final String type = scanner.next();
-					final int t = scanner.nextInt();
 					final int id = scanner.nextInt();
 
 					switch ( type ) {
 					case "H":
-						final SegmentNode segNode = tr2dTraProblem.getSerializer().getBimapSeg2Id().getA( new NodeId( t, id ) );
+						final SegmentNode segNode = tr2dTraProblem.getSerializer().getBimapSeg2Id().getA( new NodeId( id ) );
 						if ( segNode == null ) {
-							Tr2dLog.solverlog.warn( String.format( "Segmentation hypothesis (%d, %d) not found in Seg2Id bimap!", t, id ) );
+							Tr2dLog.solverlog.warn( String.format( "Segmentation hypothesis with ID %d not found in Seg2Id bimap!", id ) );
 							break;
 						}
 						final Boolean previous = assignment.put( segNode, Boolean.TRUE );
 						if ( previous == null )
 							Tr2dLog.solverlog.warn(
-									String.format( "Seg that was not previously in assignment: %d, %d", t, id ) );
+									String.format( "Seg that was not previously in assignment: %d", id ) );
 						trueSegs++;
 						break;
 					case "APP":
@@ -831,15 +824,15 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					case "MOVE":
 					case "DIV":
 					case "A": // one to rule them all ;)
-						final AssignmentNode assNode = tr2dTraProblem.getSerializer().getBimapAss2Id().getA( new NodeId( t, id ) );
+						final AssignmentNode assNode = tr2dTraProblem.getSerializer().getBimapAss2Id().getA( new NodeId( id ) );
 						if ( assNode == null ) {
-							Tr2dLog.solverlog.warn( String.format( "Assignment hypothesis (%d, %d) not found in Ass2Id bimap!", t, id ) );
+							Tr2dLog.solverlog.warn( String.format( "Assignment hypothesis with ID %d not found in Ass2Id bimap!", id ) );
 							break;
 						}
 						final Boolean previous2 = assignment.put( assNode, Boolean.TRUE );
 						if ( previous2 == null )
 							Tr2dLog.solverlog.warn(
-									String.format( "Assmnt that was not previously in assignment: %d, %d", t, id ) );
+									String.format( "Assmnt that was not previously in assignment: %d", id ) );
 						trueAssmts++;
 						break;
 					default:
