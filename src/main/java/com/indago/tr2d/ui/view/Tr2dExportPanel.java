@@ -43,6 +43,7 @@ import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.SolutionExporter;
+import com.indago.tr2d.ui.util.SolutionVisualizer;
 import com.indago.tr2d.ui.util.SolutionExporter.Tracklet;
 import com.indago.ui.util.UniversalFileChooser;
 import com.indago.util.Bimap;
@@ -52,6 +53,11 @@ import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBVar;
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
+import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
+import net.imglib2.img.cell.CellImgFactory;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.ValuePair;
 import net.miginfocom.swing.MigLayout;
 
@@ -70,6 +76,8 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	private JButton exportTrackingProblem;
 
 	private JButton exportTrackingProblemILP;
+
+	private JButton exportTraImages;
 
 	public Tr2dExportPanel( final Tr2dModel model ) {
 		super( new BorderLayout() );
@@ -96,8 +104,15 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 		panelTrackingProblem.add( exportTrackingProblemILP, "growx, wrap" );
 		panelTrackingProblem.setBorder( BorderFactory.createTitledBorder( "Tracking Problem" ) );
 
+		final JPanel panelTraComputation = new JPanel( new MigLayout() );
+		exportTraImages = new JButton( "export TRA images..." );
+		exportTraImages.addActionListener( this );
+		panelTraComputation.add( exportTraImages, "growx, wrap" );
+		panelTraComputation.setBorder( BorderFactory.createTitledBorder( "TRA Computation" ) );
+
 		controls.add( panelSchitzcells, "growx, wrap" );
 		controls.add( panelTrackingProblem, "growx, wrap" );
+		controls.add( panelTraComputation, "growx, wrap" );
 
 		final JSplitPane splitPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, controls, viewer );
 		add( splitPane, BorderLayout.CENTER );
@@ -138,7 +153,23 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 			} else {
 				JOptionPane.showMessageDialog( this, "Please choose a valid folder for this export!", "Selection Error", JOptionPane.ERROR_MESSAGE );
 			}
+		} else if ( e.getSource().equals( exportTraImages ) ) {
+			final File projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
+					model.getMainPanel().getTopLevelAncestor(),
+					"",
+					"Choose folder for TRA format images export..." );
+			if ( projectFolderBasePath.exists() && projectFolderBasePath.isDirectory() ) {
+				traImagesExport( projectFolderBasePath );
+			} else {
+				JOptionPane.showMessageDialog( this, "Please choose a valid folder for this export!", "Selection Error", JOptionPane.ERROR_MESSAGE );
+			}
 		}
+	}
+
+	private void traImagesExport( File projectFolderBasePath ) {
+
+		final SolutionExporter exp = new SolutionVisualizer( );
+		exp.get
 	}
 
 	/**

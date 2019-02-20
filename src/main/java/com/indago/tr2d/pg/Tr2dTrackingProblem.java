@@ -482,15 +482,6 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 			}
 		}
 
-//		public void saveTRACompatibleResult( final Tr2dTrackingProblem ttp ) {
-//			long x = ttp.trackingModel.getImgSolution().dimension( 0 );
-//			long y = ttp.trackingModel.getImgSolution().dimension( 1 );
-//			for (final Tr2dSegmentationProblem t : ttp.getTimepoints()) {
-//				RandomAccessibleInterval< IntType > blankImg = new Rand;
-//			}
-//		}
-
-
 		public void saveSolution( final Tr2dTrackingProblem ttp, final Assignment< IndicatorNode > pgAssignment, final File file ) {
 			try {
 				final BufferedWriter solutionWriter = new BufferedWriter( new FileWriter( file ) );
