@@ -74,7 +74,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 
 	private JButton exportTrackingProblemILP;
 
-	private JButton exportTraImages;
+	private JButton exportTraFiles;
 
 	private final List< RandomAccessibleInterval< IntType > > trackImgs = new ArrayList<>();
 
@@ -104,9 +104,9 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 		panelTrackingProblem.setBorder( BorderFactory.createTitledBorder( "Tracking Problem" ) );
 
 		final JPanel panelTraComputation = new JPanel( new MigLayout() );
-		exportTraImages = new JButton( "export TRA images..." );
-		exportTraImages.addActionListener( this );
-		panelTraComputation.add( exportTraImages, "growx, wrap" );
+		exportTraFiles = new JButton( "export TRA files..." );
+		exportTraFiles.addActionListener( this );
+		panelTraComputation.add( exportTraFiles, "growx, wrap" );
 		panelTraComputation.setBorder( BorderFactory.createTitledBorder( "TRA Computation" ) );
 
 		controls.add( panelSchitzcells, "growx, wrap" );
@@ -152,7 +152,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 			} else {
 				JOptionPane.showMessageDialog( this, "Please choose a valid folder for this export!", "Selection Error", JOptionPane.ERROR_MESSAGE );
 			}
-		} else if ( e.getSource().equals( exportTraImages ) ) {
+		} else if ( e.getSource().equals( exportTraFiles ) ) {
 			try {
 				traImagesExport();
 			} catch ( IOException e1 ) {
