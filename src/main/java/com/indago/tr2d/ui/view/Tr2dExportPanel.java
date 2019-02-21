@@ -42,8 +42,9 @@ import com.indago.pg.segments.ConflictSet;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.model.Tr2dModel;
-import com.indago.tr2d.ui.util.SolutionExporter;
-import com.indago.tr2d.ui.util.SolutionExporter.Tracklet;
+import com.indago.tr2d.ui.util.SchnitzcellSolutionExporter;
+import com.indago.tr2d.ui.util.SchnitzcellSolutionExporter.Tracklet;
+import com.indago.tr2d.ui.util.TraSolutionExporter;
 import com.indago.ui.util.UniversalFileChooser;
 import com.indago.util.Bimap;
 
@@ -152,21 +153,16 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 				JOptionPane.showMessageDialog( this, "Please choose a valid folder for this export!", "Selection Error", JOptionPane.ERROR_MESSAGE );
 			}
 		} else if ( e.getSource().equals( exportTraImages ) ) {
-			final File projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
-					model.getMainPanel().getTopLevelAncestor(),
-					"",
-					"Choose folder for TRA format images export..." );
-			if ( projectFolderBasePath.exists() && projectFolderBasePath.isDirectory() ) {
-				traImagesExport( projectFolderBasePath );
-			} else {
-				JOptionPane.showMessageDialog( this, "Please choose a valid folder for this export!", "Selection Error", JOptionPane.ERROR_MESSAGE );
+			try {
+				traImagesExport();
+			} catch ( IOException e1 ) {
+				e1.printStackTrace();
 			}
 		}
 	}
 
-	private void traImagesExport( File projectFolderBasePath ) {
-		model.getTrackingModel().getTraImgSolution();
-		model.getTrackingModel().showTraSolutionInImageJ();
+	private void traImagesExport() throws IOException {
+		TraSolutionExporter.exportTraData( model.getTrackingModel(), model.getTrackingModel().getSolution() );
 	}
 
 
@@ -532,7 +528,7 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 		    final Date now = new Date();
 			final String strNow = sdfDate.format( now );
 
-			final SolutionExporter exp = new SolutionExporter( model.getTrackingModel(), model.getTrackingModel().getSolution() );
+			final SchnitzcellSolutionExporter exp = new SchnitzcellSolutionExporter( model.getTrackingModel(), model.getTrackingModel().getSolution() );
 
 			final BufferedWriter objWriter = new BufferedWriter( new FileWriter( objects ) );
 			objWriter.write( "# Tr2d export from " + strNow + "\n" );

@@ -23,7 +23,7 @@ import com.indago.util.Bimap;
 /**
  * @author jug
  */
-public class SolutionExporter {
+public class SchnitzcellSolutionExporter {
 
 	public static class Tracklet {
 
@@ -91,7 +91,7 @@ public class SolutionExporter {
 	private final Map< Integer, Bimap< Integer, SegmentNode > > mapTime2Segments;
 	private final List< Tracklet > tracklets = new ArrayList<>();
 
-	public SolutionExporter(
+	public SchnitzcellSolutionExporter(
 			final Tr2dTrackingModel trackingModel,
 			final Assignment< IndicatorNode > solution ) {
 		this.model = trackingModel;

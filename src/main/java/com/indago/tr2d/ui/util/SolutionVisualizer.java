@@ -79,7 +79,6 @@ public class SolutionVisualizer {
 					for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
 
 						if ( solution.getAssignment( app ) == 1 ) { // || time == 0
-							System.out.println( curColorId );
 							drawLineageWithId( ret, solution, time, segVar, curColorId ); // 10 + curColorId
 							curColorId++;
 						}
