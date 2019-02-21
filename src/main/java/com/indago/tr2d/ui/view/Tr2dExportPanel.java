@@ -153,16 +153,24 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 				JOptionPane.showMessageDialog( this, "Please choose a valid folder for this export!", "Selection Error", JOptionPane.ERROR_MESSAGE );
 			}
 		} else if ( e.getSource().equals( exportTraFiles ) ) {
-			try {
-				traImagesExport();
-			} catch ( IOException e1 ) {
-				e1.printStackTrace();
+			final File projectFolderBasePath = UniversalFileChooser.showLoadFolderChooser(
+					model.getMainPanel().getTopLevelAncestor(),
+					"",
+					"Choose folder for TRA format images and lineage file export..." );
+			if ( projectFolderBasePath.exists() && projectFolderBasePath.isDirectory() ) {
+				try {
+					traImagesExport( projectFolderBasePath );
+				} catch ( IOException e1 ) {
+					e1.printStackTrace();
+				}
+			} else {
+				JOptionPane.showMessageDialog( this, "Please choose a valid folder for this export!", "Selection Error", JOptionPane.ERROR_MESSAGE );
 			}
 		}
 	}
 
-	private void traImagesExport() throws IOException {
-		TraSolutionExporter.exportTraData( model.getTrackingModel(), model.getTrackingModel().getSolution() );
+	private void traImagesExport( final File projectFolderBasePath ) throws IOException {
+		TraSolutionExporter.exportTraData( model.getTrackingModel(), model.getTrackingModel().getSolution(), projectFolderBasePath );
 	}
 
 

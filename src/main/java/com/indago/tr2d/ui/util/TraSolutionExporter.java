@@ -20,7 +20,6 @@ import com.indago.pg.assignments.DivisionHypothesis;
 import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.Tr2dLog;
-import com.indago.tr2d.io.projectfolder.Tr2dProjectFolder;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.model.Tr2dTrackingModel;
 
@@ -72,16 +71,13 @@ public class TraSolutionExporter {
 
 	public static void exportTraData(
 			final Tr2dTrackingModel trackingModel,
-			final Assignment< IndicatorNode > solution ) throws IOException {
+			final Assignment< IndicatorNode > solution,
+			File projectFolderBasePath ) throws IOException {
 
 		trackletInfo = new HashMap<>();
 
 		//create text file to write TRA info into
-		final File exportFile = new File( trackingModel
-				.getTr2dModel()
-				.getProjectFolder()
-				.getFolder( Tr2dProjectFolder.TRA_FOLDER )
-				.getAbsolutePath(), "res_track.txt" );
+		final File exportFile = new File( projectFolderBasePath.getAbsolutePath(), "res_track.txt" );
 
 		//call collectTraData
 		RandomAccessibleInterval< IntType > traImages = collectTraData( trackingModel, solution );
@@ -89,7 +85,7 @@ public class TraSolutionExporter {
 			IntervalView< IntType > res = Views.hyperSlice( traImages, 2, image );
 			IJ.save(
 					ImageJFunctions.wrap( res, "tracking solution" ).duplicate(),
-					trackingModel.getTr2dModel().getProjectFolder().getFolder( Tr2dProjectFolder.TRA_FOLDER ).getAbsolutePath() + "/mask" + String
+					projectFolderBasePath.getAbsolutePath() + "/mask" + String
 							.format( "%03d", image ) + ".tif" );
 		}
 
@@ -100,11 +96,7 @@ public class TraSolutionExporter {
 		}
 
 		//write all lines in textfile
-		FileWriter fw = new FileWriter( trackingModel
-				.getTr2dModel()
-				.getProjectFolder()
-				.getFolder( Tr2dProjectFolder.TRA_FOLDER )
-				.getAbsolutePath() + "/res_track.txt" );
+		FileWriter fw = new FileWriter( projectFolderBasePath.getAbsolutePath() + "/res_track.txt" );
 		final BufferedWriter problemWriter = new BufferedWriter( fw );
 		for ( int id = 1; id < Collections.max( trackletInfo.keySet() ) + 1; id++ ) {
 
