@@ -90,7 +90,7 @@ public class TraSolutionExporter {
 			IJ.save(
 					ImageJFunctions.wrap( res, "tracking solution" ).duplicate(),
 					trackingModel.getTr2dModel().getProjectFolder().getFolder( Tr2dProjectFolder.TRA_FOLDER ).getAbsolutePath() + "/mask" + String
-							.format( "%03d ", image ) + ".tif" );
+							.format( "%03d", image ) + ".tif" );
 		}
 
 		for ( int i = 1; i < Collections.max( trackletInfo.keySet() ) + 1; i++ ) {
