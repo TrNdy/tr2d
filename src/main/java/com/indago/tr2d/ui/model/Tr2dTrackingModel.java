@@ -113,6 +113,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private Tr2dTrackingProblem tr2dTraProblem;
 	private final LabelingTimeLapse labelingFrames;
 	private RandomAccessibleInterval< IntType > imgSolution = null;
+	private RandomAccessibleInterval< IntType > traImgSolution = null;
 
 	private MappedFactorGraph mfg;
 	private Assignment< Variable > fgSolution;
@@ -133,6 +134,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	private SolveGurobi gurobiFGsolver;
 	private SolveExternal externalPGsolver;
 	private final List< ChangeListener > stateChangedListeners;
+
 
 	/**
 	 * @param model
@@ -301,6 +303,7 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 				solveFactorGraphInternally();
 				fireProgressEvent();
 				imgSolution = SolutionVisualizer.drawSolutionSegmentImages( this, pgSolution );
+				traImgSolution = SolutionVisualizer.drawTraSegmentImages( this, pgSolution );
 				saveSolution();
 				fireSolutionChangedEvent();
 				fireProgressEvent();
@@ -511,10 +514,26 @@ public class Tr2dTrackingModel implements BdvWithOverlaysOwner {
 	}
 
 	/**
+	 * Opens the computed tracking solution image in TRA format in ImageJ (if it
+	 * was computed
+	 * already). Does nothing otherwise.
+	 */
+	public void showTraSolutionInImageJ() {
+		if ( traImgSolution != null ) ImageJFunctions.show( traImgSolution, "TRA Solution" );
+	}
+
+	/**
 	 * @return the imgSolution
 	 */
 	public RandomAccessibleInterval< IntType > getImgSolution() {
 		return imgSolution;
+	}
+
+	/**
+	 * @return the imgSolution in TRA format
+	 */
+	public RandomAccessibleInterval< IntType > getTraImgSolution() {
+		return traImgSolution;
 	}
 
 	/**

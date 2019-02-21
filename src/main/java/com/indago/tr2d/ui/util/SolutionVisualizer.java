@@ -58,6 +58,40 @@ public class SolutionVisualizer {
 		return ret;
 	}
 
+	public static RandomAccessibleInterval< IntType > drawTraSegmentImages(
+			final Tr2dTrackingModel trackingModel,
+			final Assignment< IndicatorNode > solution ) {
+
+		final RandomAccessibleInterval< IntType > ret =
+				DataMover.createEmptyArrayImgLike( trackingModel.getTr2dModel().getRawData(), new IntType() );
+
+		final MappedFactorGraph mfg = trackingModel.getMappedFactorGraph();
+		if ( mfg != null && solution != null ) {
+//			final UnaryCostConstraintGraph fg = mfg.getFg();
+//			final AssignmentMapper< Variable, IndicatorNode > assMapper = mfg.getAssmntMapper();
+//			final Map< IndicatorNode, Variable > varMapper = mfg.getVarmap();
+
+			int time = 0;
+			for ( final Tr2dSegmentationProblem segProblem : trackingModel.getTrackingProblem().getTimepoints() ) {
+				int curColorId = 1;
+				for ( final SegmentNode segVar : segProblem.getSegments() ) {
+
+					for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
+
+						if ( solution.getAssignment( app ) == 1 ) { // || time == 0
+							System.out.println( curColorId );
+							drawLineageWithId( ret, solution, time, segVar, curColorId ); // 10 + curColorId
+							curColorId++;
+						}
+					}
+				}
+				time++;
+			}
+		}
+
+		return ret;
+	}
+
 	private static void drawLineageWithId(
 			final RandomAccessibleInterval< IntType > imgSolution,
 			final Assignment< IndicatorNode > solution,

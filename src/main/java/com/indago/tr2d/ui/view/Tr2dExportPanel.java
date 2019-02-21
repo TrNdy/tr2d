@@ -43,7 +43,6 @@ import com.indago.pg.segments.SegmentNode;
 import com.indago.tr2d.pg.Tr2dSegmentationProblem;
 import com.indago.tr2d.ui.model.Tr2dModel;
 import com.indago.tr2d.ui.util.SolutionExporter;
-import com.indago.tr2d.ui.util.SolutionVisualizer;
 import com.indago.tr2d.ui.util.SolutionExporter.Tracklet;
 import com.indago.ui.util.UniversalFileChooser;
 import com.indago.util.Bimap;
@@ -53,11 +52,8 @@ import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBVar;
 import net.imglib2.Cursor;
-import net.imglib2.RandomAccess;
-import net.imglib2.img.Img;
-import net.imglib2.img.ImgFactory;
-import net.imglib2.img.cell.CellImgFactory;
-import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.util.ValuePair;
 import net.miginfocom.swing.MigLayout;
 
@@ -78,6 +74,8 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	private JButton exportTrackingProblemILP;
 
 	private JButton exportTraImages;
+
+	private final List< RandomAccessibleInterval< IntType > > trackImgs = new ArrayList<>();
 
 	public Tr2dExportPanel( final Tr2dModel model ) {
 		super( new BorderLayout() );
@@ -167,10 +165,10 @@ public class Tr2dExportPanel extends JPanel implements ActionListener {
 	}
 
 	private void traImagesExport( File projectFolderBasePath ) {
-
-		final SolutionExporter exp = new SolutionVisualizer( );
-		exp.get
+		model.getTrackingModel().getTraImgSolution();
+		model.getTrackingModel().showTraSolutionInImageJ();
 	}
+
 
 	/**
 	 * @param projectFolderBasePath
