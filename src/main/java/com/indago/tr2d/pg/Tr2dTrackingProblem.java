@@ -499,7 +499,7 @@ public class Tr2dTrackingProblem implements TrackingProblem {
 					for ( final SegmentNode segmentNode : t.getSegments() ) {
 						if ( pgAssignment.getAssignment( segmentNode ) == 1 ) {
 							final NodeId key = nodeId( segmentNode );
-							solutionWriter.write( String.format( "H %3d %4d\n", t.getTime(), key.id() ) );
+							solutionWriter.write( String.format( "H %4d\n", key.id() ) );
 						}
 					}
 				}
