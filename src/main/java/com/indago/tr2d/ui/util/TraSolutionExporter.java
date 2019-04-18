@@ -16,6 +16,7 @@ import com.indago.fg.MappedFactorGraph;
 import com.indago.io.DataMover;
 import com.indago.pg.IndicatorNode;
 import com.indago.pg.assignments.AppearanceHypothesis;
+import com.indago.pg.assignments.DisappearanceHypothesis;
 import com.indago.pg.assignments.DivisionHypothesis;
 import com.indago.pg.assignments.MovementHypothesis;
 import com.indago.pg.segments.SegmentNode;
@@ -122,7 +123,7 @@ public class TraSolutionExporter {
 			for ( final Tr2dSegmentationProblem segProblem : trackingModel.getTrackingProblem().getTimepoints() ) {
 				for ( final SegmentNode segVar : segProblem.getSegments() ) {
 					for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
-						if ( solution.getAssignment( app ) == 1 ) { // || time == 0
+						if ( solution.getAssignment( app ) == 1 ) { // time == 0
 							trackletInfo.put( curId, new TraLineData( curId, time ) );
 							curId = collectLineageData( ret, solution, time, segVar, curId );
 							curId++;
@@ -166,16 +167,21 @@ public class TraSolutionExporter {
 					trackletInfo.get( curId ).setEnd( time );
 
 					curId++;
-					TraLineData child = new TraLineData( curId, time );
+					TraLineData child = new TraLineData( curId, time + 1 );
 					child.setParentId( curId - 1 );
 					trackletInfo.put( curId, child );
 					curId = collectLineageData( imgSolution, solution, time + 1, div.getDest1(), curId );
 
 					curId++;
-					child = new TraLineData( curId, time );
+					child = new TraLineData( curId, time + 1 );
 					child.setParentId( curId - 2 );
 					trackletInfo.put( curId, child );
 					curId = collectLineageData( imgSolution, solution, time + 1, div.getDest2(), curId );
+				}
+			}
+			for ( final DisappearanceHypothesis disappear : segVar.getOutAssignments().getDisappearances() ) {
+				if ( solution.getAssignment( disappear ) == 1 ) {
+					trackletInfo.get( curId ).setEnd( time );
 				}
 			}
 		}
