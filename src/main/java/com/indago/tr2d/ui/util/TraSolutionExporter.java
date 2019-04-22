@@ -123,7 +123,7 @@ public class TraSolutionExporter {
 			for ( final Tr2dSegmentationProblem segProblem : trackingModel.getTrackingProblem().getTimepoints() ) {
 				for ( final SegmentNode segVar : segProblem.getSegments() ) {
 					for ( final AppearanceHypothesis app : segVar.getInAssignments().getAppearances() ) {
-						if ( solution.getAssignment( app ) == 1 ) { // time == 0
+						if ( solution.getAssignment( app ) == 1 ) { // || time == 0
 							trackletInfo.put( curId, new TraLineData( curId, time ) );
 							curId = collectLineageData( ret, solution, time, segVar, curId );
 							curId++;
