@@ -165,16 +165,17 @@ public class TraSolutionExporter {
 			for ( final DivisionHypothesis div : segVar.getOutAssignments().getDivisions() ) {
 				if ( solution.getAssignment( div ) == 1 ) {
 					trackletInfo.get( curId ).setEnd( time );
+					int parentId = curId;
 
 					curId++;
 					TraLineData child = new TraLineData( curId, time + 1 );
-					child.setParentId( curId - 1 );
+					child.setParentId( parentId );
 					trackletInfo.put( curId, child );
 					curId = collectLineageData( imgSolution, solution, time + 1, div.getDest1(), curId );
 
 					curId++;
 					child = new TraLineData( curId, time + 1 );
-					child.setParentId( curId - 2 );
+					child.setParentId( parentId );
 					trackletInfo.put( curId, child );
 					curId = collectLineageData( imgSolution, solution, time + 1, div.getDest2(), curId );
 				}
