@@ -19,7 +19,7 @@
 
 	<groupId>com.indago</groupId>
 	<artifactId>tr2d</artifactId>
-	<version>0.1.10-SNAPSHOT</version>
+	<version>0.1.11-SNAPSHOT</version>
 
 	<name>tr2d</name>
 	<description>Tracking 2D [tr2d]</description>
