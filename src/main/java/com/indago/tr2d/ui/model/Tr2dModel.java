@@ -3,6 +3,8 @@
  */
 package com.indago.tr2d.ui.model;
 
+import net.imagej.axis.Axes;
+import net.imagej.axis.CalibratedAxis;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 
 import com.indago.io.DoubleTypeImgLoader;
@@ -48,6 +50,7 @@ public class Tr2dModel implements AutoCloseable {
 		this.mainUiPanel = null;
 
 		imgRaw = DoubleTypeImgLoader.wrapEnsureType( imgPlus );
+		imgRaw.axis(2).setType(Axes.TIME);
 		ImglibUtil.computeMinMax( Views.iterable( imgRaw ), min, max );
 
 		segModel = new Tr2dSegmentationCollectionModel( this );
