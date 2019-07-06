@@ -158,6 +158,8 @@ public class Tr2dSegmentationEditorModel implements AutoCloseable {
 	public ImgLabeling< String, ? > fetch() {
 		List<RandomAccessibleInterval<IntType>>
 				images = model.getSegmentationModel().getSumImages();
+		if(images.size() == 0)
+			return new ImgLabeling<>(ArrayImgs.ints(Intervals.dimensionsAsLongArray(model.getRawData())));
 		List< RandomAccessibleInterval< Set< String > > > labelings = new ArrayList<>();
 		for(int i = 0; i < images.size(); i++)
 			labelings.add(toLabeling("Segmentation " + (i + 1) + " ",
